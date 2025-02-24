@@ -17,7 +17,7 @@ interface CodingQuestion {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="coding-container" [class.dark-theme]="darkMode">
+    <div class="coding-container" >
       <!-- Main Split Container -->
       <div class="split-container">
         <!-- Left Panel -->
