@@ -4,14 +4,6 @@ import { FormsModule } from '@angular/forms';
 import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 
-interface CodingQuestion {
-  id: number;
-  question: string;
-  sampleInput?: string;
-  sampleOutput?: string;
-  hints?: string[];
-}
-
 @Component({
   selector: 'app-coding-section',
   standalone: true,
@@ -20,34 +12,23 @@ interface CodingQuestion {
     <div class="coding-container" [ngClass]="{'dark-mode': isDarkMode, 'light-mode': !isDarkMode}">
       <!-- Main Split Container -->
       <div class="split-container">
-        <!-- Left Panel -->
-        <div class="left-panel">
-          <!-- Problem Statement Section -->
-          <div class="problem-statement-container" [style.height.px]="problemStatementHeight">
-            <div class="problem-statement-header" (mousedown)="startResizeProblemStatement($event)">
+        <!-- Left Panel (Problem Statement) -->
+        <div class="left-panel" [style.width.px]="leftPanelWidth">
+          <div class="problem-statement-container">
+            <div class="problem-statement-header">
               Problem Statement
             </div>
             <div class="problem-statement-content">
-              <div [innerHTML]="parseMarkdown(sections[0].content)"></div>
-            </div>
-          </div>
-          <!-- Hints Section -->
-          <div class="collapsible-section" *ngFor="let section of sections.slice(1)">
-            <button class="section-header" (click)="toggleSection(section)">
-              {{ section.title }}
-              <span class="arrow">{{ section.expanded ? '▼' : '▶' }}</span>
-            </button>
-            <div class="section-content" [class.expanded]="section.expanded">
-              <div [innerHTML]="parseMarkdown(section.content)"></div>
+              <div [innerHTML]="parseMarkdown(problemStatement)"></div>
             </div>
           </div>
         </div>
 
-        <!-- Resizer -->
+        <!-- Resizer for Left and Right Panels -->
         <div class="resizer" (mousedown)="startResize($event)"></div>
 
-        <!-- Right Panel -->
-        <div class="right-panel">
+        <!-- Right Panel (Code Editor and Test Cases) -->
+        <div class="right-panel" [style.width.px]="rightPanelWidth">
           <!-- Toolbar -->
           <div class="toolbar">
             <select [(ngModel)]="selectedLanguage" (change)="updateEditorLanguage()">
@@ -98,13 +79,6 @@ interface CodingQuestion {
               </div>
             </div>
           </div>
-
-          <!-- Status Bar -->
-          <div class="status-bar">
-            Language: {{ selectedLanguage }}
-            | Position: L{{ editor?.getPosition()?.lineNumber }},C{{ editor?.getPosition()?.column }}
-            | Errors: {{ errorCount }}
-          </div>
         </div>
       </div>
     </div>
@@ -152,9 +126,8 @@ interface CodingQuestion {
     }
 
     .left-panel {
-      width: 30%;
-      min-width: 250px;
-      max-width: 500px;
+      min-width: 200px;
+      max-width: calc(100% - 200px);
       background-color: var(--section-background);
       padding: 10px;
       overflow-y: auto;
@@ -162,6 +135,8 @@ interface CodingQuestion {
 
     .right-panel {
       flex: 1;
+      min-width: 200px;
+      max-width: calc(100% - 200px);
       display: flex;
       flex-direction: column;
       background-color: var(--background-color);
@@ -183,57 +158,13 @@ interface CodingQuestion {
       padding: 10px;
       background-color: var(--section-header-background);
       color: var(--text-color);
-      cursor: ns-resize;
     }
 
     .problem-statement-content {
       padding: 10px;
       background-color: var(--section-content-background);
       overflow-y: auto;
-    }
-
-    .test-case-panel {
-      position: relative;
-      border: 1px solid var(--section-header-background);
-      margin-top: 10px;
-    }
-
-    .test-case-header {
-      padding: 10px;
-      background-color: var(--section-header-background);
-      color: var(--text-color);
-      cursor: ns-resize;
-    }
-
-    .test-case-content {
-      padding: 10px;
-      background-color: var(--section-content-background);
-      overflow-y: auto; /* Enable vertical scrolling */
-      height: calc(100% - 40px); /* Adjust height based on header height */
-    }
-
-    .collapsible-section {
-      margin-bottom: 10px;
-    }
-
-    .section-header {
-      width: 100%;
-      padding: 10px;
-      background-color: var(--section-header-background);
-      color: var(--text-color);
-      border: none;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .section-content {
-      padding: 10px;
-      background-color: var(--section-content-background);
-      display: none;
-    }
-
-    .section-content.expanded {
-      display: block;
+      font-size: 14px;
     }
 
     .toolbar {
@@ -253,74 +184,60 @@ interface CodingQuestion {
       height: 100%;
     }
 
-    .status-bar {
-      padding: 5px;
-      background-color: var(--status-bar-background);
-      color: var(--text-color);
-      font-size: 12px;
-    }
-
-    .switch {
+    .test-case-panel {
       position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
+      border: 1px solid var(--section-header-background);
+      margin-top: 10px;
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    .test-case-header {
+      padding: 10px;
+      background-color: var(--section-header-background);
+      color: var(--text-color);
+      cursor: ns-resize;
     }
 
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 34px;
+    .test-case-content {
+      padding: 10px;
+      background-color: var(--section-content-background);
+      overflow-y: auto;
+      height: calc(100% - 40px); /* Adjust height based on header height */
     }
 
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
+    .test-case {
+      margin-bottom: 10px;
     }
 
-    input:checked + .slider {
-      background-color: #2196F3;
+    .test-case-header {
+      font-weight: bold;
     }
 
-    input:checked + .slider:before {
-      transform: translateX(26px);
+    .status {
+      margin-left: 10px;
+    }
+
+    .pass {
+      color: green;
+    }
+
+    .fail {
+      color: red;
     }
   `]
 })
 export class CodingSectionComponent implements AfterViewInit {
   @ViewChild('editorContainer', { static: false }) editorContainer!: ElementRef;
 
-  sections = [
-    {
-      title: 'Problem Description',
-      content: ` # Problem Statement  Write a function that finds the sum of all numbers in an array.  ## Example Input/Output  * Input: [1, 2, 3, 4, 5] * Output: 15  ## Constraints - Array length <= 1000 - Numbers are positive integers `,
-      expanded: true
-    },
-    {
-      title: 'Hints',
-      content: ` 1. Consider using array.reduce() 2. Handle edge cases (empty arrays) 3. Optimize for large inputs `,
-      expanded: false
-    }
-  ];
+  problemStatement = `# Problem Statement
+Write a function that finds the sum of all numbers in an array.
+
+## Example Input/Output
+- Input: [1, 2, 3, 4, 5]
+- Output: 15
+
+## Constraints
+- Array length <= 1000
+- Numbers are positive integers`;
 
   languages = [
     { id: 'typescript', name: 'TypeScript' },
@@ -331,10 +248,17 @@ export class CodingSectionComponent implements AfterViewInit {
   ];
 
   selectedLanguage = 'typescript';
-  output = '';
-  errorCount = 0;
   editor: monaco.editor.IStandaloneCodeEditor | null = null;
   isDarkMode = true;
+
+  // Panel widths
+  leftPanelWidth = 300; // Initial width of the left panel
+  rightPanelWidth = window.innerWidth - 300; // Initial width of the right panel
+
+  // Test case panel height
+  testCasePanelHeight = 150; // Initial height of the test case panel
+
+  // Test cases
   testCases = [
     {
       input: '[1, 2, 3, 4, 5]',
@@ -347,23 +271,8 @@ export class CodingSectionComponent implements AfterViewInit {
       expectedOutput: '60',
       actualOutput: '',
       passed: false
-    },
-    {
-      input: '[10, 20, 30]',
-      expectedOutput: '60',
-      actualOutput: '',
-      passed: false
-    },
-    {
-      input: '[10, 20, 30]',
-      expectedOutput: '60',
-      actualOutput: '',
-      passed: false
     }
   ];
-
-  problemStatementHeight = 300;
-  testCasePanelHeight = 150;
 
   constructor() {
     // Initialize Monaco Editor
@@ -385,46 +294,23 @@ export class CodingSectionComponent implements AfterViewInit {
         theme: this.isDarkMode ? 'vs-dark' : 'vs',
         automaticLayout: true,
       });
-
-      this.editor.onDidChangeModelContent(() => {
-        this.checkErrors();
-      });
     }
-  }
-
-  toggleSection(section: any) {
-    section.expanded = !section.expanded;
   }
 
   startResize(event: MouseEvent) {
     const startX = event.clientX;
-    const startLeftWidth = (document.querySelector('.left-panel') as HTMLElement)?.offsetWidth || 0;
+    const startLeftWidth = this.leftPanelWidth;
+    const startRightWidth = this.rightPanelWidth;
 
     const mouseMoveHandler = (e: MouseEvent) => {
-      const width = startLeftWidth + (e.clientX - startX);
-      const leftPanel = document.querySelector('.left-panel') as HTMLElement;
-      if (leftPanel && width >= 250 && width <= window.innerWidth * 0.8) {
-        leftPanel.style.width = `${width}px`;
-      }
-    };
+      const deltaX = e.clientX - startX;
+      const newLeftWidth = startLeftWidth + deltaX;
+      const newRightWidth = startRightWidth - deltaX;
 
-    const mouseUpHandler = () => {
-      document.removeEventListener('mousemove', mouseMoveHandler);
-      document.removeEventListener('mouseup', mouseUpHandler);
-    };
-
-    document.addEventListener('mousemove', mouseMoveHandler);
-    document.addEventListener('mouseup', mouseUpHandler);
-  }
-
-  startResizeProblemStatement(event: MouseEvent) {
-    const startY = event.clientY;
-    const startHeight = this.problemStatementHeight;
-
-    const mouseMoveHandler = (e: MouseEvent) => {
-      const height = startHeight + (e.clientY - startY);
-      if (height >= 100 && height <= window.innerHeight * 0.5) {
-        this.problemStatementHeight = height;
+      // Ensure minimum width constraints
+      if (newLeftWidth >= 200 && newRightWidth >= 200) {
+        this.leftPanelWidth = newLeftWidth;
+        this.rightPanelWidth = newRightWidth;
       }
     };
 
@@ -440,25 +326,22 @@ export class CodingSectionComponent implements AfterViewInit {
   startResizeTestCase(event: MouseEvent) {
     const startY = event.clientY;
     const startHeight = this.testCasePanelHeight;
-  
+
     const mouseMoveHandler = (e: MouseEvent) => {
-      const deltaY = e.clientY - startY; // Calculate the difference in Y-axis
-      const newHeight = startHeight - deltaY; // Adjust height based on drag direction
-  
-      // Ensure the height stays within reasonable bounds
-      const minHeight = 100; // Minimum height for the test case panel
-      const maxHeight = window.innerHeight * 0.8; // Maximum height (80% of the window height)
-  
-      if (newHeight >= minHeight && newHeight <= maxHeight) {
+      const deltaY = e.clientY - startY;
+      const newHeight = startHeight - deltaY;
+
+      // Ensure minimum height constraints
+      if (newHeight >= 100 && newHeight <= window.innerHeight * 0.5) {
         this.testCasePanelHeight = newHeight;
       }
     };
-  
+
     const mouseUpHandler = () => {
       document.removeEventListener('mousemove', mouseMoveHandler);
       document.removeEventListener('mouseup', mouseUpHandler);
     };
-  
+
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', mouseUpHandler);
   }
@@ -469,20 +352,11 @@ export class CodingSectionComponent implements AfterViewInit {
     }
   }
 
-  async runCode() {
+  runCode() {
     if (this.editor) {
       const code = this.editor.getValue();
-      try {
-        this.output = await this.executeCode(code, this.selectedLanguage);
-        this.errorCount = 0;
-        this.testCases.forEach(testCase => {
-          testCase.actualOutput = this.output;
-          testCase.passed = testCase.actualOutput === testCase.expectedOutput;
-        });
-      } catch (error) {
-        this.output = error instanceof Error ? error.message : 'An unknown error occurred';
-        this.errorCount++;
-      }
+      console.log('Running code:', code);
+      // Implement code execution logic
     }
   }
 
@@ -497,22 +371,6 @@ export class CodingSectionComponent implements AfterViewInit {
   resetCode() {
     if (this.editor) {
       this.editor.setValue('');
-      this.output = '';
-      this.errorCount = 0;
-      this.testCases.forEach(testCase => {
-        testCase.actualOutput = '';
-        testCase.passed = false;
-      });
-    }
-  }
-
-  checkErrors() {
-    if (this.editor) {
-      const model = this.editor.getModel();
-      if (model) {
-        const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-        this.errorCount = markers.filter(marker => marker.severity === monaco.MarkerSeverity.Error).length;
-      }
     }
   }
 
@@ -526,10 +384,5 @@ export class CodingSectionComponent implements AfterViewInit {
         theme: this.isDarkMode ? 'vs-dark' : 'vs'
       });
     }
-  }
-
-  private async executeCode(code: string, language: string): Promise<string> {
-    // Implement your code execution logic here
-    return 'Execution result';
   }
 }
