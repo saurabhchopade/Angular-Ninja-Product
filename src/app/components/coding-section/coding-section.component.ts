@@ -31,19 +31,19 @@ import { marked } from 'marked';
         <div class="right-panel" [style.width.px]="rightPanelWidth">
           <!-- Toolbar -->
           <div class="toolbar">
-            <select [(ngModel)]="selectedLanguage" (change)="updateEditorLanguage()">
+            <select [(ngModel)]="selectedLanguage" (change)="updateEditorLanguage()" class="toolbar-select">
               <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
             </select>
 
-            <button (click)="runCode()">
+            <button class="toolbar-button" (click)="runCode()">
               ▶ Run
             </button>
 
-            <button (click)="submitCode()">
+            <button class="toolbar-button" (click)="submitCode()">
               Submit
             </button>
 
-            <button (click)="resetCode()">
+            <button class="toolbar-button" (click)="resetCode()">
               Reset
             </button>
 
@@ -172,6 +172,50 @@ import { marked } from 'marked';
       background-color: var(--toolbar-background);
       display: flex;
       gap: 10px;
+      align-items: center;
+    }
+
+    .toolbar-select {
+      padding: 6px 12px;
+      border: 1px solid var(--section-header-background);
+      border-radius: 4px;
+      background-color: var(--section-content-background);
+      color: var(--text-color);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toolbar-select:hover {
+      border-color: var(--text-color);
+      background-color: var(--section-header-background);
+    }
+
+    .toolbar-button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--section-header-background);
+      color: var(--text-color);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .toolbar-button:hover {
+      background-color: var(--section-content-background);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .toolbar-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .editor-container {
@@ -255,6 +299,52 @@ import { marked } from 'marked';
 
     .editor .monaco-scrollable-element > .scrollbar > .slider.active {
       background: rgba(121, 121, 121, 0.8); /* Darker when active */
+    }
+
+    /* Switch styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
     }
   `]
 })
