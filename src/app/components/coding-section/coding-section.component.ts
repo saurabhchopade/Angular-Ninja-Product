@@ -54,7 +54,7 @@ import { marked } from 'marked';
           </div>
 
           <!-- Editor Container -->
-          <div class="editor-container">
+          <div class="editor-container" [style.height.px]="editorHeight">
             <div #editorContainer class="editor"></div>
           </div>
 
@@ -255,11 +255,36 @@ Write a function that finds the sum of all numbers in an array.
   leftPanelWidth = 300; // Initial width of the left panel
   rightPanelWidth = window.innerWidth - 300; // Initial width of the right panel
 
-  // Test case panel height
-  testCasePanelHeight = 150; // Initial height of the test case panel
+  // Editor and test case panel heights
+  editorHeight = window.innerHeight * 0.6; // Initial height of the editor
+  testCasePanelHeight = window.innerHeight * 0.4; // Initial height of the test case panel
 
   // Test cases
   testCases = [
+    {
+      input: '[1, 2, 3, 4, 5]',
+      expectedOutput: '15',
+      actualOutput: '',
+      passed: false
+    },
+    {
+      input: '[10, 20, 30]',
+      expectedOutput: '60',
+      actualOutput: '',
+      passed: false
+    },
+    {
+      input: '[1, 2, 3, 4, 5]',
+      expectedOutput: '15',
+      actualOutput: '',
+      passed: false
+    },
+    {
+      input: '[10, 20, 30]',
+      expectedOutput: '60',
+      actualOutput: '',
+      passed: false
+    },
     {
       input: '[1, 2, 3, 4, 5]',
       expectedOutput: '15',
@@ -331,9 +356,13 @@ Write a function that finds the sum of all numbers in an array.
       const deltaY = e.clientY - startY;
       const newHeight = startHeight - deltaY;
 
-      // Ensure minimum height constraints
-      if (newHeight >= 100 && newHeight <= window.innerHeight * 0.5) {
+      // Ensure minimum and maximum height constraints
+      const minHeight = 100; // Minimum height for the test case panel
+      const maxHeight = window.innerHeight * 0.8; // Maximum height (80% of the window height)
+
+      if (newHeight >= minHeight && newHeight <= maxHeight) {
         this.testCasePanelHeight = newHeight;
+        this.editorHeight = window.innerHeight - newHeight; // Adjust editor height dynamically
       }
     };
 
