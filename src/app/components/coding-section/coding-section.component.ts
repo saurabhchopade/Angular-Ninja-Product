@@ -4,6 +4,20 @@ import { FormsModule } from '@angular/forms';
 import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 
+interface CodingQuestion {
+  id: number;
+  title: string;
+  problemStatement: string;
+  languages: { id: string; name: string }[];
+  testCases: {
+    input: string;
+    expectedOutput: string;
+    actualOutput: string;
+    passed: boolean;
+  }[];
+  userCode: string; // To store user's code for each question
+}
+
 @Component({
   selector: 'app-coding-section',
   standalone: true,
@@ -19,7 +33,7 @@ import { marked } from 'marked';
               Problem Statement
             </div>
             <div class="problem-statement-content">
-              <div [innerHTML]="parseMarkdown(problemStatement)"></div>
+              <div [innerHTML]="parseMarkdown(currentQuestion.problemStatement)"></div>
             </div>
           </div>
         </div>
@@ -32,7 +46,7 @@ import { marked } from 'marked';
           <!-- Toolbar -->
           <div class="toolbar">
             <select [(ngModel)]="selectedLanguage" (change)="updateEditorLanguage()" class="toolbar-select">
-              <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+              <option *ngFor="let lang of currentQuestion.languages" [value]="lang.id">{{ lang.name }}</option>
             </select>
 
             <button class="toolbar-button" (click)="runCode()">
@@ -51,6 +65,19 @@ import { marked } from 'marked';
               <input type="checkbox" [(ngModel)]="isDarkMode" (change)="toggleTheme()">
               <span class="slider round"></span>
             </label>
+
+            <!-- Navigation Controls -->
+            <div class="navigation-controls">
+              <button class="nav-button" (click)="previousQuestion()" [disabled]="currentQuestionIndex === 0">
+                Previous
+              </button>
+              <span class="progress-indicator">
+                Question {{ currentQuestionIndex + 1 }} of {{ codingQuestions.length }}
+              </span>
+              <button class="nav-button" (click)="nextQuestion()" [disabled]="currentQuestionIndex === codingQuestions.length - 1">
+                Next
+              </button>
+            </div>
           </div>
 
           <!-- Editor Container -->
@@ -64,7 +91,7 @@ import { marked } from 'marked';
               Test Cases
             </div>
             <div class="test-case-content">
-              <div class="test-case" *ngFor="let testCase of testCases; let i = index">
+              <div class="test-case" *ngFor="let testCase of currentQuestion.testCases; let i = index">
                 <div class="test-case-header">
                   <span>Test Case {{ i + 1 }}</span>
                   <span class="status" [ngClass]="{'pass': testCase.passed, 'fail': !testCase.passed}">
@@ -268,6 +295,41 @@ import { marked } from 'marked';
       color: red;
     }
 
+    /* Navigation Controls */
+    .navigation-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto; /* Push navigation controls to the right */
+    }
+
+    .nav-button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--section-header-background);
+      color: var(--text-color);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-button:disabled {
+      background-color: var(--section-content-background);
+      cursor: not-allowed;
+    }
+
+    .nav-button:hover:not(:disabled) {
+      background-color: var(--section-content-background);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .progress-indicator {
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
     /* Custom Scrollbar Styles */
     ::-webkit-scrollbar {
       width: 8px; /* Smaller scrollbar width */
@@ -351,7 +413,12 @@ import { marked } from 'marked';
 export class CodingSectionComponent implements AfterViewInit {
   @ViewChild('editorContainer', { static: false }) editorContainer!: ElementRef;
 
-  problemStatement = `# Problem Statement
+  // List of coding questions
+  codingQuestions: CodingQuestion[] = [
+    {
+      id: 1,
+      title: 'Sum of Array',
+      problemStatement: `# Problem Statement
 Write a function that finds the sum of all numbers in an array.
 
 ## Example Input/Output
@@ -360,17 +427,46 @@ Write a function that finds the sum of all numbers in an array.
 
 ## Constraints
 - Array length <= 1000
-- Numbers are positive integers`;
+- Numbers are positive integers`,
+      languages: [
+        { id: 'typescript', name: 'TypeScript' },
+        { id: 'javascript', name: 'JavaScript' },
+        { id: 'python', name: 'Python' },
+      ],
+      testCases: [
+        { input: '[1, 2, 3, 4, 5]', expectedOutput: '15', actualOutput: '', passed: false },
+        { input: '[10, 20, 30]', expectedOutput: '60', actualOutput: '', passed: false },
+      ],
+      userCode: '', // Initialize with empty code
+    },
+    {
+      id: 2,
+      title: 'Reverse String',
+      problemStatement: `# Problem Statement
+Write a function that reverses a string.
 
-  languages = [
-    { id: 'typescript', name: 'TypeScript' },
-    { id: 'javascript', name: 'JavaScript' },
-    { id: 'java', name: 'Java' },
-    { id: 'python', name: 'Python' },
-    { id: 'csharp', name: 'C#' }
+## Example Input/Output
+- Input: "hello"
+- Output: "olleh"
+
+## Constraints
+- String length <= 1000`,
+      languages: [
+        { id: 'typescript', name: 'TypeScript' },
+        { id: 'javascript', name: 'JavaScript' },
+        { id: 'python', name: 'Python' },
+      ],
+      testCases: [
+        { input: '"hello"', expectedOutput: '"olleh"', actualOutput: '', passed: false },
+        { input: '"world"', expectedOutput: '"dlrow"', actualOutput: '', passed: false },
+      ],
+      userCode: '', // Initialize with empty code
+    },
   ];
 
-  selectedLanguage = 'typescript';
+  currentQuestionIndex = 0; // Track the current question index
+  currentQuestion = this.codingQuestions[this.currentQuestionIndex]; // Current question
+  selectedLanguage = 'typescript'; // Default language
   editor: monaco.editor.IStandaloneCodeEditor | null = null;
   isDarkMode = true;
 
@@ -381,22 +477,6 @@ Write a function that finds the sum of all numbers in an array.
   // Editor and test case panel heights
   editorHeight = window.innerHeight * 0.6; // Initial height of the editor
   testCasePanelHeight = window.innerHeight * 0.4; // Initial height of the test case panel
-
-  // Test cases
-  testCases = [
-    {
-      input: '[1, 2, 3, 4, 5]',
-      expectedOutput: '15',
-      actualOutput: '',
-      passed: false
-    },
-    {
-      input: '[10, 20, 30]',
-      expectedOutput: '60',
-      actualOutput: '',
-      passed: false
-    }
-  ];
 
   constructor() {
     // Initialize Monaco Editor
@@ -413,14 +493,95 @@ Write a function that finds the sum of all numbers in an array.
   initializeEditor() {
     if (this.editorContainer) {
       this.editor = monaco.editor.create(this.editorContainer.nativeElement, {
-        value: '',
+        value: this.currentQuestion.userCode || '', // Load user's code for the current question
         language: this.selectedLanguage,
         theme: this.isDarkMode ? 'vs-dark' : 'vs',
         automaticLayout: true,
       });
+
+      // Save user's code when the editor content changes
+      this.editor.onDidChangeModelContent(() => {
+        this.currentQuestion.userCode = this.editor?.getValue() || '';
+      });
     }
   }
 
+  // Switch to the previous question
+  previousQuestion() {
+    if (this.currentQuestionIndex > 0) {
+      this.currentQuestionIndex--;
+      this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
+      this.updateEditorContent();
+    }
+  }
+
+  // Switch to the next question
+  nextQuestion() {
+    if (this.currentQuestionIndex < this.codingQuestions.length - 1) {
+      this.currentQuestionIndex++;
+      this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
+      this.updateEditorContent();
+    }
+  }
+
+  // Update the editor content when switching questions
+  updateEditorContent() {
+    if (this.editor) {
+      this.editor.setValue(this.currentQuestion.userCode || '');
+      this.selectedLanguage = this.currentQuestion.languages[0].id; // Reset to default language
+      this.updateEditorLanguage();
+    }
+  }
+
+  // Run code for the current question
+  runCode() {
+    if (this.editor) {
+      const code = this.editor.getValue();
+      console.log('Running code:', code);
+      // Implement code execution logic
+    }
+  }
+
+  // Submit all questions
+  submitCode() {
+    const allAttempted = this.codingQuestions.every((q) => q.userCode.trim() !== '');
+    if (allAttempted) {
+      console.log('Submitting all questions:', this.codingQuestions);
+      alert('All questions submitted successfully!');
+    } else {
+      alert('Please attempt all questions before submitting.');
+    }
+  }
+  // Reset code for the current question
+  resetCode() {
+    if (this.editor) {
+      this.editor.setValue('');
+      this.currentQuestion.userCode = ''; // Clear user's code for the current question
+    }
+  }
+
+  // Update the editor language when the selected language changes
+  updateEditorLanguage() {
+    if (this.editor) {
+      monaco.editor.setModelLanguage(this.editor.getModel()!, this.selectedLanguage);
+    }
+  }
+
+  // Toggle between dark and light mode
+  toggleTheme() {
+    if (this.editor) {
+      this.editor.updateOptions({
+        theme: this.isDarkMode ? 'vs-dark' : 'vs',
+      });
+    }
+  }
+
+  // Parse markdown content
+  parseMarkdown(content: string): string {
+    return marked.parse(content) as string;
+  }
+
+  // Resize the left and right panels
   startResize(event: MouseEvent) {
     const startX = event.clientX;
     const startLeftWidth = this.leftPanelWidth;
@@ -447,6 +608,7 @@ Write a function that finds the sum of all numbers in an array.
     document.addEventListener('mouseup', mouseUpHandler);
   }
 
+  // Resize the test case panel
   startResizeTestCase(event: MouseEvent) {
     const startY = event.clientY;
     const startHeight = this.testCasePanelHeight;
@@ -472,45 +634,5 @@ Write a function that finds the sum of all numbers in an array.
 
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', mouseUpHandler);
-  }
-
-  updateEditorLanguage() {
-    if (this.editor) {
-      monaco.editor.setModelLanguage(this.editor.getModel()!, this.selectedLanguage);
-    }
-  }
-
-  runCode() {
-    if (this.editor) {
-      const code = this.editor.getValue();
-      console.log('Running code:', code);
-      // Implement code execution logic
-    }
-  }
-
-  submitCode() {
-    if (this.editor) {
-      const code = this.editor.getValue();
-      console.log('Submitting code:', code);
-      // Implement submission logic
-    }
-  }
-
-  resetCode() {
-    if (this.editor) {
-      this.editor.setValue('');
-    }
-  }
-
-  parseMarkdown(content: string): string {
-    return marked.parse(content) as string;
-  }
-
-  toggleTheme() {
-    if (this.editor) {
-      this.editor.updateOptions({
-        theme: this.isDarkMode ? 'vs-dark' : 'vs'
-      });
-    }
   }
 }
