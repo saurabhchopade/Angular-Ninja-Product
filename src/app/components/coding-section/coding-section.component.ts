@@ -89,6 +89,9 @@ interface CodingQuestion {
           <div class="test-case-panel" [style.height.px]="testCasePanelHeight">
             <div class="test-case-header" (mousedown)="startResizeTestCase($event)">
               Test Cases
+              <div class="drag-button" (click)="toggleTestCasePanel()">
+                {{ isTestCasePanelExpanded ? '▼' : '▲' }}
+              </div>
             </div>
             <div class="test-case-content">
               <div class="test-case" *ngFor="let testCase of currentQuestion.testCases; let i = index">
@@ -266,6 +269,28 @@ interface CodingQuestion {
       background-color: var(--section-header-background);
       color: var(--text-color);
       cursor: ns-resize;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drag-button {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--section-header-background);
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .drag-button:hover {
+      background-color: var(--section-content-background);
+      transform: scale(1.1);
     }
 
     .test-case-content {
@@ -478,6 +503,9 @@ Write a function that reverses a string.
   editorHeight = window.innerHeight * 0.6; // Initial height of the editor
   testCasePanelHeight = window.innerHeight * 0.4; // Initial height of the test case panel
 
+  // Track the state of the test case panel
+  isTestCasePanelExpanded = true;
+
   constructor() {
     // Initialize Monaco Editor
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
@@ -515,7 +543,6 @@ Write a function that reverses a string.
     }
   }
 
-  // Switch to the next question
   nextQuestion() {
     if (this.currentQuestionIndex < this.codingQuestions.length - 1) {
       this.currentQuestionIndex++;
@@ -523,7 +550,6 @@ Write a function that reverses a string.
       this.updateEditorContent();
     }
   }
-
   // Update the editor content when switching questions
   updateEditorContent() {
     if (this.editor) {
@@ -552,6 +578,7 @@ Write a function that reverses a string.
       alert('Please attempt all questions before submitting.');
     }
   }
+
   // Reset code for the current question
   resetCode() {
     if (this.editor) {
@@ -610,6 +637,8 @@ Write a function that reverses a string.
 
   // Resize the test case panel
   startResizeTestCase(event: MouseEvent) {
+    if (!this.isTestCasePanelExpanded) return; // Disable resizing when collapsed
+
     const startY = event.clientY;
     const startHeight = this.testCasePanelHeight;
 
@@ -634,5 +663,15 @@ Write a function that reverses a string.
 
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', mouseUpHandler);
+  }
+
+  // Toggle the test case panel
+  toggleTestCasePanel() {
+    this.isTestCasePanelExpanded = !this.isTestCasePanelExpanded;
+    if (this.isTestCasePanelExpanded) {
+      this.testCasePanelHeight = window.innerHeight * 0.4; // Expanded height
+    } else {
+      this.testCasePanelHeight = 50; // Collapsed height (just enough to show the header)
+    }
   }
 }
