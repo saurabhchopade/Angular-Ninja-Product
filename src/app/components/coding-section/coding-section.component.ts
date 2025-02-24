@@ -440,19 +440,25 @@ export class CodingSectionComponent implements AfterViewInit {
   startResizeTestCase(event: MouseEvent) {
     const startY = event.clientY;
     const startHeight = this.testCasePanelHeight;
-
+  
     const mouseMoveHandler = (e: MouseEvent) => {
-      const height = startHeight + (e.clientY - startY);
-      if (height >= 100 && height <= window.innerHeight * 0.5) {
-        this.testCasePanelHeight = height;
+      const deltaY = e.clientY - startY; // Calculate the difference in Y-axis
+      const newHeight = startHeight - deltaY; // Adjust height based on drag direction
+  
+      // Ensure the height stays within reasonable bounds
+      const minHeight = 100; // Minimum height for the test case panel
+      const maxHeight = window.innerHeight * 0.8; // Maximum height (80% of the window height)
+  
+      if (newHeight >= minHeight && newHeight <= maxHeight) {
+        this.testCasePanelHeight = newHeight;
       }
     };
-
+  
     const mouseUpHandler = () => {
       document.removeEventListener('mousemove', mouseMoveHandler);
       document.removeEventListener('mouseup', mouseUpHandler);
     };
-
+  
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', mouseUpHandler);
   }
