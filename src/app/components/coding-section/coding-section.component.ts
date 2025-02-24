@@ -208,7 +208,8 @@ interface CodingQuestion {
     .test-case-content {
       padding: 10px;
       background-color: var(--section-content-background);
-      overflow-y: auto;
+      overflow-y: auto; /* Enable vertical scrolling */
+      height: calc(100% - 40px); /* Adjust height based on header height */
     }
 
     .collapsible-section {
