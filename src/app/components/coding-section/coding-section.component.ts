@@ -223,6 +223,39 @@ import { marked } from 'marked';
     .fail {
       color: red;
     }
+
+    /* Custom Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 8px; /* Smaller scrollbar width */
+      height: 8px; /* Smaller scrollbar height */
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--section-content-background); /* Track color */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888; /* Thumb color */
+      border-radius: 4px; /* Rounded corners */
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555; /* Thumb color on hover */
+    }
+
+    /* VSCode-like scrollbar for the editor */
+    .editor .monaco-scrollable-element > .scrollbar > .slider {
+      background: rgba(121, 121, 121, 0.4); /* Subtle scrollbar color */
+      border-radius: 4px; /* Rounded corners */
+    }
+
+    .editor .monaco-scrollable-element > .scrollbar > .slider:hover {
+      background: rgba(121, 121, 121, 0.6); /* Slightly darker on hover */
+    }
+
+    .editor .monaco-scrollable-element > .scrollbar > .slider.active {
+      background: rgba(121, 121, 121, 0.8); /* Darker when active */
+    }
   `]
 })
 export class CodingSectionComponent implements AfterViewInit {
@@ -261,30 +294,6 @@ Write a function that finds the sum of all numbers in an array.
 
   // Test cases
   testCases = [
-    {
-      input: '[1, 2, 3, 4, 5]',
-      expectedOutput: '15',
-      actualOutput: '',
-      passed: false
-    },
-    {
-      input: '[10, 20, 30]',
-      expectedOutput: '60',
-      actualOutput: '',
-      passed: false
-    },
-    {
-      input: '[1, 2, 3, 4, 5]',
-      expectedOutput: '15',
-      actualOutput: '',
-      passed: false
-    },
-    {
-      input: '[10, 20, 30]',
-      expectedOutput: '60',
-      actualOutput: '',
-      passed: false
-    },
     {
       input: '[1, 2, 3, 4, 5]',
       expectedOutput: '15',
