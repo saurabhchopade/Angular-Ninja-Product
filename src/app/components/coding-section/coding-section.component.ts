@@ -665,6 +665,7 @@ Write a function that reverses a string.
     document.addEventListener('mouseup', mouseUpHandler);
   }
 
+  
   // Toggle the test case panel
   toggleTestCasePanel() {
     this.isTestCasePanelExpanded = !this.isTestCasePanelExpanded;
