@@ -29,20 +29,58 @@ import { SubjectiveSectionComponent } from './components/subjective-section/subj
       
       <div class="content-layout">
         <nav>
-          <button (click)="currentSection = 'mcq'" [class.active]="currentSection === 'mcq'">
-            MCQ Questions
+          <!-- Test Instructions Section -->
+          <button 
+            (click)="currentSection = 'instructions'" 
+            [class.active]="currentSection === 'instructions'"
+            title="Test Instructions"
+          >
+            ℹ
           </button>
-          <button (click)="currentSection = 'coding'" [class.active]="currentSection === 'coding'">
-            Coding Questions
+
+          <!-- MCQ Section -->
+          <button 
+            (click)="currentSection = 'mcq'" 
+            [class.active]="currentSection === 'mcq'"
+            title="MCQ Section"
+          >
+            1
           </button>
-          <button (click)="currentSection = 'subjective'" [class.active]="currentSection === 'subjective'">
-            Subjective Questions
+
+          <!-- Coding Section -->
+          <button 
+            (click)="currentSection = 'coding'" 
+            [class.active]="currentSection === 'coding'"
+            title="Coding Section"
+          >
+            2
+          </button>
+
+          <!-- Subjective Section -->
+          <button 
+            (click)="currentSection = 'subjective'" 
+            [class.active]="currentSection === 'subjective'"
+            title="Subjective Section"
+          >
+            3
           </button>
         </nav>
 
         <main>
           <div class="section-container">
             @switch (currentSection) {
+              @case ('instructions') {
+                <div class="instructions-section">
+                  <h2>Test Instructions</h2>
+                  <p>Please read the instructions carefully before starting the test:</p>
+                  <ul>
+                    <li>You have a total of 2 hours to complete the test.</li>
+                    <li>There are three sections: MCQ, Coding, and Subjective.</li>
+                    <li>Navigate between sections using the buttons on the left.</li>
+                    <li>Do not refresh the page during the test.</li>
+                  </ul>
+                </div>
+              }
               @case ('mcq') {
                 <app-mcq-section />
               }
@@ -106,7 +144,7 @@ import { SubjectiveSectionComponent } from './components/subjective-section/subj
       overflow: hidden;
     }
     nav {
-      width: 180px;
+      width: 60px; /* Smaller width */
       background: white;
       padding: 12px;
       display: flex;
@@ -116,18 +154,41 @@ import { SubjectiveSectionComponent } from './components/subjective-section/subj
       z-index: 5;
     }
     button {
-      padding: 8px 12px;
+      width: 36px; /* Fixed width for round buttons */
+      height: 36px; /* Fixed height for round buttons */
       border: none;
-      border-radius: 4px;
+      border-radius: 50%; /* Make buttons round */
       cursor: pointer;
       background: #e0e0e0;
       transition: all 0.3s ease;
-      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 0.875rem;
+      font-weight: 500;
+      position: relative;
     }
     button.active {
       background: #2196f3;
       color: white;
+    }
+    button:hover::after {
+      content: attr(title);
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      margin-left: 8px;
+      padding: 4px 8px;
+      background-color: rgba(0, 0, 0, 0.75);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    /* Style for the Instructions button */
+    button:first-child {
+      font-size: 1.25rem; /* Larger font size for the (i) icon */
     }
     main {
       flex: 1;
@@ -142,10 +203,22 @@ import { SubjectiveSectionComponent } from './components/subjective-section/subj
       bottom: 0;
       overflow-y: auto;
     }
+    .instructions-section {
+      padding: 20px;
+    }
+    .instructions-section h2 {
+      margin-bottom: 16px;
+    }
+    .instructions-section ul {
+      padding-left: 20px;
+    }
+    .instructions-section li {
+      margin-bottom: 8px;
+    }
   `]
 })
 export class AppComponent implements OnInit {
-  currentSection: 'mcq' | 'coding' | 'subjective' = 'mcq';
+  currentSection: 'instructions' | 'mcq' | 'coding' | 'subjective' = 'instructions';
   remainingTime: number = 7200; // 2 hours in seconds
 
   ngOnInit() {
