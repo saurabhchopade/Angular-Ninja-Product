@@ -88,7 +88,7 @@ interface CodingQuestion {
           <!-- Test Case Panel -->
           <div class="test-case-panel" [style.height.px]="testCasePanelHeight">
             <div class="test-case-header" (mousedown)="startResizeTestCase($event)">
-              Test Cases
+              Test Output
               <div class="drag-button" (click)="toggleTestCasePanel()">
                 {{ isTestCasePanelExpanded ? '▼' : '▲' }}
               </div>
@@ -485,7 +485,7 @@ Write a function that reverses a string.
         { input: '"hello"', expectedOutput: '"olleh"', actualOutput: '', passed: false },
         { input: '"world"', expectedOutput: '"dlrow"', actualOutput: '', passed: false },
       ],
-      userCode: '', // Initialize with empty code
+      userCode: 'I am saurabh', // Initialize with empty code
     },
   ];
 

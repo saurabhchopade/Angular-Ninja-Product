@@ -4,4 +4,4 @@ import { AppDashboard } from './app/components/dashboard/dashboard.component';
 import { appConfig } from './app/app.config';
 import { MainComponent } from '../src/app/components/main/main.component';
 
-bootstrapApplication(MainComponent, appConfig).catch((err) => console.error(err));
+bootstrapApplication(AppDashboard, appConfig).catch((err) => console.error(err));
