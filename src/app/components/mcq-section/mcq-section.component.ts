@@ -178,22 +178,33 @@ export class McqSectionComponent implements OnInit {
     const assessmentId = 1; // Replace with dynamic assessment ID if needed
     const sectionId = 1; // Replace with dynamic section ID if needed
 
-    this.mcqService.fetchQuestions(assessmentId, sectionId).subscribe(
-      (response) => {
-        if (response.code === 200 && response.status === 'SUCCESS') {
-          this.questions = response.data.map((item: any) => ({
-            ...item.question,
-            options: item.options
-          }));
-          this.loadAnswersFromLocalStorage();
+    // Check if questions are available in local storage
+    const cachedQuestions = localStorage.getItem('mcqQuestions');
+    if (cachedQuestions) {
+      this.questions = JSON.parse(cachedQuestions);
+      this.loadAnswersFromLocalStorage();
+      this.loading = false; // Hide skeleton loader
+    } else {
+      // If not in local storage, make an API call
+      this.mcqService.fetchQuestions(assessmentId, sectionId).subscribe(
+        (response) => {
+          if (response.code === 200 && response.status === 'SUCCESS') {
+            this.questions = response.data.map((item: any) => ({
+              ...item.question,
+              options: item.options
+            }));
+            // Save questions to local storage for future use
+            localStorage.setItem('mcqQuestions', JSON.stringify(this.questions));
+            this.loadAnswersFromLocalStorage();
+          }
+          this.loading = false; // Hide skeleton loader
+        },
+        (error) => {
+          console.error('Error fetching questions:', error);
+          this.loading = false; // Hide skeleton loader even if there's an error
         }
-        this.loading = false; // Hide skeleton loader
-      },
-      (error) => {
-        console.error('Error fetching questions:', error);
-        this.loading = false; // Hide skeleton loader even if there's an error
-      }
-    );
+      );
+    }
   }
 
   loadAnswersFromLocalStorage(): void {
