@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as monaco from 'monaco-editor';
@@ -9,14 +9,14 @@ interface CodingQuestion {
   id: number;
   title: string;
   problemStatement: string;
-  languages: { id: string; name: string }[];
+  languages: { id: string; name: string; snippet: string }[];
   testCases: {
     input: string;
     expectedOutput: string;
     actualOutput: string;
     passed: boolean;
   }[];
-  userCode: string; // To store user's code for each question
+  userCode: string;
 }
 
 @Component({
@@ -439,79 +439,32 @@ interface CodingQuestion {
 export class CodingSectionComponent implements AfterViewInit {
   @ViewChild('editorContainer', { static: false }) editorContainer!: ElementRef;
 
-  // List of coding questions
-  codingQuestions: CodingQuestion[] = [
-    {
-      id: 1,
-      title: 'Sum of Array',
-      problemStatement: `# Problem Statement
-Write a function that finds the sum of all numbers in an array.
-
-## Example Input/Output
-- Input: [1, 2, 3, 4, 5]
-- Output: 15
-
-## Constraints
-- Array length <= 1000
-- Numbers are positive integers`,
-      languages: [
-        { id: 'typescript', name: 'TypeScript' },
-        { id: 'javascript', name: 'JavaScript' },
-        { id: 'python', name: 'Python' },
-      ],
-      testCases: [
-        { input: '[1, 2, 3, 4, 5]', expectedOutput: '15', actualOutput: '', passed: false },
-        { input: '[10, 20, 30]', expectedOutput: '60', actualOutput: '', passed: false },
-      ],
-      userCode: '', // Initialize with empty code
-    },
-    {
-      id: 2,
-      title: 'Reverse String',
-      problemStatement: `# Problem Statement
-Write a function that reverses a string.
-
-## Example Input/Output
-- Input: "hello"
-- Output: "olleh"
-
-## Constraints
-- String length <= 1000`,
-      languages: [
-        { id: 'typescript', name: 'TypeScript' },
-        { id: 'javascript', name: 'JavaScript' },
-        { id: 'python', name: 'Python' },
-      ],
-      testCases: [
-        { input: '"hello"', expectedOutput: '"olleh"', actualOutput: '', passed: false },
-        { input: '"world"', expectedOutput: '"dlrow"', actualOutput: '', passed: false },
-      ],
-      userCode: '', // Initialize with empty code
-    },
-  ];
-
-  currentQuestionIndex = 0; // Track the current question index
-  currentQuestion = this.codingQuestions[this.currentQuestionIndex]; // Current question
-  selectedLanguage = 'typescript'; // Default language
+  codingQuestions: CodingQuestion[] = [];
+  currentQuestionIndex = 0;
+  currentQuestion!: CodingQuestion;
+  selectedLanguage = '';
   editor: monaco.editor.IStandaloneCodeEditor | null = null;
   isDarkMode = true;
 
-  // Panel widths
-  leftPanelWidth = 300; // Initial width of the left panel
-  rightPanelWidth = window.innerWidth - 300; // Initial width of the right panel
-
-  // Editor and test case panel heights
-  editorHeight = window.innerHeight * 0.6; // Initial height of the editor
-  testCasePanelHeight = window.innerHeight * 0.4; // Initial height of the test case panel
-
-  // Track the state of the test case panel
+  leftPanelWidth = 300;
+  rightPanelWidth = window.innerWidth - 300;
+  editorHeight = window.innerHeight * 0.6;
+  testCasePanelHeight = window.innerHeight * 0.4;
   isTestCasePanelExpanded = true;
 
   constructor(private codeSnippetService: CodeSnippetService) {
-    // Initialize Monaco Editor
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
       noSyntaxValidation: true,
+    });
+  }
+
+  ngOnInit() {
+    this.codeSnippetService.fetchCodingQuestions().subscribe((questions) => {
+      this.codingQuestions = questions;
+      this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
+      this.selectedLanguage = this.currentQuestion.languages[0].id; // Set default language
+      this.initializeEditor();
     });
   }
 
@@ -520,11 +473,11 @@ Write a function that reverses a string.
   }
 
   initializeEditor() {
-    if (this.editorContainer) {
+    if (this.editorContainer && !this.editor) {
       const initialCode = this.codeSnippetService.getCodeSnippet(
         this.currentQuestion.id,
         this.selectedLanguage
-      ) || this.getDefaultTemplate(this.selectedLanguage);
+      ) || this.currentQuestion.languages.find((lang) => lang.id === this.selectedLanguage)?.snippet || '';
 
       this.editor = monaco.editor.create(this.editorContainer.nativeElement, {
         value: initialCode,
@@ -533,7 +486,6 @@ Write a function that reverses a string.
         automaticLayout: true,
       });
 
-      // Save user's code when the editor content changes
       this.editor.onDidChangeModelContent(() => {
         const code = this.editor?.getValue() || '';
         this.codeSnippetService.saveCodeSnippet(
@@ -543,91 +495,94 @@ Write a function that reverses a string.
         );
         this.currentQuestion.userCode = code;
       });
+    } else if (this.editor) {
+      this.updateEditorContent();
     }
   }
 
-  // Update the editor content when switching questions
   updateEditorContent() {
     if (this.editor) {
-      const code = this.codeSnippetService.getCodeSnippet(
+      const initialCode = this.codeSnippetService.getCodeSnippet(
         this.currentQuestion.id,
         this.selectedLanguage
-      ) || this.getDefaultTemplate(this.selectedLanguage);
+      ) || this.currentQuestion.languages.find((lang) => lang.id === this.selectedLanguage)?.snippet || '';
 
-      this.editor.setValue(code);
-      this.currentQuestion.userCode = code;
-      this.updateEditorLanguage();
+      this.editor.setValue(initialCode);
+      monaco.editor.setModelLanguage(this.editor.getModel()!, this.selectedLanguage);
+      this.currentQuestion.userCode = initialCode;
     }
   }
 
-  // Update the editor language when the selected language changes
   updateEditorLanguage() {
     if (this.editor) {
+      const selectedLanguage = this.selectedLanguage;
+      const currentQuestion = this.currentQuestion;
 
-      // Coomented this out the code gets updated based on the Language selected as this was causing the issue for the same
-      // const previousCode = this.editor.getValue();
-      // this.codeSnippetService.saveCodeSnippet(
-      //   this.currentQuestion.id,
-      //   this.selectedLanguage,
-      //   previousCode
-      // );
+      const languageData = currentQuestion.languages.find((lang) => lang.id === selectedLanguage);
 
-      const newCode = this.codeSnippetService.getCodeSnippet(
-        this.currentQuestion.id,
-        this.selectedLanguage
-      ) || this.getDefaultTemplate(this.selectedLanguage);
+      if (languageData) {
+        const snippet = this.codeSnippetService.getCodeSnippet(
+          currentQuestion.id,
+          selectedLanguage
+        ) || languageData.snippet;
 
-      this.editor.setValue(newCode);
-      monaco.editor.setModelLanguage(this.editor.getModel()!, this.selectedLanguage);
-      this.currentQuestion.userCode = newCode;
+        this.editor.setValue(snippet);
+        monaco.editor.setModelLanguage(this.editor.getModel()!, selectedLanguage);
+        this.currentQuestion.userCode = snippet;
+      } else {
+        console.error('Snippet not found for the selected language.');
+      }
     }
   }
 
-  // Reset code for the current question and language
   resetCode() {
     if (this.editor) {
-      const defaultCode = this.getDefaultTemplate(this.selectedLanguage);
+      const defaultCode = this.currentQuestion.languages.find((lang) => lang.id === this.selectedLanguage)?.snippet || '';
       this.editor.setValue(defaultCode);
-
       this.codeSnippetService.saveCodeSnippet(
         this.currentQuestion.id,
         this.selectedLanguage,
         defaultCode
       );
-
       this.currentQuestion.userCode = defaultCode;
     }
   }
 
-  // Get default template for a language
-  getDefaultTemplate(languageId: string): string {
-    switch (languageId) {
-      case 'typescript':
-        return '// TypeScript code here';
-      case 'javascript':
-        return '// JavaScript code here';
-      case 'python':
-        return '# Python code here';
-      default:
-        return '';
-    }
-  }
-
-  // Switch to the previous question
   previousQuestion() {
     if (this.currentQuestionIndex > 0) {
+      // Save the current editor state before navigating
+      this.saveCurrentEditorState();
+
+      // Navigate to the previous question
       this.currentQuestionIndex--;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
+      this.selectedLanguage = this.currentQuestion.languages[0].id; // Reset to default language
       this.updateEditorContent();
     }
   }
 
-  // Switch to the next question
   nextQuestion() {
     if (this.currentQuestionIndex < this.codingQuestions.length - 1) {
+      // Save the current editor state before navigating
+      this.saveCurrentEditorState();
+
+      // Navigate to the next question
       this.currentQuestionIndex++;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
+      this.selectedLanguage = this.currentQuestion.languages[0].id; // Reset to default language
       this.updateEditorContent();
+    }
+  }
+
+  saveCurrentEditorState() {
+    if (this.editor) {
+      const code = this.editor.getValue();
+      this.codeSnippetService.saveCodeSnippet(
+        this.currentQuestion.id,
+        this.selectedLanguage,
+        code
+      );
+      this.currentQuestion.userCode = code;
     }
   }
 
@@ -635,7 +590,31 @@ Write a function that reverses a string.
     return marked.parse(content) as string;
   }
 
-  // Resize the left and right panels
+  toggleTestCasePanel() {
+    this.isTestCasePanelExpanded = !this.isTestCasePanelExpanded;
+    if (this.isTestCasePanelExpanded) {
+      this.testCasePanelHeight = window.innerHeight * 0.4;
+    } else {
+      this.testCasePanelHeight = 50;
+    }
+  }
+
+  toggleTheme() {
+    if (this.editor) {
+      this.editor.updateOptions({
+        theme: this.isDarkMode ? 'vs-dark' : 'vs',
+      });
+    }
+  }
+
+  runCode() {
+    if (this.editor) {
+      const code = this.editor.getValue();
+      console.log('Running code:', code);
+      // Implement code execution logic
+    }
+  }
+
   startResize(event: MouseEvent) {
     const startX = event.clientX;
     const startLeftWidth = this.leftPanelWidth;
@@ -646,7 +625,6 @@ Write a function that reverses a string.
       const newLeftWidth = startLeftWidth + deltaX;
       const newRightWidth = startRightWidth - deltaX;
 
-      // Ensure minimum width constraints
       if (newLeftWidth >= 200 && newRightWidth >= 200) {
         this.leftPanelWidth = newLeftWidth;
         this.rightPanelWidth = newRightWidth;
@@ -662,9 +640,8 @@ Write a function that reverses a string.
     document.addEventListener('mouseup', mouseUpHandler);
   }
 
-  // Resize the test case panel
   startResizeTestCase(event: MouseEvent) {
-    if (!this.isTestCasePanelExpanded) return; // Disable resizing when collapsed
+    if (!this.isTestCasePanelExpanded) return;
 
     const startY = event.clientY;
     const startHeight = this.testCasePanelHeight;
@@ -673,13 +650,12 @@ Write a function that reverses a string.
       const deltaY = e.clientY - startY;
       const newHeight = startHeight - deltaY;
 
-      // Ensure minimum and maximum height constraints
-      const minHeight = 100; // Minimum height for the test case panel
-      const maxHeight = window.innerHeight * 0.8; // Maximum height (80% of the window height)
+      const minHeight = 100;
+      const maxHeight = window.innerHeight * 0.8;
 
       if (newHeight >= minHeight && newHeight <= maxHeight) {
         this.testCasePanelHeight = newHeight;
-        this.editorHeight = window.innerHeight - newHeight; // Adjust editor height dynamically
+        this.editorHeight = window.innerHeight - newHeight;
       }
     };
 
@@ -692,44 +668,13 @@ Write a function that reverses a string.
     document.addEventListener('mouseup', mouseUpHandler);
   }
 
-  
-  // Toggle the test case panel
-  toggleTestCasePanel() {
-    this.isTestCasePanelExpanded = !this.isTestCasePanelExpanded;
-    if (this.isTestCasePanelExpanded) {
-      this.testCasePanelHeight = window.innerHeight * 0.4; // Expanded height
+  submitCode() {
+    const allAttempted = this.codingQuestions.every((q) => q.userCode.trim() !== '');
+    if (allAttempted) {
+      console.log('Submitting all questions:', this.codingQuestions);
+      alert('All questions submitted successfully!');
     } else {
-      this.testCasePanelHeight = 50; // Collapsed height (just enough to show the header)
+      alert('Please attempt all questions before submitting.');
     }
   }
-
-  // Toggle between dark and light mode
-  toggleTheme() {
-    if (this.editor) {
-      this.editor.updateOptions({
-        theme: this.isDarkMode ? 'vs-dark' : 'vs',
-      });
-    }
-  }
-
-    // Run code for the current question
-    runCode() {
-      if (this.editor) {
-        const code = this.editor.getValue();
-        console.log('Running code:', code);
-        // Implement code execution logic
-      }
-    }
-  
-    // Submit all questions
-    submitCode() {
-      const allAttempted = this.codingQuestions.every((q) => q.userCode.trim() !== '');
-      if (allAttempted) {
-        console.log('Submitting all questions:', this.codingQuestions);
-        alert('All questions submitted successfully!');
-      } else {
-        alert('Please attempt all questions before submitting.');
-      }
-    }
-  
 }
