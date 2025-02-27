@@ -11,28 +11,46 @@ import { McqService } from '../../services/mcq.service'; // Import the service
   template: `
     <div class="mcq-container">
       <h2>Multiple Choice Questions</h2>
-      @for (question of questions; track question.id) {
-        <div class="question-card">
-          <h3>Question {{ question.id }}</h3>
-          <p>{{ question.problemStatement }}</p>
-          <div class="options">
-            @for (option of question.options; track option.id; let i = $index) {
-              <div class="option">
-                <input 
-                  type="radio" 
-                  [id]="'q' + question.id + 'o' + option.id"
-                  [name]="'question' + question.id"
-                  [(ngModel)]="selectedAnswers[question.id]"
-                  [value]="option.id"
-                  (change)="onOptionChange(question.id, option.id)"
-                >
-                <label [for]="'q' + question.id + 'o' + option.id">{{ option.optionText }}</label>
+      @if (loading) {
+        <!-- Skeleton Loader -->
+        <div class="skeleton-loader">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="skeleton-question-card">
+              <div class="skeleton-title"></div>
+              <div class="skeleton-text"></div>
+              <div class="skeleton-options">
+                @for (j of [1, 2, 3, 4]; track j) {
+                  <div class="skeleton-option"></div>
+                }
               </div>
-            }
-          </div>
+            </div>
+          }
         </div>
+      } @else {
+        <!-- Actual MCQ Content -->
+        @for (question of questions; track question.id) {
+          <div class="question-card">
+            <h3>Question {{ question.id }}</h3>
+            <p>{{ question.problemStatement }}</p>
+            <div class="options">
+              @for (option of question.options; track option.id; let i = $index) {
+                <div class="option">
+                  <input 
+                    type="radio" 
+                    [id]="'q' + question.id + 'o' + option.id"
+                    [name]="'question' + question.id"
+                    [(ngModel)]="selectedAnswers[question.id]"
+                    [value]="option.id"
+                    (change)="onOptionChange(question.id, option.id)"
+                  >
+                  <label [for]="'q' + question.id + 'o' + option.id">{{ option.optionText }}</label>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        <button class="submit-btn" (click)="onSubmit()">Submit MCQ Answers</button>
       }
-      <button class="submit-btn" (click)="onSubmit()">Submit MCQ Answers</button>
     </div>
   `,
   styles: [`
@@ -52,6 +70,7 @@ import { McqService } from '../../services/mcq.service'; // Import the service
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.3s ease-in-out;
     }
 
     .options {
@@ -84,6 +103,50 @@ import { McqService } from '../../services/mcq.service'; // Import the service
       background: #45a049;
     }
 
+    /* Skeleton Loader Styles */
+    .skeleton-loader {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .skeleton-question-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .skeleton-title {
+      height: 20px;
+      width: 50%;
+      background: #e0e0e0;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .skeleton-text {
+      height: 16px;
+      width: 80%;
+      background: #e0e0e0;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .skeleton-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .skeleton-option {
+      height: 16px;
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 4px;
+    }
+
     @media (max-width: 768px) {
       .mcq-container {
         padding: 10px;
@@ -103,6 +166,7 @@ import { McqService } from '../../services/mcq.service'; // Import the service
 export class McqSectionComponent implements OnInit {
   questions: any[] = [];
   selectedAnswers: { [key: number]: number } = {};
+  loading: boolean = true; // Track loading state
 
   constructor(private mcqService: McqService) {} // Inject the service
 
@@ -123,9 +187,11 @@ export class McqSectionComponent implements OnInit {
           }));
           this.loadAnswersFromLocalStorage();
         }
+        this.loading = false; // Hide skeleton loader
       },
       (error) => {
         console.error('Error fetching questions:', error);
+        this.loading = false; // Hide skeleton loader even if there's an error
       }
     );
   }
@@ -139,19 +205,7 @@ export class McqSectionComponent implements OnInit {
 
   onOptionChange(questionId: number, optionId: number): void {
     this.selectedAnswers[questionId] = optionId;
-    // this.saveAnswerToServer(questionId, optionId);
     this.saveAnswersToLocalStorage();
-  }
-
-  saveAnswerToServer(questionId: number, optionId: number): void {
-    this.mcqService.saveAnswer(questionId, optionId).subscribe(
-      (response) => {
-        console.log('Answer saved successfully:', response);
-      },
-      (error) => {
-        console.error('Error saving answer:', error);
-      }
-    );
   }
 
   saveAnswersToLocalStorage(): void {
