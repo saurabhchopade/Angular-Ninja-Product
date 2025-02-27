@@ -1,30 +1,32 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { McqQuestion } from '../../models/question.model';
+import { HttpClientModule } from '@angular/common/http';
+import { McqService } from '../../services/mcq.service'; // Import the service
 
 @Component({
   selector: 'app-mcq-section',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
     <div class="mcq-container">
       <h2>Multiple Choice Questions</h2>
       @for (question of questions; track question.id) {
         <div class="question-card">
           <h3>Question {{ question.id }}</h3>
-          <p>{{ question.question }}</p>
+          <p>{{ question.problemStatement }}</p>
           <div class="options">
-            @for (option of question.options; track option; let i = $index) {
+            @for (option of question.options; track option.id; let i = $index) {
               <div class="option">
                 <input 
                   type="radio" 
-                  [id]="'q' + question.id + 'o' + i"
+                  [id]="'q' + question.id + 'o' + option.id"
                   [name]="'question' + question.id"
                   [(ngModel)]="selectedAnswers[question.id]"
-                  [value]="i"
+                  [value]="option.id"
+                  (change)="onOptionChange(question.id, option.id)"
                 >
-                <label [for]="'q' + question.id + 'o' + i">{{ option }}</label>
+                <label [for]="'q' + question.id + 'o' + option.id">{{ option.optionText }}</label>
               </div>
             }
           </div>
@@ -35,13 +37,13 @@ import { McqQuestion } from '../../models/question.model';
   `,
   styles: [`
     .mcq-container {
-      max-width: 1200px; /* Increased max-width for better spacing */
-      margin: 0 auto; /* Center the container */
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 20px;
-      min-height: 100vh; /* Ensure it takes the full height of the screen */
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* Center content vertically */
+      justify-content: center;
     }
 
     .question-card {
@@ -82,7 +84,6 @@ import { McqQuestion } from '../../models/question.model';
       background: #45a049;
     }
 
-    /* Responsive design */
     @media (max-width: 768px) {
       .mcq-container {
         padding: 10px;
@@ -99,92 +100,66 @@ import { McqQuestion } from '../../models/question.model';
     }
   `]
 })
-export class McqSectionComponent {
-  questions: McqQuestion[] = [
-    {
-      id: 1,
-      question: 'What is Angular?',
-      options: [
-        'A JavaScript framework',
-        'A database management system',
-        'A programming language',
-        'An operating system'
-      ],
-      correctAnswer: 0
-    },
-    {
-      id: 2,
-      question: 'Which decorator is used to define a component in Angular?',
-      options: [
-        '@NgModule',
-        '@Component',
-        '@Injectable',
-        '@Directive'
-      ],
-      correctAnswer: 1
-    },
-    {
-      id: 3,
-      question: 'What is the purpose of NgModule in Angular?',
-      options: [
-        'To handle HTTP requests',
-        'To define a template',
-        'To organize and bundle related components and services',
-        'To style components'
-      ],
-      correctAnswer: 2
-    },
-    {
-      id: 4,
-      question: 'Which of the following is used for two-way data binding in Angular?',
-      options: [
-        '[ ]',
-        '( )',
-        '{{ }}',
-        '[(ngModel)]'
-      ],
-      correctAnswer: 3
-    },
-    {
-      id: 5,
-      question: 'What is the purpose of dependency injection in Angular?',
-      options: [
-        'To create new components',
-        'To manage component lifecycle',
-        'To provide required dependencies to classes',
-        'To handle routing'
-      ],
-      correctAnswer: 2
-    },
-    {
-      id: 6,
-      question: 'Which lifecycle hook is called after Angular initializes all data-bound properties?',
-      options: [
-        'ngOnInit',
-        'ngAfterViewInit',
-        'ngOnChanges',
-        'ngDoCheck'
-      ],
-      correctAnswer: 0
-    },
-    {
-      id: 7,
-      question: 'What is the purpose of Angular CLI?',
-      options: [
-        'To write unit tests',
-        'To create and manage Angular applications',
-        'To deploy applications',
-        'To debug applications'
-      ],
-      correctAnswer: 1
-    }
-  ];
-
+export class McqSectionComponent implements OnInit {
+  questions: any[] = [];
   selectedAnswers: { [key: number]: number } = {};
 
-  onSubmit() {
+  constructor(private mcqService: McqService) {} // Inject the service
+
+  ngOnInit(): void {
+    this.fetchQuestions();
+  }
+
+  fetchQuestions(): void {
+    const assessmentId = 1; // Replace with dynamic assessment ID if needed
+    const sectionId = 1; // Replace with dynamic section ID if needed
+
+    this.mcqService.fetchQuestions(assessmentId, sectionId).subscribe(
+      (response) => {
+        if (response.code === 200 && response.status === 'SUCCESS') {
+          this.questions = response.data.map((item: any) => ({
+            ...item.question,
+            options: item.options
+          }));
+          this.loadAnswersFromLocalStorage();
+        }
+      },
+      (error) => {
+        console.error('Error fetching questions:', error);
+      }
+    );
+  }
+
+  loadAnswersFromLocalStorage(): void {
+    const savedAnswers = localStorage.getItem('mcqAnswers');
+    if (savedAnswers) {
+      this.selectedAnswers = JSON.parse(savedAnswers);
+    }
+  }
+
+  onOptionChange(questionId: number, optionId: number): void {
+    this.selectedAnswers[questionId] = optionId;
+    // this.saveAnswerToServer(questionId, optionId);
+    this.saveAnswersToLocalStorage();
+  }
+
+  saveAnswerToServer(questionId: number, optionId: number): void {
+    this.mcqService.saveAnswer(questionId, optionId).subscribe(
+      (response) => {
+        console.log('Answer saved successfully:', response);
+      },
+      (error) => {
+        console.error('Error saving answer:', error);
+      }
+    );
+  }
+
+  saveAnswersToLocalStorage(): void {
+    localStorage.setItem('mcqAnswers', JSON.stringify(this.selectedAnswers));
+  }
+
+  onSubmit(): void {
     console.log('Submitted MCQ answers:', this.selectedAnswers);
-    // Here you can add logic to handle the submission
     alert('MCQ answers submitted successfully!');
   }
 }
