@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 import { CodeSnippetService } from '../../services/codsnippet.service';
+import { CodeExecutionService } from '../../services/code-run.service';
 
 interface CodingQuestion {
   id: number;
@@ -15,6 +16,7 @@ interface CodingQuestion {
     expectedOutput: string;
     actualOutput: string;
     passed: boolean;
+    description?: string;
   }[];
   userCode: string;
 }
@@ -106,6 +108,12 @@ interface CodingQuestion {
                   <div>Input: <pre>{{ testCase.input }}</pre></div>
                   <div>Expected Output: <pre>{{ testCase.expectedOutput }}</pre></div>
                   <div>Actual Output: <pre>{{ testCase.actualOutput }}</pre></div>
+                  <div class="output-container">
+  Description : 
+  <span [ngClass]="{'pass': testCase.description === 'Accepted', 'fail': testCase.description !== 'Accepted'}">
+    {{ testCase.description }}
+  </span>
+</div>
                 </div>
               </div>
             </div>
@@ -136,7 +144,11 @@ interface CodingQuestion {
       --output-background: #252526;
       --status-bar-background: #333;
     }
-
+    .output-container {
+  display: flex;
+  align-items: center; /* Aligns items vertically in the center */
+  gap: 8px; /* Adds some space between the text and the output */
+}
     .light-mode {
       --background-color: #fff;
       --text-color: #000;
@@ -436,7 +448,7 @@ interface CodingQuestion {
     }
   `]
 })
-export class CodingSectionComponent implements AfterViewInit {
+export class CodingSectionComponent implements AfterViewInit, OnInit {
   @ViewChild('editorContainer', { static: false }) editorContainer!: ElementRef;
 
   codingQuestions: CodingQuestion[] = [];
@@ -452,7 +464,10 @@ export class CodingSectionComponent implements AfterViewInit {
   testCasePanelHeight = window.innerHeight * 0.4;
   isTestCasePanelExpanded = true;
 
-  constructor(private codeSnippetService: CodeSnippetService) {
+  constructor(
+    private codeSnippetService: CodeSnippetService,
+    private codeExecutionService: CodeExecutionService
+  ) {
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
       noSyntaxValidation: true,
@@ -463,7 +478,7 @@ export class CodingSectionComponent implements AfterViewInit {
     this.codeSnippetService.fetchCodingQuestions().subscribe((questions) => {
       this.codingQuestions = questions;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
-      this.selectedLanguage = this.currentQuestion.languages[0].id; // Set default language
+      this.selectedLanguage = this.currentQuestion.languages[0].id;
       this.initializeEditor();
     });
   }
@@ -550,26 +565,20 @@ export class CodingSectionComponent implements AfterViewInit {
 
   previousQuestion() {
     if (this.currentQuestionIndex > 0) {
-      // Save the current editor state before navigating
       this.saveCurrentEditorState();
-
-      // Navigate to the previous question
       this.currentQuestionIndex--;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
-      this.selectedLanguage = this.currentQuestion.languages[0].id; // Reset to default language
+      this.selectedLanguage = this.currentQuestion.languages[0].id;
       this.updateEditorContent();
     }
   }
 
   nextQuestion() {
     if (this.currentQuestionIndex < this.codingQuestions.length - 1) {
-      // Save the current editor state before navigating
       this.saveCurrentEditorState();
-
-      // Navigate to the next question
       this.currentQuestionIndex++;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
-      this.selectedLanguage = this.currentQuestion.languages[0].id; // Reset to default language
+      this.selectedLanguage = this.currentQuestion.languages[0].id;
       this.updateEditorContent();
     }
   }
@@ -608,11 +617,45 @@ export class CodingSectionComponent implements AfterViewInit {
   }
 
   runCode() {
-    if (this.editor) {
-      const code = this.editor.getValue();
-      console.log('Running code:', code);
-      // Implement code execution logic
+    if (!this.editor) {
+      console.error('Editor not initialized');
+      return;
     }
+  
+    const code = this.editor.getValue();
+    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.id === this.selectedLanguage);
+  
+    if (!selectedLanguage) {
+      console.error('Selected language not found');
+      return;
+    }
+  
+    // Ensure languageId and questionId are parsed correctly
+    const languageId = selectedLanguage.id; // No need to parse if it's already a string
+    const questionId = this.currentQuestion.id; // No need to parse if it's already a number
+    
+    // Debugging logs to verify values
+    console.log('Language ID:', languageId);
+    console.log('Question ID:', questionId);
+    console.log('Code:', code);
+  
+    // Call the code execution service
+    this.codeExecutionService.executeCode(62, code, questionId).subscribe({
+      next: (response) => {
+        if (response.code === 200) {
+          this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
+            input: testCase.std_input,
+            expectedOutput: testCase.expected_output,
+            actualOutput: testCase.stdout,
+            passed: testCase.status.description === 'Accepted',
+            description: testCase.status.description
+          }));
+        }
+      },
+      error: (error) => {
+        console.error('Error executing code:', error);
+      }
+    });
   }
 
   startResize(event: MouseEvent) {
