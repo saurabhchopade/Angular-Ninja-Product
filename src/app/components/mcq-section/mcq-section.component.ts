@@ -176,7 +176,7 @@ export class McqSectionComponent implements OnInit {
 
   fetchQuestions(): void {
     const assessmentId = 1; // Replace with dynamic assessment ID if needed
-    const sectionId = 1; // Replace with dynamic section ID if needed
+    const sectionId = 2; // Replace with dynamic section ID if needed
 
     // Check if questions are available in local storage
     const cachedQuestions = localStorage.getItem('mcqQuestions');

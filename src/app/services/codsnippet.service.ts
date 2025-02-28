@@ -98,7 +98,10 @@ export class CodeSnippetService {
   // API endpoint to fetch coding questions
   private apiUrl = 'http://localhost:8080/api/codingQuestion/findByAssessmentIdAndSectionId/assessment/1/section/1';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Listen to the beforeunload event to clear local storage
+    window.addEventListener('beforeunload', () => this.clearLocalStorage());
+  }
 
   // Fetch coding questions from the API
   fetchCodingQuestions(): Observable<CodingQuestion[]> {
@@ -166,5 +169,10 @@ export class CodeSnippetService {
   private getStoredCode(questionId: number, languageId: string): string {
     const key = `code_${questionId}_${languageId}`;
     return localStorage.getItem(key) || '';
+  }
+
+  // Clear local storage data
+  private clearLocalStorage() {
+    localStorage.clear();
   }
 }

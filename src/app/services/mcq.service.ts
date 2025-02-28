@@ -8,7 +8,10 @@ import { Observable } from 'rxjs';
 export class McqService {
   private baseUrl = 'http://localhost:8080/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Listen to the beforeunload event to clear local storage or perform cleanup
+    window.addEventListener('beforeunload', () => this.clearLocalStorage());
+  }
 
   // Fetch questions and options for a specific assessment and section
   fetchQuestions(assessmentId: number, sectionId: number): Observable<any> {
@@ -23,5 +26,10 @@ export class McqService {
     const payload = { questionId, optionId };
     return this.http.post(url, payload);
   }
-  
+
+  // Clear local storage data
+  private clearLocalStorage() {
+    localStorage.clear(); // Clears all data in localStorage
+    console.log('Local storage cleared on page refresh.');
+  }
 }
