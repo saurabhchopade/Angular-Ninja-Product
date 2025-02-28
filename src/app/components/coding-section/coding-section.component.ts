@@ -92,30 +92,55 @@ interface CodingQuestion {
           <div class="test-case-panel" [style.height.px]="testCasePanelHeight">
             <div class="test-case-header" (mousedown)="startResizeTestCase($event)">
               Test Output
+
+              <span class="test-count" *ngIf="!loading">
+                Passed Count: 
+      {{ passedCount }}/{{ totalTestCount }}
+    </span>
+
               <div class="drag-button" (click)="toggleTestCasePanel()">
                 {{ isTestCasePanelExpanded ? '▼' : '▲' }}
               </div>
             </div>
             <div class="test-case-content">
-              <div class="test-case" *ngFor="let testCase of currentQuestion.testCases; let i = index">
-                <div class="test-case-header">
-                  <span>Test Case {{ i + 1 }}</span>
-                  <span class="status" [ngClass]="{'pass': testCase.passed, 'fail': !testCase.passed}">
-                    {{ testCase.passed ? '✔' : '✘' }}
-                  </span>
-                </div>
-                <div class="test-case-content">
-                  <div>Input: <pre>{{ testCase.input }}</pre></div>
-                  <div>Expected Output: <pre>{{ testCase.expectedOutput }}</pre></div>
-                  <div>Actual Output: <pre>{{ testCase.actualOutput }}</pre></div>
-                  <div class="output-container">
-  Description : 
-  <span [ngClass]="{'pass': testCase.description === 'Accepted', 'fail': testCase.description !== 'Accepted'}">
-    {{ testCase.description }}
-  </span>
-</div>
-                </div>
-              </div>
+  <!-- Skeleton Loader -->
+  <div *ngIf="loading" class="skeleton-loader" aria-label="Loading test cases">
+    <div class="skeleton-test-case" *ngFor="let _ of [1, 2, 3]">
+      <div class="skeleton-header">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+      <div class="skeleton-body">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actual Test Cases -->
+  <div *ngIf="!loading">
+    <div class="test-case" *ngFor="let testCase of currentQuestion.testCases; let i = index">
+      <div class="test-case-header">
+        <span>Test Case {{ i + 1 }}</span>
+        <span class="status" [ngClass]="{'pass': testCase.passed, 'fail': !testCase.passed}">
+          {{ testCase.passed ? '✔' : '✘' }}
+        </span>
+      </div>
+      <div class="test-case-content">
+        <div>Input: <pre>{{ testCase.input }}</pre></div>
+        <div>Expected Output: <pre>{{ testCase.expectedOutput }}</pre></div>
+        <div>Actual Output: <pre>{{ testCase.actualOutput }}</pre></div>
+        <div class="output-container">
+          Description:
+          <span [ngClass]="{'pass': testCase.description === 'Accepted', 'fail': testCase.description !== 'Accepted'}">
+            {{ testCase.description }}
+          </span>
+        </div>
+      </div>
+    </div>
+      </div>
+
             </div>
           </div>
         </div>
@@ -459,6 +484,58 @@ interface CodingQuestion {
     input:checked + .slider:before {
       transform: translateX(26px);
     }
+
+    /* Skeleton Loader Styles */
+.skeleton-loader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-test-case {
+  background-color: var(--section-content-background);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.skeleton-header,
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+  background-color: var(--section-header-background);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-header .skeleton-line {
+  width: 50%;
+}
+
+.skeleton-body .skeleton-line {
+  width: 80%;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+.test-count {
+  margin-left: 0; /* No space between "Test Output" and the count */
+  color: green; /* Green color for the count */
+  font-weight: bold;
+}
   `]
 })
 export class CodingSectionComponent implements AfterViewInit, OnInit {
@@ -470,12 +547,15 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
   selectedLanguage = '';
   editor: monaco.editor.IStandaloneCodeEditor | null = null;
   isDarkMode = true;
-
+  loading = false; // Add this line for skeleton loader
+  submission = false;
   leftPanelWidth = 300;
   rightPanelWidth = window.innerWidth - 300;
   editorHeight = window.innerHeight * 0.6;
   testCasePanelHeight = window.innerHeight * 0.4;
   isTestCasePanelExpanded = true;
+  passedCount = 0; // Add this line
+  totalTestCount = 0; // 
 
   constructor(
     private codeSnippetService: CodeSnippetService,
@@ -642,6 +722,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       console.error('Selected language not found');
       return;
     }
+    this.loading = true;
 
     // Ensure languageId and questionId are parsed correctly
     const languageId = selectedLanguage.id; // No need to parse if it's already a string
@@ -653,7 +734,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     console.log('Code:', code);
 
     // Call the code execution service
-    this.codeExecutionService.executeCode(62, code, questionId).subscribe({
+    this.codeExecutionService.executeCode(62, code, questionId,this.submission).subscribe({
       next: (response) => {
         if (response.code === 200) {
           this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
@@ -663,10 +744,15 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
             passed: testCase.status.description === 'Accepted',
             description: testCase.status.description
           }));
+
+          this.passedCount = response.data[0].passed_count; 
+          this.totalTestCount = response.data[0].total_test_count;
         }
+        this.loading = false; // Reset loading state
       },
       error: (error) => {
         console.error('Error executing code:', error);
+        this.loading = false; // Reset loading state
       }
     });
   }
@@ -725,12 +811,63 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
   }
 
   submitCode() {
-    const allAttempted = this.codingQuestions.every((q) => q.userCode.trim() !== '');
-    if (allAttempted) {
-      console.log('Submitting all questions:', this.codingQuestions);
-      alert('All questions submitted successfully!');
-    } else {
-      alert('Please attempt all questions before submitting.');
+    // const allAttempted = this.codingQuestions.every((q) => q.userCode.trim() !== '');
+    // if (allAttempted) {
+    //   console.log('Submitting all questions:', this.codingQuestions);
+    //   alert('All questions submitted successfully!');
+    // } else {
+    //   alert('Please attempt all questions before submitting.');
+    // }
+
+    this.submission = true;
+
+    if (!this.editor) {
+      console.error('Editor not initialized');
+      return;
     }
+
+    const code = this.editor.getValue();
+    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.id === this.selectedLanguage);
+
+    if (!selectedLanguage) {
+      console.error('Selected language not found');
+      return;
+    }
+    this.loading = true;
+    this.submission =true;
+
+    // Ensure languageId and questionId are parsed correctly
+    const languageId = selectedLanguage.id; // No need to parse if it's already a string
+    const questionId = this.currentQuestion.id; // No need to parse if it's already a number
+
+    // Debugging logs to verify values
+    console.log('Language ID:', languageId);
+    console.log('Question ID:', questionId);
+    console.log('Code:', code);
+
+    // Call the code execution service
+    this.codeExecutionService.executeCode(62, code, questionId,this.submission).subscribe({
+      next: (response) => {
+        if (response.code === 200) {
+          this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
+            input: testCase.std_input,
+            expectedOutput: testCase.expected_output,
+            actualOutput: testCase.stdout,
+            passed: testCase.status.description === 'Accepted',
+            description: testCase.status.description
+          }));
+
+          this.passedCount = response.data[0].passed_count; 
+          this.totalTestCount = response.data[0].total_test_count;
+        }
+        this.loading = false; // Reset loading state
+        this.submission = false;
+      },
+      error: (error) => {
+        console.error('Error executing code:', error);
+        this.loading = false; // Reset loading state
+      }
+    });
+
   }
 }

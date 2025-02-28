@@ -10,12 +10,13 @@ export class CodeExecutionService {
 
   constructor(private http: HttpClient) {}
 
-  executeCode(language_id: number, source_code: string, question_id: number): Observable<any> {
+  executeCode(language_id: number, source_code: string, question_id: number,submission: boolean): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = {
       language_id,
       source_code,
       question_id,
+      submission
     };
     return this.http.post(this.apiUrl, body, { headers });
   }
