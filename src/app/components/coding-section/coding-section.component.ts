@@ -320,18 +320,31 @@ interface CodingQuestion {
     .test-case-header {
       font-weight: bold;
     }
+    .initial {
+  color: #888; /* Neutral color for initial state */
+}
 
-    .status {
-      margin-left: 10px;
-    }
+.pass {
+  color: green; /* Color for pass state */
+}
 
-    .pass {
-      color: green;
-    }
+.fail {
+  color: red; /* Color for fail state */
+}
 
-    .fail {
-      color: red;
-    }
+.status {
+  margin-left: 10px;
+}
+
+.test-case-header {
+  font-weight: bold;
+}
+
+.output-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
     /* Navigation Controls */
     .navigation-controls {
@@ -621,24 +634,24 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       console.error('Editor not initialized');
       return;
     }
-  
+
     const code = this.editor.getValue();
     const selectedLanguage = this.currentQuestion.languages.find(lang => lang.id === this.selectedLanguage);
-  
+
     if (!selectedLanguage) {
       console.error('Selected language not found');
       return;
     }
-  
+
     // Ensure languageId and questionId are parsed correctly
     const languageId = selectedLanguage.id; // No need to parse if it's already a string
     const questionId = this.currentQuestion.id; // No need to parse if it's already a number
-    
+
     // Debugging logs to verify values
     console.log('Language ID:', languageId);
     console.log('Question ID:', questionId);
     console.log('Code:', code);
-  
+
     // Call the code execution service
     this.codeExecutionService.executeCode(62, code, questionId).subscribe({
       next: (response) => {
