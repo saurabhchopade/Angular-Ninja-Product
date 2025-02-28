@@ -486,11 +486,11 @@ interface CodingQuestion {
     }
 
     /* Skeleton Loader Styles */
-.skeleton-loader {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+    .skeleton-loader {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
 .skeleton-test-case {
   background-color: var(--section-content-background);
