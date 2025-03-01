@@ -573,7 +573,10 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit() {
-    this.codeSnippetService.fetchCodingQuestions().subscribe((questions) => {
+    const assessmentId = 1; // Replace with actual assessment ID
+    const candidateId = 1; // Replace with actual candidate ID
+    const sectionId = 1; // Replace with actual section ID
+    this.codeSnippetService.fetchCodingQuestions(assessmentId, candidateId, sectionId).subscribe((questions) => {
       this.codingQuestions = questions;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
       this.selectedLanguage = this.currentQuestion.languages[0].id;

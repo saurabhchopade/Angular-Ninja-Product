@@ -96,16 +96,17 @@ export class CodeSnippetService {
   currentCode$ = this.currentCodeSubject.asObservable();
 
   // API endpoint to fetch coding questions
-  private apiUrl = 'http://localhost:8080/api/codingQuestion/findByAssessmentIdAndSectionId/assessment/1/section/1';
+  private apiUrl = 'http://localhost:8080/api/codingQuestion/fetch-codingQuestion';
 
   constructor(private http: HttpClient) {
     // Listen to the beforeunload event to clear local storage
     window.addEventListener('beforeunload', () => this.clearLocalStorage());
   }
 
-  // Fetch coding questions from the API
-  fetchCodingQuestions(): Observable<CodingQuestion[]> {
-    return this.http.get<ApiResponse>(this.apiUrl).pipe(
+  // Fetch coding questions from the API using POST request
+  fetchCodingQuestions(assessmentId: number, candidateId: number, sectionId: number): Observable<CodingQuestion[]> {
+    const body = { assessmentId, candidateId, sectionId };
+    return this.http.post<ApiResponse>(this.apiUrl, body).pipe(
       map((response) => {
         // Map the API response to the CodingQuestion interface
         this.codingQuestions = response.data.map((item: ApiResponseItem) => ({
