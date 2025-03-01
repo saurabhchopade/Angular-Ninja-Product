@@ -1,32 +1,61 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SubjectiveQuestion } from '../../models/question.model';
+import { HttpClientModule } from '@angular/common/http';
+import { QuestionService } from '../../services/subjective.question.service';
+import { DropOffService } from '../../services/dropoff.subjective.service';
+
+// Define the SubjectiveQuestion model within the same file
+interface SubjectiveQuestion {
+  questionId: number;
+  type: string;
+  title: string;
+  problemStatement: string;
+  difficultyLevel: string;
+  maxScore: number;
+  visibility: string | null;
+  aiEvaluationEnabled: boolean;
+  evaluationMode: string | null;
+  ruleId: number;
+  mustInclude: string | null;
+  optional: string | null;
+  negativeKeywords: string | null;
+  scoringWeights: string | null;
+  expectedResponseFormat: string | null;
+  minWords: number;
+  maxWords: number;
+  sampleAnswer: string | null;
+  actualAnswer: string | null;
+  evaluatedScore: number | null;
+  dropOffAnswer: string;
+}
 
 @Component({
   selector: 'app-subjective-section',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
     <div class="subjective-container">
       <h2>Subjective Questions</h2>
-      @for (question of questions; track question.id) {
+      @for (question of questions; track question.questionId; let i = $index) {
         <div class="question-card">
-          <h3>Question {{ question.id }}</h3>
-          <p>{{ question.question }}</p>
+          <h3>Question {{ i + 1 }}</h3> <!-- Display series 1, 2, 3, 4 -->
+          <p>{{ question.problemStatement }}</p>
           @if (question.maxWords) {
             <p class="word-limit">Maximum words: {{ question.maxWords }}</p>
           }
           <div class="answer-box">
             <textarea
-              [(ngModel)]="answers[question.id]"
+              [(ngModel)]="answers[question.questionId]"
               placeholder="Write your answer here..."
               rows="6"
-              (input)="updateWordCount(question.id)"
+              (input)="updateWordCount(question.questionId)"
+              (focus)="startDropOffPush(question.questionId)"
+              (blur)="stopDropOffPush(question.questionId)"
             ></textarea>
             @if (question.maxWords) {
               <div class="word-count">
-                Words: {{ wordCounts[question.id] || 0 }}/{{ question.maxWords }}
+                Words: {{ wordCounts[question.questionId] || 0 }}/{{ question.maxWords }}
               </div>
             }
           </div>
@@ -108,26 +137,62 @@ import { SubjectiveQuestion } from '../../models/question.model';
     }
   `]
 })
-export class SubjectiveSectionComponent {
-  questions: SubjectiveQuestion[] = [
-    {
-      id: 1,
-      question: 'Explain the concept of dependency injection in Angular and its benefits.',
-      maxWords: 200
-    },
-    {
-      id: 2,
-      question: 'Describe the differences between Angular and React frameworks.',
-      maxWords: 300
-    }
-  ];
-
+export class SubjectiveSectionComponent implements OnInit, OnDestroy {
+  questions: SubjectiveQuestion[] = [];
   answers: { [key: number]: string } = {};
   wordCounts: { [key: number]: number } = {};
+  private dropOffIntervals: { [key: number]: any } = {};
+
+  constructor(
+    private questionService: QuestionService,
+    private dropOffService: DropOffService
+  ) {}
+
+  ngOnInit(): void {
+    const assessmentId = 7;
+    const sectionId = 7;
+    const candidateId = 7;
+
+    this.questionService.fetchSubjectiveQuestions(assessmentId, sectionId, candidateId).subscribe(response => {
+      if (response.code === 200) {
+        this.questions = response.data;
+
+        // Map dropOffAnswer to answers if it is not empty or null
+        this.questions.forEach(question => {
+          if (question.dropOffAnswer && question.dropOffAnswer.trim() !== '') {
+            this.answers[question.questionId] = question.dropOffAnswer;
+            this.updateWordCount(question.questionId); // Update word count for the mapped answer
+          }
+        });
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    Object.values(this.dropOffIntervals).forEach(intervalId => clearInterval(intervalId));
+  }
 
   updateWordCount(questionId: number) {
     const answer = this.answers[questionId] || '';
     this.wordCounts[questionId] = answer.trim().split(/\s+/).filter(word => word.length > 0).length;
+  }
+
+  startDropOffPush(questionId: number) {
+    const assessmentId = 7;
+    const sectionId = 7;
+    const candidateId = 7;
+
+    this.dropOffIntervals[questionId] = setInterval(() => {
+      const answer = this.answers[questionId] || '';
+      this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer).subscribe(response => {
+        console.log('Drop-off answer pushed:', response);
+      });
+    }, 5000);
+  }
+
+  stopDropOffPush(questionId: number) {
+    clearInterval(this.dropOffIntervals[questionId]);
+    delete this.dropOffIntervals[questionId];
   }
 
   onSubmit() {
