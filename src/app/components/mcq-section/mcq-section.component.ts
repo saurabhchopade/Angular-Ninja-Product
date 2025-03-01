@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { McqService } from '../../services/mcq.service'; // Import the service
+import { McqService } from '../../services/mcq.service'; // Existing service
+import { McqAnswerService } from '../../services/dropoff.push.mcq.service'; // New service
 
 @Component({
   selector: 'app-mcq-section',
@@ -165,18 +166,22 @@ import { McqService } from '../../services/mcq.service'; // Import the service
 })
 export class McqSectionComponent implements OnInit {
   questions: any[] = [];
-  selectedAnswers: { [key: number]: number } = {};
-  loading: boolean = true; // Track loading state
+  selectedAnswers: { [key: number]: number } = {}; // Stores the selected option ID for each question
+  loading: boolean = true;
 
-  constructor(private mcqService: McqService) {} // Inject the service
+  constructor(
+    private mcqService: McqService, // Existing service
+    private mcqAnswerService: McqAnswerService // New service
+  ) {}
 
   ngOnInit(): void {
     this.fetchQuestions();
   }
 
   fetchQuestions(): void {
-    const assessmentId = 1; // Replace with dynamic assessment ID if needed
-    const sectionId = 2; // Replace with dynamic section ID if needed
+    const assessmentId = 6; // Replace with dynamic assessment ID if needed
+    const candidateId = 6; // Replace with dynamic candidate ID if needed
+    const sectionId = 6; // Replace with dynamic section ID if needed
 
     // Check if questions are available in local storage
     const cachedQuestions = localStorage.getItem('mcqQuestions');
@@ -186,13 +191,17 @@ export class McqSectionComponent implements OnInit {
       this.loading = false; // Hide skeleton loader
     } else {
       // If not in local storage, make an API call
-      this.mcqService.fetchQuestions(assessmentId, sectionId).subscribe(
+      this.mcqService.fetchQuestions(assessmentId, candidateId, sectionId).subscribe(
         (response) => {
           if (response.code === 200 && response.status === 'SUCCESS') {
             this.questions = response.data.map((item: any) => ({
               ...item.question,
               options: item.options
             }));
+
+            // Set the default selected answer based on "savedAnswer": true
+            this.setDefaultSelectedAnswers();
+
             // Save questions to local storage for future use
             localStorage.setItem('mcqQuestions', JSON.stringify(this.questions));
             this.loadAnswersFromLocalStorage();
@@ -207,6 +216,15 @@ export class McqSectionComponent implements OnInit {
     }
   }
 
+  setDefaultSelectedAnswers(): void {
+    this.questions.forEach((question) => {
+      const savedOption = question.options.find((option: any) => option.savedAnswer === true);
+      if (savedOption) {
+        this.selectedAnswers[question.id] = savedOption.id; // Set the saved option as selected
+      }
+    });
+  }
+
   loadAnswersFromLocalStorage(): void {
     const savedAnswers = localStorage.getItem('mcqAnswers');
     if (savedAnswers) {
@@ -217,10 +235,34 @@ export class McqSectionComponent implements OnInit {
   onOptionChange(questionId: number, optionId: number): void {
     this.selectedAnswers[questionId] = optionId;
     this.saveAnswersToLocalStorage();
+    this.pushAnswerToServer(questionId, optionId); // Push the updated answer to the server
   }
 
   saveAnswersToLocalStorage(): void {
     localStorage.setItem('mcqAnswers', JSON.stringify(this.selectedAnswers));
+  }
+
+  pushAnswerToServer(questionId: number, optionId: number): void {
+    const assessmentId = 6; // Replace with dynamic assessment ID if needed
+    const candidateId = 6; // Replace with dynamic candidate ID if needed
+    const sectionId = 6; // Replace with dynamic section ID if needed
+
+    const answerData = {
+      assessmentId,
+      candidateId,
+      sectionId,
+      questionId,
+      mcqOption: optionId
+    };
+
+    this.mcqAnswerService.addAnswer(answerData).subscribe({
+      next: (response: any) => {
+        console.log('Answer pushed successfully:', response);
+      },
+      error: (error: any) => {
+        console.error('Error pushing answer:', error);
+      }
+    });
   }
 
   onSubmit(): void {
