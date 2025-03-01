@@ -182,17 +182,33 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     const sectionId = 7;
     const candidateId = 7;
 
+    // Start periodic push every 10 seconds
     this.dropOffIntervals[questionId] = setInterval(() => {
       const answer = this.answers[questionId] || '';
       this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer).subscribe(response => {
         console.log('Drop-off answer pushed:', response);
       });
-    }, 5000);
+    }, 20000);
   }
 
   stopDropOffPush(questionId: number) {
-    clearInterval(this.dropOffIntervals[questionId]);
-    delete this.dropOffIntervals[questionId];
+    // Clear the interval for the current question
+    if (this.dropOffIntervals[questionId]) {
+      clearInterval(this.dropOffIntervals[questionId]);
+      delete this.dropOffIntervals[questionId];
+    }
+
+    // Push the answer immediately when the user leaves the textarea
+    const assessmentId = 7;
+    const sectionId = 7;
+    const candidateId = 7;
+    const answer = this.answers[questionId] || '';
+
+    if (answer.trim() !== '') {
+      this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer).subscribe(response => {
+        console.log('Drop-off answer pushed immediately:', response);
+      });
+    }
   }
 
   onSubmit() {
