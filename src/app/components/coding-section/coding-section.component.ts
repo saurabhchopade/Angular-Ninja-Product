@@ -5,6 +5,8 @@ import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 import { CodeSnippetService } from '../../services/codsnippet.service';
 import { CodeExecutionService } from '../../services/code-run.service';
+import { DropOffAnswerService } from '../../services/dropoff.Coding.service'; // Import the new service
+import { interval, Subscription } from 'rxjs'; // Import interval and Subscription
 
 interface CodingQuestion {
   id: number;
@@ -547,20 +549,22 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
   selectedLanguage = '';
   editor: monaco.editor.IStandaloneCodeEditor | null = null;
   isDarkMode = true;
-  loading = false; // Add this line for skeleton loader
+  loading = false;
   submission = false;
   leftPanelWidth = 300;
   rightPanelWidth = window.innerWidth - 300;
   editorHeight = window.innerHeight * 0.6;
   testCasePanelHeight = window.innerHeight * 0.4;
   isTestCasePanelExpanded = true;
-  passedCount = 0; // Add this line
-  totalTestCount = 0; // 
+  passedCount = 0;
+  totalTestCount = 0;
   language_id = 0;
+  private dropOffSubscription!: Subscription; // Subscription for the interval
 
   constructor(
     private codeSnippetService: CodeSnippetService,
-    private codeExecutionService: CodeExecutionService
+    private codeExecutionService: CodeExecutionService,
+    private dropOffAnswerService: DropOffAnswerService // Inject the new service
   ) {
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
@@ -575,6 +579,51 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       this.selectedLanguage = this.currentQuestion.languages[0].id;
       this.language_id = this.currentQuestion.languages[0].language_id;
       this.initializeEditor();
+
+      // Start the interval to drop off the answer every 30 seconds
+      this.dropOffSubscription = interval(30000).subscribe(() => {
+        this.dropOffAnswer();
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    // Unsubscribe from the interval to avoid memory leaks
+    if (this.dropOffSubscription) {
+      this.dropOffSubscription.unsubscribe();
+    }
+  }
+
+  dropOffAnswer() {
+    if (!this.editor) {
+      console.error('Editor not initialized');
+      return;
+    }
+
+    const code = this.editor.getValue();
+    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.language_id === this.language_id);
+
+    if (!selectedLanguage) {
+      console.error('Selected language not found');
+      return;
+    }
+
+    const answerData = {
+      questionId: this.currentQuestion.id,
+      assessmentId: 1, // Replace with actual assessment ID
+      sectionId: 1, // Replace with actual section ID
+      candidateId: 1, // Replace with actual candidate ID
+      languageId: selectedLanguage.language_id,
+      answer: code
+    };
+
+    this.dropOffAnswerService.dropOffAnswer(answerData).subscribe({
+      next: (response: any) => {
+        console.log('Answer dropped off successfully:', response);
+      },
+      error: (error: any) => {
+        console.error('Error dropping off answer:', error);
+      }
     });
   }
 
