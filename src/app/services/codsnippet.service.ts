@@ -72,7 +72,7 @@ interface CodingQuestion {
   id: number;
   title: string;
   problemStatement: string;
-  languages: { id: string; name: string; snippet: string }[];
+  languages: { id: string; name: string; snippet: string;language_id:number }[];
   testCases: {
     input: string;
     expectedOutput: string;
@@ -116,6 +116,7 @@ export class CodeSnippetService {
             id: template.language.code,
             name: template.language.displayName,
             snippet: template.snippet,
+            language_id:template.language.languageId
           })),
           testCases: item.testcaseResponse.map((testCase: TestCaseResponse) => ({
             input: testCase.inputData,

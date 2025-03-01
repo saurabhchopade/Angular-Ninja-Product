@@ -10,7 +10,7 @@ interface CodingQuestion {
   id: number;
   title: string;
   problemStatement: string;
-  languages: { id: string; name: string; snippet: string }[];
+  languages: { id: string; name: string; snippet: string;language_id:number }[];
   testCases: {
     input: string;
     expectedOutput: string;
@@ -556,6 +556,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
   isTestCasePanelExpanded = true;
   passedCount = 0; // Add this line
   totalTestCount = 0; // 
+  language_id = 0;
 
   constructor(
     private codeSnippetService: CodeSnippetService,
@@ -572,6 +573,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       this.codingQuestions = questions;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
       this.selectedLanguage = this.currentQuestion.languages[0].id;
+      this.language_id = this.currentQuestion.languages[0].language_id;
       this.initializeEditor();
     });
   }
@@ -627,6 +629,12 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       const currentQuestion = this.currentQuestion;
 
       const languageData = currentQuestion.languages.find((lang) => lang.id === selectedLanguage);
+      
+      if (languageData && this.language_id !== languageData.language_id) {
+        console.log('UPDATEDD Language ID:',languageData.language_id);
+        this.language_id = languageData.language_id; // Update only if it's different
+      }
+      
 
       if (languageData) {
         const snippet = this.codeSnippetService.getCodeSnippet(
@@ -662,6 +670,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       this.currentQuestionIndex--;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
       this.selectedLanguage = this.currentQuestion.languages[0].id;
+      this.language_id =this.currentQuestion.languages[0].language_id;
       this.updateEditorContent();
     }
   }
@@ -672,6 +681,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
       this.currentQuestionIndex++;
       this.currentQuestion = this.codingQuestions[this.currentQuestionIndex];
       this.selectedLanguage = this.currentQuestion.languages[0].id;
+      this.language_id = this.currentQuestion.languages[0].language_id;
       this.updateEditorContent();
     }
   }
@@ -716,7 +726,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     }
 
     const code = this.editor.getValue();
-    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.id === this.selectedLanguage);
+    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.language_id === this.language_id);
 
     if (!selectedLanguage) {
       console.error('Selected language not found');
@@ -725,7 +735,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     this.loading = true;
 
     // Ensure languageId and questionId are parsed correctly
-    const languageId = selectedLanguage.id; // No need to parse if it's already a string
+    const languageId = selectedLanguage.language_id; // No need to parse if it's already a string
     const questionId = this.currentQuestion.id; // No need to parse if it's already a number
 
     // Debugging logs to verify values
@@ -734,7 +744,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     console.log('Code:', code);
 
     // Call the code execution service
-    this.codeExecutionService.executeCode(62, code, questionId,this.submission).subscribe({
+    this.codeExecutionService.executeCode(languageId, code, questionId,this.submission).subscribe({
       next: (response) => {
         if (response.code === 200) {
           this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
@@ -827,7 +837,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     }
 
     const code = this.editor.getValue();
-    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.id === this.selectedLanguage);
+    const selectedLanguage = this.currentQuestion.languages.find(lang => lang.language_id === this.language_id);
 
     if (!selectedLanguage) {
       console.error('Selected language not found');
@@ -837,7 +847,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     this.submission =true;
 
     // Ensure languageId and questionId are parsed correctly
-    const languageId = selectedLanguage.id; // No need to parse if it's already a string
+    const languageId = selectedLanguage.language_id; // No need to parse if it's already a string
     const questionId = this.currentQuestion.id; // No need to parse if it's already a number
 
     // Debugging logs to verify values
@@ -846,7 +856,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit {
     console.log('Code:', code);
 
     // Call the code execution service
-    this.codeExecutionService.executeCode(62, code, questionId,this.submission).subscribe({
+    this.codeExecutionService.executeCode(languageId, code, questionId,this.submission).subscribe({
       next: (response) => {
         if (response.code === 200) {
           this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
