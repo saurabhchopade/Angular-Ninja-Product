@@ -13,7 +13,7 @@ import { McqAnswerService } from '../../services/dropoff.push.mcq.service'; // N
     <div class="mcq-container">
       <div class="sticky-header">
         <div class="mcq-header">
-          <h2>Multiple Choice Questions</h2>
+          <!-- <h2>Multiple Choice Questions</h2> -->
           @if (!loading && questions.length > 0) {
             <div class="progress-container">
               <div class="progress-bar">
@@ -115,66 +115,69 @@ import { McqAnswerService } from '../../services/dropoff.push.mcq.service'; // N
     }
 
     .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background-color: #fff;
-      padding: 0.45rem 0.6rem; /* Reduced by 70% from 1.5rem 2rem */
-      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
-      border-bottom: 1px solid #e9ecef;
-    }
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #fff;
+  padding: 0.45rem 0.6rem; /* Reduced by 70% from 1.5rem 2rem */
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 12px; /* Added rounded corners */
+  margin: 0.5rem; /* Added margin to create space around the sticky header */
+}
 
-    .mcq-header {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+.mcq-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px; /* Added rounded corners */
+  padding: 0.5rem; /* Added padding for better spacing */
+}
 
-    .mcq-content {
-      padding: 2rem;
-      flex: 1;
-    }
+.mcq-content {
+  padding: 2rem;
+  flex: 1;
+}
 
-    .mcq-header h2 {
-      font-size: 1.2rem; /* Reduced by 70% from 2rem */
-      color: #2c3e50;
-      margin-bottom: 0; /* Removed margin */
-      font-weight: 600;
-    }
-
+.mcq-header h2 {
+  font-size: 1.2rem; /* Reduced by 70% from 2rem */
+  color: #2c3e50;
+  margin-bottom: 0; /* Removed margin */
+  font-weight: 600;
+}
     .progress-container {
-      margin: 0;
-      padding: 0;
-      flex: 1;
-      max-width: 60%;
-      margin-left: 1rem;
-    }
+  width: 100%;
+  background-color: #ffffff; /* White background for the outer container */
+  border-radius: 12px; /* Rounded corners for the outer container */
+  padding: 0.75rem; /* Add some padding inside the container */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
 
-    .progress-bar {
-      height: 6px; /* Reduced by 70% from 12px */
-      background-color: #e9ecef;
-      border-radius: 10px; /* Reduced from 20px */
-      overflow: hidden;
-      margin-bottom: 0.2rem; /* Reduced from 0.75rem */
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-    }
+.progress-bar {
+  height: 6px; /* Reduced by 70% from 12px */
+  background-color: #e9ecef;
+  border-radius: 10px; /* Rounded corners for the progress bar */
+  overflow: hidden;
+  margin-bottom: 0.2rem; /* Reduced from 0.75rem */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
 
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #4CAF50, #8BC34A);
-      border-radius: 10px; /* Match parent's border-radius */
-      transition: width 0.3s ease;
-    }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 10px; /* Match parent's border-radius */
+  transition: width 0.3s ease;
+}
 
-    .progress-text {
-      font-size: 0.7rem; /* Reduced from 1rem */
-      color: #6c757d;
-      font-weight: 500;
-      display: block;
-      text-align: right;
-      padding-right: 0.15rem; /* Reduced from 0.5rem */
-    }
+.progress-text {
+  font-size: 0.7rem; /* Reduced from 1rem */
+  color: #6c757d;
+  font-weight: 500;
+  display: block;
+  text-align: right;
+  padding-right: 0.15rem; /* Reduced from 0.5rem */
+}
 
     .question-card {
       background: white;
