@@ -995,10 +995,10 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
   toggleTestCasePanel() {
     this.isTestCasePanelExpanded = !this.isTestCasePanelExpanded;
     if (this.isTestCasePanelExpanded) {
-      this.testCasePanelHeight = window.innerHeight * 0.4;
-      this.editorHeight = window.innerHeight * 0.6 - 50; // Adjust for toolbar
+      this.testCasePanelHeight = window.innerHeight * 0.5; // Set to 30% of screen height
+      this.editorHeight = window.innerHeight - this.testCasePanelHeight - 50; // Adjust for toolbar
     } else {
-      this.testCasePanelHeight = 50;
+      this.testCasePanelHeight = 50; // Collapse the panel
       this.editorHeight = window.innerHeight - 100; // Adjust for toolbar and collapsed panel
     }
   }
@@ -1016,19 +1016,23 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
       console.error('Editor not initialized');
       return;
     }
-
+  
     const code = this.editor.getValue();
     const selectedLanguage = this.currentQuestion.languages.find(lang => lang.language_id === this.language_id);
-
+  
     if (!selectedLanguage) {
       console.error('Selected language not found');
       return;
     }
     this.loading = true;
-
+  
+    // Expand the test case panel to 30% of the screen height
+    this.testCasePanelHeight = window.innerHeight * 0.5;
+    this.editorHeight = window.innerHeight - this.testCasePanelHeight - 50; // Adjust for toolbar
+  
     const languageId = selectedLanguage.language_id;
     const questionId = this.currentQuestion.id;
-
+  
     this.codeExecutionService.executeCode(languageId, code, questionId, this.submission).subscribe({
       next: (response) => {
         if (response.code === 200) {
@@ -1039,7 +1043,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
             passed: testCase.status.description === 'Accepted',
             description: testCase.status.description
           }));
-
+  
           this.passedCount = response.data[0].passed_count;
           this.totalTestCount = response.data[0].total_test_count;
         }
@@ -1121,7 +1125,10 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
       return;
     }
     this.loading = true;
-
+    // Expand the test case panel to 30% of the screen height
+    this.testCasePanelHeight = window.innerHeight * 0.5;
+    this.editorHeight = window.innerHeight - this.testCasePanelHeight - 50;
+    
     const languageId = selectedLanguage.language_id;
     const questionId = this.currentQuestion.id;
 
