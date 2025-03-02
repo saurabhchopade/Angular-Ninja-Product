@@ -40,18 +40,29 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       </header>
       
       <div class="content-layout">
-        <nav>
+        <nav [class.collapsed]="navCollapsed">
+          <div class="nav-toggle" (click)="toggleNav()" [title]="navCollapsed ? 'Show Panel' : 'Hide Panel'">
+            <div class="toggle-content">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.rotated]="navCollapsed">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span class="toggle-text" *ngIf="!navCollapsed"></span>
+            </div>
+          </div>
+          
           <div class="nav-section">
             <button 
               (click)="currentSection = 'instructions'" 
               [class.active]="currentSection === 'instructions'"
               title="Test Instructions"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
+              <div class="instruction-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
               <span class="nav-label">Instructions</span>
             </button>
           </div>
@@ -90,7 +101,7 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
           </div>
         </nav>
 
-        <main>
+        <main [class.expanded]="navCollapsed">
           <div class="section-container">
             @switch (currentSection) {
               @case ('instructions') {
@@ -320,6 +331,58 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
       z-index: 5;
       overflow-y: auto;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+
+    nav.collapsed {
+      width: 60px;
+    }
+
+    .nav-toggle {
+      position: absolute;
+      top: 50%;
+      right: -16px;
+      width: auto;
+      min-width: 32px;
+      height: 32px;
+      background: #4CAF50;
+      color: white;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+      transform: translateY(-50%);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      padding: 0 8px;
+    }
+
+    .toggle-content {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .toggle-text {
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .nav-toggle:hover {
+      background: #43A047;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-toggle svg {
+      transition: transform 0.3s ease;
+    }
+
+    .nav-toggle svg.rotated {
+      transform: rotate(180deg);
     }
 
     .nav-section {
@@ -336,6 +399,13 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       font-weight: 600;
       margin-bottom: 4px;
       padding-left: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    nav.collapsed .section-label {
+      visibility: hidden;
     }
 
     nav button {
@@ -353,6 +423,15 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       font-weight: 500;
       color: #495057;
       text-align: left;
+    }
+
+    nav.collapsed button {
+      justify-content: center;
+      padding: 12px 8px;
+      border-radius: 50%;
+      margin: 0 auto;
+      width: 40px;
+      height: 40px;
     }
 
     nav button.active {
@@ -380,6 +459,20 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       transition: all 0.2s ease;
     }
 
+    .instruction-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      margin-right: 12px;
+    }
+
+    nav.collapsed .section-number,
+    nav.collapsed .instruction-icon {
+      margin-right: 0;
+    }
+
     button.active .section-number {
       background-color: #4CAF50;
       color: white;
@@ -387,6 +480,14 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
 
     .nav-label {
       flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity 0.2s ease;
+    }
+
+    nav.collapsed .nav-label {
+      display: none;
     }
 
     /* Main Content Styles */
@@ -394,6 +495,11 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       flex: 1;
       position: relative;
       overflow: hidden;
+      transition: margin-left 0.3s ease;
+    }
+
+    main.expanded {
+      margin-left: 0;
     }
 
     .section-container {
@@ -672,7 +778,7 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
 
     /* Responsive Styles */
     @media (max-width: 992px) {
-      nav {
+      nav:not(.collapsed) {
         width: 180px;
       }
     }
@@ -692,18 +798,6 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
       .test-info {
         width: 100%;
         justify-content: space-between;
-      }
-
-      nav {
-        width: 60px;
-      }
-
-      .nav-label {
-        display: none;
-      }
-
-      .section-number {
-        margin-right: 0;
       }
 
       .instructions-section {
@@ -733,9 +827,14 @@ export class AppDashboard implements OnInit {
   remainingTime: number = 7200; // 2 hours in seconds
   showSubmitConfirmation: boolean = false;
   testSubmitted: boolean = false;
+  navCollapsed: boolean = false;
 
   ngOnInit() {
     this.startTimer();
+  }
+
+  toggleNav() {
+    this.navCollapsed = !this.navCollapsed;
   }
 
   startTimer() {
