@@ -879,7 +879,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
         automaticLayout: true,
         fontSize: 14,
         lineHeight: 22,
-        minimap: { enabled: true },
+        minimap: { enabled: false },
         scrollBeyondLastLine: false,
         renderLineHighlight: 'all',
         cursorBlinking: 'smooth',
