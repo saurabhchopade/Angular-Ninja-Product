@@ -8,6 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import {SubmitTestService} from '../../services/submit.test.service'
 import { RouterModule } from '@angular/router';
+import { FullstackSectionComponent } from '../fullstack-section/fullstack.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,6 +18,7 @@ import { RouterModule } from '@angular/router';
     McqSectionComponent,
     CodingSectionComponent,
     SubjectiveSectionComponent,
+    FullstackSectionComponent,
     ReactiveFormsModule,
     HttpClientModule,
     RouterModule
@@ -108,6 +110,16 @@ import { RouterModule } from '@angular/router';
               <div class="section-number">3</div>
               <span class="nav-label">Subjective</span>
             </button>
+            
+            <!-- FullStack Section -->
+            <button 
+              (click)="currentSection = 'fullstack'" 
+              [class.active]="currentSection === 'fullstack'"
+              title="FullStack Section"
+            >
+              <div class="section-number">4</div>
+              <span class="nav-label">Full Stack</span>
+            </button>
           </div>
         </nav>
 
@@ -161,6 +173,14 @@ import { RouterModule } from '@angular/router';
                               <p>Provide detailed answers to the given questions. Be concise and to the point.</p>
                             </div>
                           </div>
+                          
+                          <div class="section-info-item">
+                            <div class="section-info-number">4</div>
+                            <div class="section-info-details">
+                              <h4>Full Stack Implementation</h4>
+                              <p>Complete the full stack implementation task and upload your solution files.</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
@@ -191,6 +211,9 @@ import { RouterModule } from '@angular/router';
               @case ('subjective') {
                 <app-subjective-section />
               }
+              @case ('fullstack') {
+                <app-fullstack-section />
+              }
             }
           </div>
         </main>
@@ -218,6 +241,10 @@ import { RouterModule } from '@angular/router';
                 </div>
                 <div class="summary-item">
                   <span>Subjective Section:</span>
+                  <span class="summary-status not-started">Not Started</span>
+                </div>
+                <div class="summary-item">
+                  <span>Full Stack Section:</span>
                   <span class="summary-status not-started">Not Started</span>
                 </div>
               </div>
@@ -833,7 +860,7 @@ import { RouterModule } from '@angular/router';
   `]
 })
 export class AppDashboard implements OnInit {
-  currentSection: 'instructions' | 'mcq' | 'coding' | 'subjective' = 'instructions';
+  currentSection: 'instructions' | 'mcq' | 'coding' | 'subjective' | 'fullstack' = 'instructions';
   remainingTime: number = 7200; // 2 hours in seconds
   showSubmitConfirmation: boolean = false;
   testSubmitted: boolean = false;
@@ -842,7 +869,7 @@ export class AppDashboard implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private submitTestService :SubmitTestService
+    private submitTestService: SubmitTestService
   ) {}
 
   ngOnInit() {
@@ -875,7 +902,7 @@ export class AppDashboard implements OnInit {
     this.showSubmitConfirmation = true;
   }
   
-    submitTest() {
+  submitTest() {
     // // Here you would implement the actual submission logic
     this.testSubmitted = true;
     this.showSubmitConfirmation = false;
