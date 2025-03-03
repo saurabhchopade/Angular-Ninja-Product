@@ -53,7 +53,14 @@ export class MainComponent implements OnInit {
       },
       error: (error) => {
         console.error('API Error:', error);
-        alert('An error occurred while validating the invite link. Please try again later.');
+        this.router.navigate(['invalid-invite']).then((success) => {
+          if (success) {
+            console.log('Navigation to feedback successful');
+          } else {
+            console.error('Navigation to feedback failed');
+          }
+        });
+        // alert('An error occurred while validating the invite link. Please try again later.');
       }
     });
   }

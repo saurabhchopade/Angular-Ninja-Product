@@ -7,7 +7,7 @@ import { LoginComponent } from './components/login/login.component';
 import { McqSectionComponent } from './components/mcq-section/mcq-section.component';
 import { FeedbackComponent } from './components/feedback/feedback';
 import { AppDashboard } from './components/dashboard/dashboard.component';
-// import { AppDashboard } from '../app/components/dashboard/dashboard.component';
+import { InvalidInviteComponent } from '../app/components/invalid-invite/invalid-invite.component';
 
 
 
@@ -17,5 +17,7 @@ export const routes: Routes = [
   { path: 'test', component: McqSectionComponent },
   { path: 'feedback', component: FeedbackComponent },
   { path: 'dashboard', component: AppDashboard },
+  { path: 'invalid-invite', component: InvalidInviteComponent },
   { path: '', redirectTo: '/', pathMatch: 'full' }
 ];
+
