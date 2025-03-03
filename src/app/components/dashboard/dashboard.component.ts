@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { McqSectionComponent } from '../mcq-section/mcq-section.component';
 import { CodingSectionComponent } from '../coding-section/coding-section.component';
 import { SubjectiveSectionComponent } from '../subjective-section/subjective-section.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import {SubmitTestService} from '../../services/submit.test.service'
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,8 +16,13 @@ import { SubjectiveSectionComponent } from '../subjective-section/subjective-sec
     CommonModule,
     McqSectionComponent,
     CodingSectionComponent,
-    SubjectiveSectionComponent
+    SubjectiveSectionComponent,
+    ReactiveFormsModule,
+    HttpClientModule,
+    RouterModule
   ],
+  providers: [SubmitTestService], // Add the service here
+
   template: `
     <div class="app-container">
       <header>
@@ -829,6 +839,12 @@ export class AppDashboard implements OnInit {
   testSubmitted: boolean = false;
   navCollapsed: boolean = false;
 
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private submitTestService :SubmitTestService
+  ) {}
+
   ngOnInit() {
     this.startTimer();
   }
@@ -858,15 +874,33 @@ export class AppDashboard implements OnInit {
   confirmSubmitTest() {
     this.showSubmitConfirmation = true;
   }
-
-  submitTest() {
-    // Here you would implement the actual submission logic
+  
+  async  submitTest() {
+    // // Here you would implement the actual submission logic
     this.testSubmitted = true;
     this.showSubmitConfirmation = false;
+    console.log('dsdsds');
+    // this.router.navigate(['feedback']);
+
+    const inviteId = 2; // Dummy inviteId
+    const email = 'john.doe@example.com'; // Dummy email
+
+    this.router.navigate(['feedback']).then((success) => {
+      if (success) {
+        console.log('Navigation to feedback successful');
+      } else {
+        console.error('Navigation to feedback failed');
+      }
+    });
     
-    // For demo purposes, show an alert
-    setTimeout(() => {
-      alert('Test submitted successfully!');
-    }, 500);
+    // this.submitTestService.submitAssessment(inviteId, email).subscribe({
+    //   next: (response: any) => {
+    //     console.log('Submission successful', response);
+    //     this.testSubmitted = true;
+    //     this.showSubmitConfirmation = false;
+    //     this.router.navigate(['/feedback']);
+    //   }
+
+    // });
   }
 }
