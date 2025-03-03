@@ -6,6 +6,8 @@ import { LoginComponent } from './components/login/login.component';
 // import { CodingSectionComponent } from './MyComponent/coding-section/coding-section.component';
 import { McqSectionComponent } from './components/mcq-section/mcq-section.component';
 import { FeedbackComponent } from './components/feedback/feedback';
+import { AppDashboard } from './components/dashboard/dashboard.component';
+// import { AppDashboard } from '../app/components/dashboard/dashboard.component';
 
 
 
@@ -14,5 +16,6 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'test', component: McqSectionComponent },
   { path: 'feedback', component: FeedbackComponent },
-  { path: '', redirectTo: '/login', pathMatch: 'full' }
+  { path: 'dashboard', component: AppDashboard },
+  { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
 ];

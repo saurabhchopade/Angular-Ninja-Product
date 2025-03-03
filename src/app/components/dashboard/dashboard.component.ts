@@ -875,7 +875,7 @@ export class AppDashboard implements OnInit {
     this.showSubmitConfirmation = true;
   }
   
-  async  submitTest() {
+    submitTest() {
     // // Here you would implement the actual submission logic
     this.testSubmitted = true;
     this.showSubmitConfirmation = false;
