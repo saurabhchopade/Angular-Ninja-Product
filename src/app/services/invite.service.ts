@@ -29,21 +29,29 @@ export class InviteService {
   }
 
   /**
-   * Store invite data (email, name, and inviteId) in local storage.
+   * Store invite data (email, name, inviteId, startTime, and endTime) in local storage.
    */
   storeInviteData(data: any): void {
     const inviteData = {
       email: data.candidateDto.candidateEmail,
       name: data.candidateDto.candidateFullName,
-      inviteId: data.inviteDto.inviteId
+      inviteId: data.inviteDto.inviteId,
+      startTime: data.assessmentDto.assessmentStartTime, // Add startTime
+      endTime: data.assessmentDto.assessmentEndTime // Add endTime
     };
     localStorage.setItem('inviteData', JSON.stringify(inviteData));
   }
 
   /**
-   * Retrieve invite data (email, name, and inviteId) from local storage.
+   * Retrieve invite data (email, name, inviteId, startTime, and endTime) from local storage.
    */
-  getInviteData(): { email: string, name: string, inviteId: number } | null {
+  getInviteData(): { 
+    email: string, 
+    name: string, 
+    inviteId: number, 
+    startTime: string, 
+    endTime: string 
+  } | null {
     const inviteData = localStorage.getItem('inviteData');
     if (inviteData) {
       return JSON.parse(inviteData);

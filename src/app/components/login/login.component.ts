@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
+import { InviteService } from '../../services/invite.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  providers: [InviteService], // Add InviteService to providers
   template: `
   <div class="page-container">
     <nav class="navbar">
@@ -288,7 +290,9 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private inviteService: InviteService // Inject InviteService
+
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
@@ -305,9 +309,33 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       const email = this.loginForm.get('email')?.value;
       console.log('Starting test for email:', email);
-      
-      // Navigate to dashboard
-      this.router.navigate(['/dashboard']);
+
+      // Retrieve invite data from local storage
+      const inviteData = this.inviteService.getInviteData();
+      const startTime = inviteData?.startTime;
+      const endTimeTime = inviteData?.endTime;
+
+      console.log(endTimeTime)
+
+
+      if (!inviteData) {
+        alert('No invite data found. Please check your invite link or contact support.');
+        return;
+      }
+
+      // Verify email and invite ID
+      if (email === inviteData.email) {
+        console.log('Email and invite ID verified successfully:', inviteData);
+        console.log('Assessment Start Time:', inviteData.startTime);
+        console.log('Assessment End Time:', inviteData.endTime);
+
+        // Navigate to dashboard if email and invite ID are valid
+        this.router.navigate(['/dashboard']);
+      } else {
+        alert('Invalid email. Please check your invite link or contact support.');
+      }
+    } else {
+      alert('Please enter a valid email address.');
     }
   }
 }
