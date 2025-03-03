@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 import { CodeSnippetService } from '../../services/codsnippet.service';
+import { CodeSnippetServiceForReset } from '../../services/reset.code.snippet.service';
 import { CodeExecutionService } from '../../services/code-run.service';
 import { DropOffAnswerService } from '../../services/dropoff.Coding.service'; // Import the new service
 import { interval, Subscription } from 'rxjs'; // Import interval and Subscription
@@ -772,8 +773,14 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
   language_id = 0;
   private dropOffSubscription!: Subscription; // Subscription for the interval
 
+  assessmentId = 1;   
+  candidateId = 1;
+  candidateAssessmentSessionId =1;
+  sectionId =1;
+
   constructor(
     private codeSnippetService: CodeSnippetService,
+    private codeSnippetServiceForReset:CodeSnippetServiceForReset,
     private codeExecutionService: CodeExecutionService,
     private dropOffAnswerService: DropOffAnswerService // Inject the new service
   ) {
@@ -1017,7 +1024,8 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
       console.error('Editor not initialized');
       return;
     }
-  
+
+
     const code = this.editor.getValue();
     const selectedLanguage = this.currentQuestion.languages.find(lang => lang.language_id === this.language_id);
   
@@ -1033,8 +1041,8 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
   
     const languageId = selectedLanguage.language_id;
     const questionId = this.currentQuestion.id;
-  
-    this.codeExecutionService.executeCode(languageId, code, questionId, this.submission).subscribe({
+    
+    this.codeExecutionService.executeCode(languageId, code, questionId, this.submission,this.assessmentId,this.candidateId,this.candidateAssessmentSessionId,this.sectionId ).subscribe({
       next: (response) => {
         if (response.code === 200) {
           this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
@@ -1133,7 +1141,7 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
     const languageId = selectedLanguage.language_id;
     const questionId = this.currentQuestion.id;
 
-    this.codeExecutionService.executeCode(languageId, code, questionId, this.submission).subscribe({
+    this.codeExecutionService.executeCode(languageId, code, questionId, this.submission,this.assessmentId,this.candidateId,this.candidateAssessmentSessionId,this.sectionId).subscribe({
       next: (response) => {
         if (response.code === 200) {
           this.currentQuestion.testCases = response.data.map((testCase: { std_input: any; expected_output: any; stdout: any; status: { description: string; }; }) => ({
