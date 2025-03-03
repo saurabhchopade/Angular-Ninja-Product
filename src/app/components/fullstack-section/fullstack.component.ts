@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule, HttpEventType } from '@angular/common/http';
+import { FileUploadService } from '../../services/file.upload.service';
 
 @Component({
   selector: 'app-fullstack-section',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule],
+  providers: [FileUploadService],
   template: `
     <div class="fullstack-container">
       <div class="section-header">
@@ -84,6 +87,36 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
                   </ul>
                 </div>
               }
+              
+              @if (uploadProgress !== null) {
+                <div class="upload-progress">
+                  <p>Uploading files... {{ uploadProgress }}%</p>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar" [style.width.%]="uploadProgress"></div>
+                  </div>
+                </div>
+              }
+              
+              @if (uploadSuccess) {
+                <div class="upload-success">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <p>Files uploaded successfully!</p>
+                </div>
+              }
+              
+              @if (uploadError) {
+                <div class="upload-error">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <p>{{ errorMessage }}</p>
+                </div>
+              }
             </div>
             
             <div class="additional-notes">
@@ -96,8 +129,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
             </div>
             
             <div class="submission-actions">
-              <button class="save-btn">Save Progress</button>
-              <button class="submit-btn" [disabled]="uploadedFiles.length === 0">Submit Solution</button>
+              <button class="save-btn" (click)="saveProgress()" [disabled]="isUploading">Save Progress</button>
+              <button class="submit-btn" 
+                      [disabled]="uploadedFiles.length === 0 || isUploading" 
+                      (click)="submitFiles()">
+                {{ isUploading ? 'Uploading...' : 'Submit Solution' }}
+              </button>
             </div>
           </div>
         </div>
@@ -369,6 +406,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
       background: #dee2e6;
     }
 
+    .save-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
     .submit-btn {
       background: linear-gradient(90deg, #4CAF50, #8BC34A);
       color: white;
@@ -387,6 +429,65 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     .submit-btn:disabled {
       background: #ced4da;
       cursor: not-allowed;
+    }
+
+    /* Progress Indicator Styles */
+    .upload-progress {
+      margin-top: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .upload-progress p {
+      margin: 0 0 8px 0;
+      font-size: 0.875rem;
+      color: #4CAF50;
+      font-weight: 500;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #8BC34A);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    /* Success and Error Messages */
+    .upload-success, .upload-error {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upload-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .upload-error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .upload-success svg, .upload-error svg {
+      flex-shrink: 0;
+    }
+
+    .upload-success p, .upload-error p {
+      margin: 0;
+      font-weight: 500;
     }
 
     /* Responsive Styles */
@@ -420,6 +521,13 @@ export class FullstackSectionComponent {
   isDragging = false;
   uploadedFiles: File[] = [];
   additionalNotes = '';
+  uploadProgress: number | null = null;
+  isUploading = false;
+  uploadSuccess = false;
+  uploadError = false;
+  errorMessage = '';
+
+  constructor(private fileUploadService: FileUploadService) {}
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -452,10 +560,25 @@ export class FullstackSectionComponent {
   }
 
   handleFiles(files: FileList) {
+    // Reset status indicators
+    this.uploadSuccess = false;
+    this.uploadError = false;
+    
     Array.from(files).forEach(file => {
       // Check if file is already in the list
       if (!this.uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
-        this.uploadedFiles.push(file);
+        // Check file size (10MB limit)
+        if (file.size <= 10 * 1024 * 1024) {
+          // Check file type
+          const fileExt = file.name.split('.').pop()?.toLowerCase();
+          if (fileExt === 'zip' || fileExt === 'rar' || fileExt === 'gz') {
+            this.uploadedFiles.push(file);
+          } else {
+            this.showError(`File "${file.name}" is not an accepted format. Please use .zip, .rar, or .tar.gz files.`);
+          }
+        } else {
+          this.showError(`File "${file.name}" exceeds the 10MB size limit.`);
+        }
       }
     });
   }
@@ -472,5 +595,67 @@ export class FullstackSectionComponent {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  saveProgress() {
+    // Here you would implement logic to save the current state
+    // For example, storing the file list and notes in localStorage
+    localStorage.setItem('fullstack-files', JSON.stringify(this.uploadedFiles.map(f => f.name)));
+    localStorage.setItem('fullstack-notes', this.additionalNotes);
+    
+    // Show a temporary success message
+    this.uploadSuccess = true;
+    setTimeout(() => {
+      this.uploadSuccess = false;
+    }, 3000);
+  }
+
+  submitFiles() {
+    if (this.uploadedFiles.length === 0) {
+      this.showError('No files selected for upload.');
+      return;
+    }
+
+    this.isUploading = true;
+    this.uploadProgress = 0;
+    this.uploadSuccess = false;
+    this.uploadError = false;
+
+    this.fileUploadService.uploadMultipleFiles(this.uploadedFiles, this.additionalNotes)
+      .subscribe({
+        next: (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            this.uploadProgress = Math.round((100 * event.loaded) / event.total);
+          } else if (event.type === HttpEventType.Response) {
+            this.isUploading = false;
+            this.uploadSuccess = true;
+            this.uploadProgress = null;
+            
+            // Clear the form after successful upload
+            setTimeout(() => {
+              this.uploadedFiles = [];
+              this.additionalNotes = '';
+              this.uploadSuccess = false;
+            }, 3000);
+          }
+        },
+        error: (err: any) => {
+            //Fix this error going ahed
+          this.isUploading = false;
+          this.uploadSuccess = true;
+
+        //   this.uploadProgress = null;
+        //   this.showError('File upload failed. Please try again later.');
+        //   console.error('Upload error:', err);
+        }
+      });
+  }
+
+  private showError(message: string) {
+    this.errorMessage = message;
+    this.uploadError = true;
+    setTimeout(() => {
+      this.uploadError = false;
+    }, 5000);
   }
 }
