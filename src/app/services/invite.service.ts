@@ -14,9 +14,11 @@ export class InviteService {
   checkInviteStatus(id: string): Observable<any> {
     return this.http.get(`${this.baseUrl}${id}`).pipe(
       map((response: any) => {
-        if (response.code !== 200 || response.status !== 'success') {
+        if (response.code !== 200 || response.status !== 'SUCCESS') {
           throw new Error('Invalid invitation');
         }
+        // Store invite data in local storage
+        this.storeInviteData(response.data);
         return response;
       }),
       catchError(error => {
@@ -24,5 +26,35 @@ export class InviteService {
         return throwError(() => error);
       })
     );
+  }
+
+  /**
+   * Store invite data (email, name, and inviteId) in local storage.
+   */
+  storeInviteData(data: any): void {
+    const inviteData = {
+      email: data.candidateDto.candidateEmail,
+      name: data.candidateDto.candidateFullName,
+      inviteId: data.inviteDto.inviteId
+    };
+    localStorage.setItem('inviteData', JSON.stringify(inviteData));
+  }
+
+  /**
+   * Retrieve invite data (email, name, and inviteId) from local storage.
+   */
+  getInviteData(): { email: string, name: string, inviteId: number } | null {
+    const inviteData = localStorage.getItem('inviteData');
+    if (inviteData) {
+      return JSON.parse(inviteData);
+    }
+    return null;
+  }
+
+  /**
+   * Clear invite data from local storage.
+   */
+  clearInviteData(): void {
+    localStorage.removeItem('inviteData');
   }
 }

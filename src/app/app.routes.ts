@@ -17,5 +17,5 @@ export const routes: Routes = [
   { path: 'test', component: McqSectionComponent },
   { path: 'feedback', component: FeedbackComponent },
   { path: 'dashboard', component: AppDashboard },
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
+  { path: '', redirectTo: '/', pathMatch: 'full' }
 ];

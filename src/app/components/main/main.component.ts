@@ -6,7 +6,6 @@ import { InviteService } from '../../services/invite.service'; // Import the Inv
 import { HttpClientModule } from '@angular/common/http'; // Import HttpClientModule for HTTP calls
 import { DataService } from '../../services/data.service'; // Import DataService
 
-
 @Component({
   selector: 'app-main',
   standalone: true,
@@ -21,7 +20,6 @@ export class MainComponent implements OnInit {
     private router: Router,
     private inviteService: InviteService, // Inject the InviteService
     private dataService: DataService // Inject DataService
-
   ) {}
 
   ngOnInit(): void {
@@ -41,25 +39,21 @@ export class MainComponent implements OnInit {
     this.inviteService.checkInviteStatus(id).subscribe({
       next: (response) => {
         console.log('API Response:', response);
-        if (response.code === 200 && response.status === 'success') {
-          const inviteStatus = response.data.validate.inviteStatus;
-          if (inviteStatus === 'PENDING') {
-            // this.dataService.updateInviteData(response.data);
-
-            const newData = { name: 'John Doe', age: 30 };
-            // this.dataService.updateInviteData(newData);
-            // Redirect to login page with the invite ID as a query parameter
+        if (response.code === 200 && response.status === 'SUCCESS') {
+          const inviteStatus = response.data.inviteDto.inviteStatus;
+          if (inviteStatus === 'ACTIVE') {
+            // Allow navigation to the login page with the invite ID as a query parameter
             this.router.navigate(['login'], { queryParams: { inviteId: id } });
           } else {
-            // alert('Invite link is not valid or has expired.');
+            alert('Invite link is not active or has expired.');
           }
         } else {
-          // alert('Invalid invite link. Please check the link and try again.');
+          alert('Invalid invite link. Please check the link and try again.');
         }
       },
       error: (error) => {
         console.error('API Error:', error);
-        // alert('An error occurred while validating the invite link. Please try again later.');
+        alert('An error occurred while validating the invite link. Please try again later.');
       }
     });
   }
