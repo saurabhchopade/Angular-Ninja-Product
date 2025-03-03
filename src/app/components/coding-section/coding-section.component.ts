@@ -848,7 +848,8 @@ export class CodingSectionComponent implements AfterViewInit, OnInit, OnDestroy 
       sectionId: 1, // Replace with actual section ID
       candidateId: 1, // Replace with actual candidate ID
       languageId: selectedLanguage.language_id,
-      answer: code
+      answer: code,
+      candidateAssessmentSessionId:1
     };
 
     this.dropOffAnswerService.dropOffAnswer(answerData).subscribe({

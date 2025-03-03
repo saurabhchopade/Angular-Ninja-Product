@@ -17,6 +17,7 @@ export class McqAnswerService {
     sectionId: number;
     questionId: number;
     mcqOption: number;
+    candidateAssessmentSessionId:number
   }): Observable<any> {
     const url = `${this.baseUrl}/saveMcq`;
     return this.http.post(url, answerData);

@@ -564,13 +564,14 @@ export class McqSectionComponent implements OnInit {
     const assessmentId = 6; // Replace with dynamic assessment ID if needed
     const candidateId = 6; // Replace with dynamic candidate ID if needed
     const sectionId = 6; // Replace with dynamic section ID if needed
-
+    const candidateAssessmentSessionId = 1;
     const answerData = {
       assessmentId,
       candidateId,
       sectionId,
       questionId,
-      mcqOption: optionId
+      mcqOption: optionId,
+      candidateAssessmentSessionId
     };
 
     this.mcqAnswerService.addAnswer(answerData).subscribe({

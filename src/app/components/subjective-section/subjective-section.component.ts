@@ -571,12 +571,13 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     const assessmentId = 7;
     const sectionId = 7;
     const candidateId = 7;
+    const candidateAssessmentSessionId = 1;
 
     // Start periodic push every 20 seconds
     this.dropOffIntervals[questionId] = setInterval(() => {
       const answer = this.answers[questionId] || '';
       if (answer.trim() !== '') {
-        this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer).subscribe({
+        this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer,candidateAssessmentSessionId).subscribe({
           next: (response) => {
             console.log('Drop-off answer pushed:', response);
           },
@@ -600,9 +601,10 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     const sectionId = 7;
     const candidateId = 7;
     const answer = this.answers[questionId] || '';
+    const candidateAssessmentSessionId = 1;
 
     if (answer.trim() !== '') {
-      this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer).subscribe({
+      this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer,candidateAssessmentSessionId).subscribe({
         next: (response) => {
           console.log('Drop-off answer pushed immediately:', response);
         },
@@ -622,13 +624,14 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     const assessmentId = 7;
     const sectionId = 7;
     const candidateId = 7;
+    const candidateAssessmentSessionId = 1;
     
     const pushPromises = Object.keys(this.answers)
       .filter(key => this.answers[parseInt(key)] && this.answers[parseInt(key)].trim() !== '')
       .map(key => {
         const questionId = parseInt(key);
         const answer = this.answers[questionId];
-        return this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer).toPromise();
+        return this.dropOffService.pushDropOffAnswer(questionId, assessmentId, sectionId, candidateId, answer,candidateAssessmentSessionId).toPromise();
       });
     
     // Simulate submission delay
