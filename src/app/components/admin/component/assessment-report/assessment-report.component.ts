@@ -38,24 +38,19 @@ interface CandidateReport {
 
           <!-- Date Range Filter -->
           <div class="flex items-center gap-2">
-            <div class="flex flex-col">
-              <label class="text-sm text-gray-600 mb-1">Start Date</label>
-              <input
-                type="date"
-                [(ngModel)]="startDate"
-                (change)="filterByDate()"
-                class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-            </div>
-            <div class="flex flex-col">
-              <label class="text-sm text-gray-600 mb-1">End Date</label>
-              <input
-                type="date"
-                [(ngModel)]="endDate"
-                (change)="filterByDate()"
-                class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-            </div>
+            <input
+              type="date"
+              [(ngModel)]="startDate"
+              (change)="filterByDate()"
+              class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+            <span class="text-gray-400">to</span>
+            <input
+              type="date"
+              [(ngModel)]="endDate"
+              (change)="filterByDate()"
+              class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
           </div>
 
           <!-- Status Filter -->
