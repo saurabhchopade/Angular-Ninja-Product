@@ -8,6 +8,7 @@ import { McqSectionComponent } from './components/mcq-section/mcq-section.compon
 import { FeedbackComponent } from './components/feedback/feedback';
 import { AppDashboard } from './components/dashboard/dashboard.component';
 import { InvalidInviteComponent } from '../app/components/invalid-invite/invalid-invite.component';
+import { AssessmentLibraryComponent } from './components/admin/component/assessment-library/assessment-library';
 
 
 
@@ -18,6 +19,7 @@ export const routes: Routes = [
   { path: 'feedback', component: FeedbackComponent },
   { path: 'dashboard', component: AppDashboard },
   { path: 'invalid-invite', component: InvalidInviteComponent },
+  { path: 'asseesment-library', component: AssessmentLibraryComponent },
   { path: '', redirectTo: '/', pathMatch: 'full' }
 ];
 
