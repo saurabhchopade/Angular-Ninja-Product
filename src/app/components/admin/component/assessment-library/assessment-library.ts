@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { QuestionCardComponent } from '../question-card/question-card.component';
@@ -8,11 +8,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TestType } from '../../types/test.type';
 import { TestCardComponent } from "../test-card/test-card.component";
+import { QuestionTypeModalComponent, QuestionTypeOption } from "../question-type/question-type-modal.component";
 
 @Component({
   selector: 'assessment-library',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, QuestionCardComponent, RouterModule, HttpClientModule, ReactiveFormsModule, TestCardComponent],
+  imports: [CommonModule, SidebarComponent, QuestionCardComponent, RouterModule, HttpClientModule, ReactiveFormsModule, TestCardComponent, QuestionTypeModalComponent],
   template: `
     <div class="flex h-screen bg-gray-50">
       <app-sidebar />
@@ -29,7 +30,9 @@ import { TestCardComponent } from "../test-card/test-card.component";
                 class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
               >
             </div>
-            <button class="flex items-center px-4 py-2 bg-gradient-to-r from-[#4CAF50] to-[#8BC34A] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow ml-4">
+            <button 
+              (click)="onCreateClick()"
+              class="flex items-center px-4 py-2 bg-gradient-to-r from-[#4CAF50] to-[#8BC34A] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow ml-4">
               <span class="material-icons mr-2">add</span>
               Create {{activeTab === 'assessments' ? 'Assessment' : 'Question'}}
             </button>
@@ -89,11 +92,18 @@ import { TestCardComponent } from "../test-card/test-card.component";
           </div>
         </div>
       </main>
+
+      <app-question-type-modal
+        #questionTypeModal
+        (typeSelected)="onQuestionTypeSelected($event)"
+      ></app-question-type-modal>
     </div>
   `,
   styles: [``]
 })
 export class AssessmentLibraryComponent implements OnInit {
+    @ViewChild('questionTypeModal') questionTypeModal!: QuestionTypeModalComponent;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -102,7 +112,7 @@ export class AssessmentLibraryComponent implements OnInit {
   ngOnInit(): void {
     // Implement your initialization logic here
   }
-
+  
   activeTab: string = 'assessments';
   tabs = ['Assessments', 'Library'];
   difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
@@ -187,6 +197,20 @@ export class AssessmentLibraryComponent implements OnInit {
     return baseClasses + (this.activeTab === tab
       ? 'bg-[#4CAF50] text-white'
       : 'text-gray-600 hover:bg-gray-100');
+  }
+
+  onCreateClick() {
+    if (this.activeTab === 'library') {
+      this.questionTypeModal.show();
+    } else {
+      // Handle assessment creation
+      console.log('Create assessment clicked');
+    }
+  }
+
+  onQuestionTypeSelected(type: QuestionTypeOption) {
+    console.log('Selected question type:', type);
+    // Handle question type selection
   }
 
   onViewReport(id: number) {
