@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 interface CandidateReport {
   id: number;
@@ -19,12 +20,13 @@ interface CandidateReport {
 @Component({
   selector: 'app-assessment-report',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="p-6">
       <!-- Table Header with Filters -->
       <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">
+          <!-- Search Input -->
           <div class="relative">
             <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
             <input
@@ -33,12 +35,38 @@ interface CandidateReport {
               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
           </div>
+
+          <!-- Date Range Filter -->
+          <div class="flex items-center gap-2">
+            <div class="flex flex-col">
+              <label class="text-sm text-gray-600 mb-1">Start Date</label>
+              <input
+                type="date"
+                [(ngModel)]="startDate"
+                (change)="filterByDate()"
+                class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+            </div>
+            <div class="flex flex-col">
+              <label class="text-sm text-gray-600 mb-1">End Date</label>
+              <input
+                type="date"
+                [(ngModel)]="endDate"
+                (change)="filterByDate()"
+                class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+            </div>
+          </div>
+
+          <!-- Status Filter -->
           <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
             <option>All Status</option>
             <option>Review Pending</option>
             <option>Reviewed</option>
             <option>Flagged</option>
           </select>
+
+          <!-- Integrity Filter -->
           <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
             <option>All Integrity</option>
             <option>Good</option>
@@ -46,6 +74,8 @@ interface CandidateReport {
             <option>Poor</option>
           </select>
         </div>
+
+        <!-- Export Button -->
         <button class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2">
           <span class="material-icons">download</span>
           Export Report
@@ -70,7 +100,7 @@ interface CandidateReport {
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let report of reports" class="border-b border-gray-100 hover:bg-gray-50">
+            <tr *ngFor="let report of filteredReports" class="border-b border-gray-100 hover:bg-gray-50">
               <td class="px-4 py-3">
                 <div>
                   <div class="font-medium text-gray-800">{{report.name}}</div>
@@ -285,13 +315,15 @@ export class AssessmentReportComponent {
   @Input() testId!: number;
   
   selectedReport: CandidateReport | null = null;
+  startDate: string = '';
+  endDate: string = '';
 
   reports: CandidateReport[] = [
     {
       id: 1,
       name: "John Doe",
       email: "john.doe@example.com",
-      finishedAt: "Feb 15, 2025 14:30",
+      finishedAt: "2025-02-15T14:30:00",
       status: "Review Pending",
       score: 115,
       maxScore: 132,
@@ -305,7 +337,7 @@ export class AssessmentReportComponent {
       id: 2,
       name: "Jane Smith",
       email: "jane.smith@example.com",
-      finishedAt: "Feb 15, 2025 15:45",
+      finishedAt: "2025-02-15T15:45:00",
       status: "Reviewed",
       score: 128,
       maxScore: 132,
@@ -318,7 +350,7 @@ export class AssessmentReportComponent {
       id: 3,
       name: "Mike Johnson",
       email: "mike.j@example.com",
-      finishedAt: "Feb 15, 2025 16:15",
+      finishedAt: "2025-02-15T16:15:00",
       status: "Flagged",
       score: 95,
       maxScore: 132,
@@ -328,6 +360,33 @@ export class AssessmentReportComponent {
       tabSwitches: 8
     }
   ];
+
+  get filteredReports(): CandidateReport[] {
+    if (!this.startDate && !this.endDate) {
+      return this.reports;
+    }
+
+    return this.reports.filter(report => {
+      const reportDate = new Date(report.finishedAt);
+      const start = this.startDate ? new Date(this.startDate) : null;
+      const end = this.endDate ? new Date(this.endDate) : null;
+
+      if (start && end) {
+        return reportDate >= start && reportDate <= end;
+      } else if (start) {
+        return reportDate >= start;
+      } else if (end) {
+        return reportDate <= end;
+      }
+
+      return true;
+    });
+  }
+
+  filterByDate() {
+    // The filtering is handled by the filteredReports getter
+    console.log('Filtering by date range:', this.startDate, 'to', this.endDate);
+  }
 
   getStatusClass(status: string): string {
     const baseClasses = 'px-2 py-1 rounded-full text-xs ';
