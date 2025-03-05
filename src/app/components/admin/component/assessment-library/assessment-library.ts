@@ -12,6 +12,8 @@ import { QuestionTypeModalComponent, QuestionTypeOption } from "../question-type
 import { CreateSubjectiveModalComponent, SubjectiveQuestion } from '../create-subjective-modal/create-subjective-modal.component';
 import { CreateProgrammingModalComponent } from '../create-programming-modal/create-programming-modal.component';
 import { ProgrammingQuestion } from '../../types/programming-question.type';
+import { CreateMCQModalComponent } from '../create-mcq-modal/create-mcq-modal.component';
+import { MCQQuestion } from '../../types/mcq-question.type';
 
 @Component({
     selector: 'app-root',
@@ -24,7 +26,8 @@ import { ProgrammingQuestion } from '../../types/programming-question.type';
       TestCardComponent,
       QuestionTypeModalComponent,
       CreateSubjectiveModalComponent,
-      CreateProgrammingModalComponent
+      CreateProgrammingModalComponent,
+      CreateMCQModalComponent
     ],
     template: `
       <div class="flex h-screen bg-gray-50">
@@ -121,6 +124,12 @@ import { ProgrammingQuestion } from '../../types/programming-question.type';
           (published)="onProgrammingQuestionPublished($event)"
           (drafted)="onProgrammingQuestionDrafted($event)"
         ></app-create-programming-modal>
+  
+        <app-create-mcq-modal
+          #createMCQModal
+          (published)="onMCQQuestionPublished($event)"
+          (drafted)="onMCQQuestionDrafted($event)"
+        ></app-create-mcq-modal>
       </div>
     `
   })
@@ -128,6 +137,7 @@ import { ProgrammingQuestion } from '../../types/programming-question.type';
     @ViewChild('questionTypeModal') questionTypeModal!: QuestionTypeModalComponent;
     @ViewChild('createSubjectiveModal') createSubjectiveModal!: CreateSubjectiveModalComponent;
     @ViewChild('createProgrammingModal') createProgrammingModal!: CreateProgrammingModalComponent;
+    @ViewChild('createMCQModal') createMCQModal!: CreateMCQModalComponent;
     
     activeTab: string = 'assessments';
     tabs = ['Assessments', 'Library'];
@@ -229,8 +239,9 @@ import { ProgrammingQuestion } from '../../types/programming-question.type';
         this.createSubjectiveModal.show();
       } else if (type === 'programming') {
         this.createProgrammingModal.show();
+      } else if (type === 'mcq') {
+        this.createMCQModal.show();
       }
-      // Handle other question types...
     }
   
     onQuestionPublished(question: SubjectiveQuestion) {
@@ -253,6 +264,16 @@ import { ProgrammingQuestion } from '../../types/programming-question.type';
       // Handle saving the draft
     }
   
+    onMCQQuestionPublished(question: MCQQuestion) {
+      console.log('Published MCQ question:', question);
+      // Handle publishing the question
+    }
+  
+    onMCQQuestionDrafted(question: MCQQuestion) {
+      console.log('Saved MCQ draft:', question);
+      // Handle saving the draft
+    }
+  
     onViewReport(id: number) {
       console.log('View report for test:', id);
     }
@@ -265,3 +286,4 @@ import { ProgrammingQuestion } from '../../types/programming-question.type';
       console.log('Archive test:', id);
     }
   }
+  
