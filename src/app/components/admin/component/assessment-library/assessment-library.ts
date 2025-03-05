@@ -14,6 +14,9 @@ import { CreateProgrammingModalComponent } from '../create-programming-modal/cre
 import { ProgrammingQuestion } from '../../types/programming-question.type';
 import { CreateMCQModalComponent } from '../create-mcq-modal/create-mcq-modal.component';
 import { MCQQuestion } from '../../types/mcq-question.type';
+import { FullStackQuestion } from '../../types/fullstack-question.type';
+import { CreateFullStackModalComponent } from '../create-fullstack-modal/create-fullstack-modal.component';
+
 
 @Component({
     selector: 'app-root',
@@ -27,7 +30,8 @@ import { MCQQuestion } from '../../types/mcq-question.type';
       QuestionTypeModalComponent,
       CreateSubjectiveModalComponent,
       CreateProgrammingModalComponent,
-      CreateMCQModalComponent
+      CreateMCQModalComponent,
+      CreateFullStackModalComponent
     ],
     template: `
       <div class="flex h-screen bg-gray-50">
@@ -59,7 +63,7 @@ import { MCQQuestion } from '../../types/mcq-question.type';
                 <span class="material-icons text-gray-500">filter_list</span>
                 <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
                   <option>All Question Types</option>
-                  <option>Multiple Choice</option>
+                  <option>Multiple Choice</option >
                   <option>Coding</option>
                   <option>Design</option>
                 </select>
@@ -130,6 +134,12 @@ import { MCQQuestion } from '../../types/mcq-question.type';
           (published)="onMCQQuestionPublished($event)"
           (drafted)="onMCQQuestionDrafted($event)"
         ></app-create-mcq-modal>
+  
+        <app-create-fullstack-modal
+          #createFullStackModal
+          (published)="onFullStackQuestionPublished($event)"
+          (drafted)="onFullStackQuestionDrafted($event)"
+        ></app-create-fullstack-modal>
       </div>
     `
   })
@@ -138,6 +148,7 @@ import { MCQQuestion } from '../../types/mcq-question.type';
     @ViewChild('createSubjectiveModal') createSubjectiveModal!: CreateSubjectiveModalComponent;
     @ViewChild('createProgrammingModal') createProgrammingModal!: CreateProgrammingModalComponent;
     @ViewChild('createMCQModal') createMCQModal!: CreateMCQModalComponent;
+    @ViewChild('createFullStackModal') createFullStackModal!: CreateFullStackModalComponent;
     
     activeTab: string = 'assessments';
     tabs = ['Assessments', 'Library'];
@@ -241,6 +252,8 @@ import { MCQQuestion } from '../../types/mcq-question.type';
         this.createProgrammingModal.show();
       } else if (type === 'mcq') {
         this.createMCQModal.show();
+      } else if (type === 'fullstack') {
+        this.createFullStackModal.show();
       }
     }
   
@@ -274,6 +287,16 @@ import { MCQQuestion } from '../../types/mcq-question.type';
       // Handle saving the draft
     }
   
+    onFullStackQuestionPublished(question: FullStackQuestion) {
+      console.log('Published full stack question:', question);
+      // Handle publishing the question
+    }
+  
+    onFullStackQuestionDrafted(question: FullStackQuestion) {
+      console.log('Saved full stack draft:', question);
+      // Handle saving the draft
+    }
+  
     onViewReport(id: number) {
       console.log('View report for test:', id);
     }
@@ -286,4 +309,3 @@ import { MCQQuestion } from '../../types/mcq-question.type';
       console.log('Archive test:', id);
     }
   }
-  
