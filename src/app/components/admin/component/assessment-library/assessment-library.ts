@@ -19,12 +19,13 @@ import { TestCardComponent } from "../test-card/test-card.component";
       
       <main class="flex-1 overflow-auto">
         <div class="p-8">
+          <!-- Search and Create Button -->
           <div class="flex justify-between items-center mb-8">
             <div class="relative flex-1 max-w-2xl">
               <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
               <input
                 type="text"
-                placeholder="Search questions by topic, title, or description..."
+                [placeholder]="activeTab === 'assessments' ? 'Search assessments...' : 'Search questions by topic, title, or description...'"
                 class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
               >
             </div>
@@ -34,18 +35,19 @@ import { TestCardComponent } from "../test-card/test-card.component";
             </button>
           </div>
 
-          <div class="flex items-center space-x-4 mb-6">
+          <!-- Library Filters - Only visible in library tab -->
+          <div *ngIf="activeTab === 'library'" class="flex items-center space-x-4 mb-6">
             <div class="flex items-center space-x-2">
               <span class="material-icons text-gray-500">filter_list</span>
               <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                <option>All Types</option>
+                <option>All Question Types</option>
                 <option>Multiple Choice</option>
                 <option>Coding</option>
                 <option>Design</option>
               </select>
             </div>
             <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-              <option>All Categories</option>
+              <option>All Libraries</option>
               <option>Frontend</option>
               <option>Backend</option>
               <option>Security</option>
@@ -59,6 +61,7 @@ import { TestCardComponent } from "../test-card/test-card.component";
           </div>
 
           <div class="bg-white rounded-xl shadow-sm p-6">
+            <!-- Tabs -->
             <div class="flex space-x-4 mb-6">
               <button *ngFor="let tab of tabs"
                       (click)="activeTab = tab.toLowerCase()"
@@ -67,6 +70,7 @@ import { TestCardComponent } from "../test-card/test-card.component";
               </button>
             </div>
 
+            <!-- Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <ng-container *ngIf="activeTab === 'assessments'">
                 <app-test-card *ngFor="let test of tests"
