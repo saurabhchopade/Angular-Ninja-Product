@@ -6,11 +6,13 @@ import { QuestionType } from '../../types/question.type';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
+import { TestType } from '../../types/test.type';
+import { TestCardComponent } from "../test-card/test-card.component";
 
 @Component({
   selector: 'assessment-library',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, QuestionCardComponent, RouterModule, HttpClientModule, ReactiveFormsModule],
+  imports: [CommonModule, SidebarComponent, QuestionCardComponent, RouterModule, HttpClientModule, ReactiveFormsModule, TestCardComponent],
   template: `
     <div class="flex h-screen bg-gray-50">
       <app-sidebar />
@@ -28,7 +30,7 @@ import { ReactiveFormsModule } from '@angular/forms';
             </div>
             <button class="flex items-center px-4 py-2 bg-gradient-to-r from-[#4CAF50] to-[#8BC34A] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow ml-4">
               <span class="material-icons mr-2">add</span>
-              Create a Question
+              Create {{activeTab === 'assessments' ? 'Assessment' : 'Question'}}
             </button>
           </div>
 
@@ -36,14 +38,14 @@ import { ReactiveFormsModule } from '@angular/forms';
             <div class="flex items-center space-x-2">
               <span class="material-icons text-gray-500">filter_list</span>
               <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                <option>All Question Types</option>
+                <option>All Types</option>
                 <option>Multiple Choice</option>
                 <option>Coding</option>
                 <option>Design</option>
               </select>
             </div>
             <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-              <option>All Libraries</option>
+              <option>All Categories</option>
               <option>Frontend</option>
               <option>Backend</option>
               <option>Security</option>
@@ -65,10 +67,20 @@ import { ReactiveFormsModule } from '@angular/forms';
               </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <app-question-card *ngFor="let question of questions"
-                               [question]="question">
-              </app-question-card>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <ng-container *ngIf="activeTab === 'assessments'">
+                <app-test-card *ngFor="let test of tests"
+                              [test]="test"
+                              (viewReport)="onViewReport($event)"
+                              (invite)="onInvite($event)"
+                              (archive)="onArchive($event)">
+                </app-test-card>
+              </ng-container>
+              <ng-container *ngIf="activeTab === 'library'">
+                <app-question-card *ngFor="let question of questions"
+                                 [question]="question">
+                </app-question-card>
+              </ng-container>
             </div>
           </div>
         </div>
@@ -121,6 +133,41 @@ export class AssessmentLibraryComponent implements OnInit {
     }
   ];
 
+  tests: TestType[] = [
+    {
+      id: 1,
+      name: "Frontend Developer Assessment",
+      inviteType: "Invite Only",
+      duration: "1 hr 30 mins",
+      testDate: "Feb 15th, 2025, 12:00 PM IST",
+      endDate: "Feb 15th, 2025, 11:59 PM IST",
+      invitedCount: 50,
+      completedCount: 35,
+      status: "Active"
+    },
+    {
+      id: 2,
+      name: "Backend Engineering Test",
+      inviteType: "Public",
+      duration: "2 hrs",
+      testDate: "Feb 20th, 2025, 10:00 AM IST",
+      invitedCount: 100,
+      completedCount: 75,
+      status: "Active"
+    },
+    {
+      id: 3,
+      name: "DevOps Assessment",
+      inviteType: "Invite Only",
+      duration: "1 hr",
+      testDate: "Feb 10th, 2025, 3:00 PM IST",
+      endDate: "Feb 10th, 2025, 6:00 PM IST",
+      invitedCount: 25,
+      completedCount: 25,
+      status: "Completed"
+    }
+  ];
+
   getDifficultyColor(difficulty: string): string {
     const baseClasses = 'px-3 py-1 rounded-full text-sm ';
     switch (difficulty) {
@@ -136,5 +183,17 @@ export class AssessmentLibraryComponent implements OnInit {
     return baseClasses + (this.activeTab === tab
       ? 'bg-[#4CAF50] text-white'
       : 'text-gray-600 hover:bg-gray-100');
+  }
+
+  onViewReport(id: number) {
+    console.log('View report for test:', id);
+  }
+
+  onInvite(id: number) {
+    console.log('Invite candidates for test:', id);
+  }
+
+  onArchive(id: number) {
+    console.log('Archive test:', id);
   }
 }
