@@ -5,15 +5,24 @@ import { QuestionCardComponent } from '../question-card/question-card.component'
 import { QuestionType } from '../../types/question.type';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TestType } from '../../types/test.type';
 import { TestCardComponent } from "../test-card/test-card.component";
 import { QuestionTypeModalComponent, QuestionTypeOption } from "../question-type/question-type-modal.component";
+import { CreateSubjectiveModalComponent, SubjectiveQuestion } from '../create-subjective-modal/create-subjective-modal.component';
 
 @Component({
-  selector: 'assessment-library',
+  selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, QuestionCardComponent, RouterModule, HttpClientModule, ReactiveFormsModule, TestCardComponent, QuestionTypeModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    QuestionCardComponent,
+    TestCardComponent,
+    QuestionTypeModalComponent,
+    CreateSubjectiveModalComponent
+  ],
   template: `
     <div class="flex h-screen bg-gray-50">
       <app-sidebar />
@@ -97,21 +106,18 @@ import { QuestionTypeModalComponent, QuestionTypeOption } from "../question-type
         #questionTypeModal
         (typeSelected)="onQuestionTypeSelected($event)"
       ></app-question-type-modal>
+    
+      <app-create-subjective-modal
+        #createSubjectiveModal
+        (published)="onQuestionPublished($event)"
+        (drafted)="onQuestionDrafted($event)"
+      ></app-create-subjective-modal>
     </div>
-  `,
-  styles: [``]
+  `
 })
-export class AssessmentLibraryComponent implements OnInit {
-    @ViewChild('questionTypeModal') questionTypeModal!: QuestionTypeModalComponent;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
-
-  ngOnInit(): void {
-    // Implement your initialization logic here
-  }
+export class AssessmentLibraryComponent {
+  @ViewChild('questionTypeModal') questionTypeModal!: QuestionTypeModalComponent;
+  @ViewChild('createSubjectiveModal') createSubjectiveModal!: CreateSubjectiveModalComponent;
   
   activeTab: string = 'assessments';
   tabs = ['Assessments', 'Library'];
@@ -209,8 +215,20 @@ export class AssessmentLibraryComponent implements OnInit {
   }
 
   onQuestionTypeSelected(type: QuestionTypeOption) {
-    console.log('Selected question type:', type);
-    // Handle question type selection
+    if (type === 'subjective') {
+      this.createSubjectiveModal.show();
+    }
+    // Handle other question types...
+  }
+
+  onQuestionPublished(question: SubjectiveQuestion) {
+    console.log('Published question:', question);
+    // Handle publishing the question
+  }
+
+  onQuestionDrafted(question: SubjectiveQuestion) {
+    console.log('Saved draft:', question);
+    // Handle saving the draft
   }
 
   onViewReport(id: number) {
