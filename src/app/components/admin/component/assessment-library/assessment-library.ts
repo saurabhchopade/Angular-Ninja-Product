@@ -16,6 +16,8 @@ import { CreateMCQModalComponent } from '../create-mcq-modal/create-mcq-modal.co
 import { MCQQuestion } from '../../types/mcq-question.type';
 import { FullStackQuestion } from '../../types/fullstack-question.type';
 import { CreateFullStackModalComponent } from '../create-fullstack-modal/create-fullstack-modal.component';
+import { CandidateInviteData } from '../../types/candidate.type';
+import { InviteCandidatesModalComponent } from '../invite-candidates-modal/invite-candidates-modal.component';
 
 
 @Component({
@@ -31,7 +33,8 @@ import { CreateFullStackModalComponent } from '../create-fullstack-modal/create-
       CreateSubjectiveModalComponent,
       CreateProgrammingModalComponent,
       CreateMCQModalComponent,
-      CreateFullStackModalComponent
+      CreateFullStackModalComponent,
+      InviteCandidatesModalComponent
     ],
     template: `
       <div class="flex h-screen bg-gray-50">
@@ -140,6 +143,12 @@ import { CreateFullStackModalComponent } from '../create-fullstack-modal/create-
           (published)="onFullStackQuestionPublished($event)"
           (drafted)="onFullStackQuestionDrafted($event)"
         ></app-create-fullstack-modal>
+  
+        <app-invite-candidates-modal
+          #inviteCandidatesModal
+          [testId]="selectedTestId"
+          (invitesSent)="onInvitesSent($event)"
+        ></app-invite-candidates-modal>
       </div>
     `
   })
@@ -149,10 +158,12 @@ import { CreateFullStackModalComponent } from '../create-fullstack-modal/create-
     @ViewChild('createProgrammingModal') createProgrammingModal!: CreateProgrammingModalComponent;
     @ViewChild('createMCQModal') createMCQModal!: CreateMCQModalComponent;
     @ViewChild('createFullStackModal') createFullStackModal!: CreateFullStackModalComponent;
+    @ViewChild('inviteCandidatesModal') inviteCandidatesModal!: InviteCandidatesModalComponent;
     
     activeTab: string = 'assessments';
     tabs = ['Assessments', 'Library'];
     difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
+    selectedTestId: number = 0;
   
     questions: QuestionType[] = [
       {
@@ -302,10 +313,17 @@ import { CreateFullStackModalComponent } from '../create-fullstack-modal/create-
     }
   
     onInvite(id: number) {
-      console.log('Invite candidates for test:', id);
+      this.selectedTestId = id;
+      this.inviteCandidatesModal.show();
+    }
+  
+    onInvitesSent(data: CandidateInviteData) {
+      console.log('Invites sent:', data);
+      // Handle sending invites
     }
   
     onArchive(id: number) {
       console.log('Archive test:', id);
     }
   }
+  
