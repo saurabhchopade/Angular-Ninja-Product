@@ -21,11 +21,6 @@ import { InviteCandidatesModalComponent } from '../invite-candidates-modal/invit
 import { AssessmentReportComponent } from '../assessment-report/assessment-report.component';
 import { CreateAssessmentModalComponent } from '../create-assessment-modal/create-assessment-modal.component';
 
-
-
-
-
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -56,6 +51,8 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
               <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
               <input
                 type="text"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearch($event)"
                 [placeholder]="activeTab === 'assessments' ? 'Search assessments...' : 'Search for topics, problem title, or problem description...'"
                 class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
               >
@@ -141,7 +138,7 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
             <!-- Tabs -->
             <div class="flex space-x-4 mb-6">
               <button *ngFor="let tab of tabs"
-                      (click)="activeTab = tab.toLowerCase()"
+                      (click)="switchTab(tab.toLowerCase())"
                       [class]="getTabClass(tab.toLowerCase())">
                 {{tab}}
               </button>
@@ -152,7 +149,7 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
               <ng-container *ngIf="!showingReport">
                 <!-- Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <app-test-card *ngFor="let test of tests"
+                  <app-test-card *ngFor="let test of filteredTests"
                                 [test]="test"
                                 (viewReport)="onViewReport($event)"
                                 (invite)="onInvite($event)"
@@ -253,6 +250,7 @@ export class AssessmentLibraryComponent {
   selectedTestId: number = 0;
   showingReport: boolean = false;
   isFiltering: boolean = false;
+  searchQuery: string = '';
 
   showQuestionTypesDropdown = false;
   showLibrariesDropdown = false;
@@ -337,8 +335,27 @@ export class AssessmentLibraryComponent {
     }
   ];
 
+  get filteredTests(): TestType[] {
+    if (!this.searchQuery) return this.tests;
+    const query = this.searchQuery.toLowerCase();
+    return this.tests.filter(test => 
+      test.name.toLowerCase().includes(query)
+    );
+  }
+
   get filteredQuestions(): QuestionType[] {
     let filtered = [...this.questions];
+
+    // Apply search filter
+    if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(q => 
+        q.title.toLowerCase().includes(query) ||
+        q.description.toLowerCase().includes(query) ||
+        q.technologies.some(tech => tech.toLowerCase().includes(query)) ||
+        q.categories.some(cat => cat.toLowerCase().includes(query))
+      );
+    }
 
     // Apply difficulty filters
     if (this.selectedDifficulties.length > 0) {
@@ -349,7 +366,6 @@ export class AssessmentLibraryComponent {
     const selectedTypes = this.questionTypes.filter(t => t.selected).map(t => t.label);
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(q => {
-        // Map question categories to question types
         const questionType = this.mapCategoryToType(q.categories);
         return selectedTypes.includes(questionType);
       });
@@ -365,6 +381,19 @@ export class AssessmentLibraryComponent {
     }
 
     return filtered;
+  }
+
+  async onSearch(query: string) {
+    this.isFiltering = true;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    this.searchQuery = query;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    this.isFiltering = false;
+  }
+
+  switchTab(tab: string) {
+    this.activeTab = tab;
+    this.searchQuery = ''; // Clear search when switching tabs
   }
 
   mapCategoryToType(categories: string[]): string {
