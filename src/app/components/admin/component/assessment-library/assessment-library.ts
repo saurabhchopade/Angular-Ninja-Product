@@ -24,6 +24,8 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
 
 
 
+
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -68,8 +70,58 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
 
           <!-- Library Filters - Only visible in library tab -->
           <div *ngIf="activeTab === 'library'" class="mb-6">
-            <!-- Difficulty Filters -->
-            <div class="flex items-center justify-center gap-4 mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+              <!-- Question Types Filter -->
+              <div class="relative">
+                <button 
+                  (click)="toggleDropdown('questionTypes')"
+                  class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4CAF50] transition-colors">
+                  <span class="material-icons text-gray-500">filter_list</span>
+                  <span class="text-gray-700">Question Types</span>
+                  <span class="material-icons text-gray-500 text-sm">
+                    {{showQuestionTypesDropdown ? 'expand_less' : 'expand_more'}}
+                  </span>
+                </button>
+                <!-- Dropdown Menu -->
+                <div *ngIf="showQuestionTypesDropdown" 
+                     class="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                  <label *ngFor="let type of questionTypes"
+                         class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox"
+                           [(ngModel)]="type.selected"
+                           (change)="filterQuestions()"
+                           class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                    <span class="ml-2 text-gray-700">{{type.label}}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Libraries Filter -->
+              <div class="relative">
+                <button 
+                  (click)="toggleDropdown('libraries')"
+                  class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4CAF50] transition-colors">
+                  <span class="material-icons text-gray-500">library_books</span>
+                  <span class="text-gray-700">Libraries</span>
+                  <span class="material-icons text-gray-500 text-sm">
+                    {{showLibrariesDropdown ? 'expand_less' : 'expand_more'}}
+                  </span>
+                </button>
+                <!-- Dropdown Menu -->
+                <div *ngIf="showLibrariesDropdown" 
+                     class="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                  <label *ngFor="let lib of libraries"
+                         class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox"
+                           [(ngModel)]="lib.selected"
+                           (change)="filterQuestions()"
+                           class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                    <span class="ml-2 text-gray-700">{{lib.label}}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Difficulty Filters -->
               <button *ngFor="let level of difficultyLevels"
                       (click)="toggleDifficultyFilter(level)"
                       [class]="getDifficultyFilterClass(level)"
@@ -82,25 +134,6 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
                 <span class="material-icons text-sm">close</span>
                 Clear
               </button>
-            </div>
-
-            <!-- Additional Filters -->
-            <div class="flex items-center gap-4">
-              <div class="flex items-center gap-2">
-                <span class="material-icons text-gray-500">filter_list</span>
-                <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                  <option>All Question Types</option>
-                  <option>Multiple Choice</option>
-                  <option>Coding</option>
-                  <option>Design</option>
-                </select>
-              </div>
-              <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                <option>All Libraries</option>
-                <option>Frontend</option>
-                <option>Backend</option>
-                <option>Security</option>
-              </select>
             </div>
           </div>
 
@@ -221,6 +254,24 @@ export class AssessmentLibraryComponent {
   showingReport: boolean = false;
   isFiltering: boolean = false;
 
+  showQuestionTypesDropdown = false;
+  showLibrariesDropdown = false;
+
+  questionTypes = [
+    { label: 'Multiple Choice', selected: false },
+    { label: 'Programming', selected: false },
+    { label: 'Full Stack', selected: false },
+    { label: 'Subjective', selected: false }
+  ];
+
+  libraries = [
+    { label: 'Frontend', selected: false },
+    { label: 'Backend', selected: false },
+    { label: 'Database', selected: false },
+    { label: 'DevOps', selected: false },
+    { label: 'Security', selected: false }
+  ];
+
   questions: QuestionType[] = [
     {
       id: 1,
@@ -287,10 +338,74 @@ export class AssessmentLibraryComponent {
   ];
 
   get filteredQuestions(): QuestionType[] {
-    if (this.selectedDifficulties.length === 0) {
-      return this.questions;
+    let filtered = [...this.questions];
+
+    // Apply difficulty filters
+    if (this.selectedDifficulties.length > 0) {
+      filtered = filtered.filter(q => this.selectedDifficulties.includes(q.difficulty));
     }
-    return this.questions.filter(q => this.selectedDifficulties.includes(q.difficulty));
+
+    // Apply question type filters
+    const selectedTypes = this.questionTypes.filter(t => t.selected).map(t => t.label);
+    if (selectedTypes.length > 0) {
+      filtered = filtered.filter(q => {
+        // Map question categories to question types
+        const questionType = this.mapCategoryToType(q.categories);
+        return selectedTypes.includes(questionType);
+      });
+    }
+
+    // Apply library filters
+    const selectedLibraries = this.libraries.filter(l => l.selected).map(l => l.label);
+    if (selectedLibraries.length > 0) {
+      filtered = filtered.filter(q => 
+        q.categories.some(cat => selectedLibraries.includes(cat)) ||
+        q.technologies.some(tech => selectedLibraries.includes(this.mapTechnologyToLibrary(tech)))
+      );
+    }
+
+    return filtered;
+  }
+
+  mapCategoryToType(categories: string[]): string {
+    if (categories.includes('Full Stack')) return 'Full Stack';
+    if (categories.includes('Frontend') || categories.includes('Backend')) return 'Programming';
+    if (categories.includes('Theory')) return 'Multiple Choice';
+    return 'Subjective';
+  }
+
+  mapTechnologyToLibrary(technology: string): string {
+    const techMap: { [key: string]: string } = {
+      'React': 'Frontend',
+      'Angular': 'Frontend',
+      'Vue': 'Frontend',
+      'Node.js': 'Backend',
+      'Python': 'Backend',
+      'Java': 'Backend',
+      'MongoDB': 'Database',
+      'PostgreSQL': 'Database',
+      'Docker': 'DevOps',
+      'Kubernetes': 'DevOps',
+      'CyberOps': 'Security'
+    };
+    return techMap[technology] || '';
+  }
+
+  toggleDropdown(type: 'questionTypes' | 'libraries') {
+    if (type === 'questionTypes') {
+      this.showQuestionTypesDropdown = !this.showQuestionTypesDropdown;
+      this.showLibrariesDropdown = false;
+    } else {
+      this.showLibrariesDropdown = !this.showLibrariesDropdown;
+      this.showQuestionTypesDropdown = false;
+    }
+  }
+
+  async filterQuestions() {
+    this.isFiltering = true;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 150));
+    this.isFiltering = false;
   }
 
   async toggleDifficultyFilter(difficulty: string) {
