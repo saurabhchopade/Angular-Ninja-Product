@@ -14,6 +14,8 @@ interface Assessment {
   skills: string[];
   experienceLevel: string;
   duration: string;
+  startDate: string;
+  endDate: string;
   tags: string[];
   isAutomatic: boolean;
 }
@@ -216,6 +218,37 @@ interface Assessment {
                 </div>
               </div>
 
+              <!-- Test Schedule -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-4">Test Schedule</label>
+                <div class="grid grid-cols-2 gap-4">
+                  <!-- Start Date & Time -->
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-2">Start Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      [(ngModel)]="assessment.startDate"
+                      class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      [min]="getCurrentDateTime()"
+                    >
+                  </div>
+
+                  <!-- End Date & Time -->
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-2">End Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      [(ngModel)]="assessment.endDate"
+                      class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      [min]="assessment.startDate || getCurrentDateTime()"
+                    >
+                  </div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">
+                  Candidates can take the test anytime between the start and end date within the specified duration.
+                </p>
+              </div>
+
               <!-- Test Duration -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Test Duration</label>
@@ -228,6 +261,9 @@ interface Assessment {
                   <option value="120">2 Hours</option>
                   <option value="180">3 Hours</option>
                 </select>
+                <p class="text-sm text-gray-500 mt-2">
+                  Once started, candidates must complete the test within this duration.
+                </p>
               </div>
 
               <!-- Tags -->
@@ -419,6 +455,8 @@ export class CreateAssessmentModalComponent {
     skills: [],
     experienceLevel: '',
     duration: '90',
+    startDate: '',
+    endDate: '',
     tags: [],
     isAutomatic: true
   };
@@ -441,6 +479,8 @@ export class CreateAssessmentModalComponent {
       skills: [],
       experienceLevel: '',
       duration: '90',
+      startDate: '',
+      endDate: '',
       tags: [],
       isAutomatic: true
     };
@@ -518,6 +558,12 @@ export class CreateAssessmentModalComponent {
     }
   }
 
+  getCurrentDateTime(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  }
+
   addTag() {
     if (this.newTag.trim()) {
       this.assessment.tags.push(this.newTag.trim());
@@ -541,7 +587,10 @@ export class CreateAssessmentModalComponent {
         return this.assessment.skills.length > 0;
       case 2:
         return this.assessment.experienceLevel !== '' && 
-               this.assessment.duration !== '';
+               this.assessment.duration !== '' &&
+               this.assessment.startDate !== '' &&
+               this.assessment.endDate !== '' &&
+               new Date(this.assessment.startDate) < new Date(this.assessment.endDate);
       default:
         return true;
     }
@@ -551,7 +600,10 @@ export class CreateAssessmentModalComponent {
     return this.assessment.jobRole.trim() !== '' &&
            this.assessment.skills.length > 0 &&
            this.assessment.experienceLevel !== '' &&
-           this.assessment.duration !== '';
+           this.assessment.duration !== '' &&
+           this.assessment.startDate !== '' &&
+           this.assessment.endDate !== '' &&
+           new Date(this.assessment.startDate) < new Date(this.assessment.endDate);
   }
 
   nextStep() {
