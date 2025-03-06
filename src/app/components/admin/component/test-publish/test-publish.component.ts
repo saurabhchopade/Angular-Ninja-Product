@@ -2,13 +2,13 @@ import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TestPublishDetails, TestSection } from '../../types/test-publish.type';
-import { QuestionType } from '../../types/question.type';
 import { QuestionLibraryComponent } from '../question-library/question-library.component';
+import { QuestionType } from '../../types/question.type';
 
 @Component({
   selector: 'app-test-publish',
   standalone: true,
-  imports: [CommonModule, FormsModule,QuestionLibraryComponent],
+  imports: [CommonModule, FormsModule, QuestionLibraryComponent],
   template: `
     <div class="min-h-screen bg-gray-50 pb-12">
       <!-- Navigation & Header -->
@@ -122,7 +122,7 @@ import { QuestionLibraryComponent } from '../question-library/question-library.c
 
               <!-- Questions List -->
               <div class="space-y-4">
-                <div *ngFor="let question of section.questions" 
+                <div *ngFor="let question of section.questions; let qIndex = index" 
                      class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div class="flex items-start justify-between">
                     <div>
@@ -139,7 +139,9 @@ import { QuestionLibraryComponent } from '../question-library/question-library.c
                       <button class="p-1 text-gray-400 hover:text-gray-600">
                         <span class="material-icons">visibility</span>
                       </button>
-                      <button class="p-1 text-gray-400 hover:text-red-500">
+                      <button 
+                        (click)="deleteQuestion(i, qIndex)"
+                        class="p-1 text-gray-400 hover:text-red-500 transition-colors">
                         <span class="material-icons">delete</span>
                       </button>
                     </div>
@@ -349,7 +351,7 @@ import { QuestionLibraryComponent } from '../question-library/question-library.c
   `
 })
 export class TestPublishComponent implements OnInit {
-//   @ViewChild('questionLibrary') questionLibrary!: QuestionLibraryComponent;
+  @ViewChild('questionLibrary') questionLibrary!: QuestionLibraryComponent;
   @Output() navigate = new EventEmitter<string>();
 
   tabs = ['Overview', 'Questions'];
@@ -445,6 +447,10 @@ export class TestPublishComponent implements OnInit {
     this.test.sections.splice(index, 1);
   }
 
+  deleteQuestion(sectionIndex: number, questionIndex: number) {
+    this.test.sections[sectionIndex].questions.splice(questionIndex, 1);
+  }
+
   onDragStart(index: number) {
     this.draggedSectionIndex = index;
   }
@@ -470,6 +476,12 @@ export class TestPublishComponent implements OnInit {
   openLibrary(sectionIndex: number) {
     this.currentSectionIndex = sectionIndex;
     this.showLibrary = true;
+  }
+
+  getExistingQuestionIds(): string[] {
+    return this.test.sections.flatMap(section => 
+      section.questions.map(q => q.id)
+    );
   }
 
   onQuestionsSelected(questions: QuestionType[]) {
