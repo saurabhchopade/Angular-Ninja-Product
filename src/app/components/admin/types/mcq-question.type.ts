@@ -1,16 +1,21 @@
 export interface MCQOption {
-    id: string;
-    text: string;
-    isCorrect: boolean;
-  }
-  
-  export interface MCQQuestion {
-    difficulty: 'Basic' | 'Intermediate' | 'Advanced';
-    question: string;
-    options: MCQOption[];
-    allowMultipleAnswers: boolean;
-    enablePartialScoring: boolean;
-    maxScore: number;
-    negativeScore: number;
-    tags: string[];
-  }
+  optionText: string;
+  isCorrect: boolean;
+  scoreIfSelected: number;
+}
+
+export interface MCQQuestion {
+  type: "MCQ";
+  title: string;
+  problemStatement: string;
+  difficultyLevel: 'Basic' | 'Intermediate' | 'Advanced';
+  maxScore: number;
+  negativeScore: number;
+  timeBoundSeconds: number;
+  tags: string[];
+  options: MCQOption[];
+  isDraft: boolean;
+  allowMultipleAnswers: boolean;
+  enablePartialScoring: boolean;
+  aiEvaluationEnabled: boolean;
+}

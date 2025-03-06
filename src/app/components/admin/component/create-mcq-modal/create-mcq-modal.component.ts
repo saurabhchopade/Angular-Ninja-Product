@@ -2,11 +2,13 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MCQQuestion, MCQOption } from '../../types/mcq-question.type';
+import { QuestionService } from '../../services/create.mcq.service'; // Import the service
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-mcq-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,HttpClientModule],
   template: `
     <div 
       *ngIf="isVisible"
@@ -41,7 +43,7 @@ import { MCQQuestion, MCQOption } from '../../types/mcq-question.type';
                        class="flex items-center space-x-2 cursor-pointer">
                   <input type="radio" 
                          [value]="level" 
-                         [(ngModel)]="question.difficulty"
+                         [(ngModel)]="question.difficultyLevel"
                          class="text-green-500 focus:ring-green-500">
                   <span>{{level}}</span>
                 </label>
@@ -62,7 +64,7 @@ import { MCQQuestion, MCQOption } from '../../types/mcq-question.type';
                 </div>
                 <!-- Editor Area -->
                 <textarea
-                  [(ngModel)]="question.question"
+                  [(ngModel)]="question.problemStatement"
                   rows="6"
                   class="w-full p-3 focus:outline-none"
                   placeholder="Enter your question here..."
@@ -108,7 +110,7 @@ import { MCQQuestion, MCQOption } from '../../types/mcq-question.type';
                   >
                   <input
                     type="text"
-                    [(ngModel)]="option.text"
+                    [(ngModel)]="option.optionText"
                     class="flex-1 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     [placeholder]="'Option ' + (i + 1)"
                   >
@@ -220,7 +222,6 @@ export class CreateMCQModalComponent {
   isVisible = false;
   difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
   newTag = '';
-
   editorTools = [
     { icon: 'format_bold', label: 'Bold' },
     { icon: 'format_italic', label: 'Italic' },
@@ -236,15 +237,22 @@ export class CreateMCQModalComponent {
   ];
 
   question: MCQQuestion = {
-    difficulty: 'Basic',
-    question: '',
+    type: 'MCQ',
+    title: '',
+    difficultyLevel: 'Basic',
+    problemStatement: '',
     options: [],
     allowMultipleAnswers: false,
     enablePartialScoring: false,
     maxScore: 10,
     negativeScore: 0,
-    tags: []
+    tags: [],
+    isDraft: false,
+    timeBoundSeconds: 30,
+    aiEvaluationEnabled: false,
   };
+
+  constructor(private questionService: QuestionService) {}
 
   show() {
     this.isVisible = true;
@@ -262,23 +270,28 @@ export class CreateMCQModalComponent {
 
   resetForm() {
     this.question = {
-      difficulty: 'Basic',
-      question: '',
+      type: 'MCQ',
+      title: '',
+      difficultyLevel: 'Basic',
+      problemStatement: '',
       options: [],
       allowMultipleAnswers: false,
       enablePartialScoring: false,
       maxScore: 10,
       negativeScore: 0,
-      tags: []
+      tags: [],
+      isDraft: false,
+      timeBoundSeconds: 30,
+      aiEvaluationEnabled: false
     };
     this.newTag = '';
   }
 
   addOption() {
     this.question.options.push({
-      id: crypto.randomUUID(),
-      text: '',
-      isCorrect: false
+      optionText: '',
+      isCorrect: false,
+      scoreIfSelected: 0
     });
   }
 
@@ -298,21 +311,52 @@ export class CreateMCQModalComponent {
   }
 
   get isComplete(): boolean {
-    return this.question.question.trim() !== '' && 
+    return this.question.problemStatement.trim() !== '' && 
            this.question.options.length >= 2 &&
-           this.question.options.every(opt => opt.text.trim() !== '') &&
+           this.question.options.every(opt => opt.optionText.trim() !== '') &&
            this.question.options.some(opt => opt.isCorrect) &&
            this.question.maxScore > 0;
   }
 
   saveDraft() {
-    this.drafted.emit({...this.question});
+    this.question.isDraft = true;
+    this.drafted.emit({ ...this.question });
   }
 
   publish() {
     if (this.isComplete) {
-      this.published.emit({...this.question});
-      this.close();
+      const payload: MCQQuestion = {
+        type: 'MCQ',
+        title: this.question.title,
+        difficultyLevel: this.question.difficultyLevel,
+        problemStatement: this.question.problemStatement,
+        options: this.question.options.map(opt => ({
+          optionText: opt.optionText,
+          isCorrect: opt.isCorrect,
+          scoreIfSelected: opt.isCorrect ? this.question.maxScore : 0
+        })),
+        allowMultipleAnswers: this.question.allowMultipleAnswers,
+        enablePartialScoring: this.question.enablePartialScoring,
+        maxScore: this.question.maxScore,
+        negativeScore: this.question.negativeScore,
+        tags: this.question.tags,
+        isDraft: false,
+        timeBoundSeconds: this.question.timeBoundSeconds,
+        aiEvaluationEnabled: this.question.aiEvaluationEnabled
+      };
+
+      console.log('Payload being sent:', payload);
+
+      this.questionService.createMCQ(payload).subscribe({
+        next: (response) => {
+          console.log('MCQ created successfully:', response);
+          this.published.emit({ ...this.question });
+          this.close();
+        },
+        error: (error) => {
+          console.error('Error creating MCQ:', error);
+        }
+      });
     }
   }
 }
