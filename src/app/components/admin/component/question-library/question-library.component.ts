@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QuestionType } from '../../types/question.type';
@@ -27,97 +27,73 @@ import { QuestionType } from '../../types/question.type';
         <div class="border-b">
           <div class="p-6 space-y-4">
             <!-- Search -->
-            <div class="flex gap-4">
-              <div class="flex-1 relative">
-                <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                <input
-                  type="text"
-                  [(ngModel)]="searchQuery"
-                  (ngModelChange)="onSearch()"
-                  class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-                  placeholder="Search questions by keyword, title, or content..."
-                >
-                <!-- Search Suggestions -->
-                <div *ngIf="searchSuggestions.length > 0" 
-                     class="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
-                  <div *ngFor="let suggestion of searchSuggestions"
-                       (click)="selectSuggestion(suggestion)"
-                       class="px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                    {{ suggestion }}
+            <div class="relative flex-1 max-w-2xl">
+              <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearch()"
+                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+                placeholder="Search questions by topic, title, or description..."
+              >
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="flex items-center gap-4">
+              <!-- Question Types Dropdown -->
+              <div class="relative group">
+                <button 
+                  (click)="toggleDropdown('types')"
+                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  <span class="material-icons text-gray-500">filter_list</span>
+                  Question Types
+                  <span class="material-icons text-gray-500 text-sm">expand_more</span>
+                </button>
+                <div *ngIf="showDropdowns.types"
+                     class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                  <div class="p-3 space-y-2">
+                    <label *ngFor="let type of questionTypes" class="flex items-center gap-2">
+                      <input type="checkbox"
+                             [(ngModel)]="selectedTypes[type]"
+                             (change)="applyFilters()"
+                             class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                      <span>{{type}}</span>
+                    </label>
                   </div>
                 </div>
               </div>
 
-              <!-- Advanced Filters Toggle -->
-              <button 
-                (click)="showAdvancedFilters = !showAdvancedFilters"
-                class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-                <span class="material-icons">tune</span>
-                Advanced Filters
-                <span class="material-icons text-sm" [class.rotate-180]="showAdvancedFilters">
-                  expand_more
-                </span>
-              </button>
-            </div>
-
-            <!-- Advanced Filters -->
-            <div *ngIf="showAdvancedFilters" class="grid grid-cols-4 gap-4">
-              <!-- Question Type -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
-                <select 
-                  [(ngModel)]="filters.type"
-                  (ngModelChange)="applyFilters()"
-                  class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4CAF50]">
-                  <option value="">All Types</option>
-                  <option value="mcq">Multiple Choice</option>
-                  <option value="programming">Programming</option>
-                  <option value="subjective">Subjective</option>
-                  <option value="fullstack">Full Stack</option>
-                </select>
+              <!-- Libraries Dropdown -->
+              <div class="relative group">
+                <button 
+                  (click)="toggleDropdown('libraries')"
+                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  <span class="material-icons text-gray-500">folder</span>
+                  Libraries
+                  <span class="material-icons text-gray-500 text-sm">expand_more</span>
+                </button>
+                <div *ngIf="showDropdowns.libraries"
+                     class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                  <div class="p-3 space-y-2">
+                    <label *ngFor="let lib of libraries" class="flex items-center gap-2">
+                      <input type="checkbox"
+                             [(ngModel)]="selectedLibraries[lib]"
+                             (change)="applyFilters()"
+                             class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                      <span>{{lib}}</span>
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              <!-- Difficulty -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                <select 
-                  [(ngModel)]="filters.difficulty"
-                  (ngModelChange)="applyFilters()"
-                  class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4CAF50]">
-                  <option value="">All Levels</option>
-                  <option value="Basic">Basic</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
-              </div>
-
-              <!-- Date Range -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Created Date</label>
-                <select 
-                  [(ngModel)]="filters.dateRange"
-                  (ngModelChange)="applyFilters()"
-                  class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4CAF50]">
-                  <option value="">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-              </div>
-
-              <!-- Usage -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Usage</label>
-                <select 
-                  [(ngModel)]="filters.usage"
-                  (ngModelChange)="applyFilters()"
-                  class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4CAF50]">
-                  <option value="">Any Usage</option>
-                  <option value="unused">Never Used</option>
-                  <option value="used">Previously Used</option>
-                  <option value="popular">Most Popular</option>
-                </select>
+              <!-- Difficulty Levels -->
+              <div class="flex items-center gap-2">
+                <button *ngFor="let level of difficultyLevels"
+                        (click)="toggleDifficulty(level)"
+                        [class]="getDifficultyButtonClass(level)"
+                        class="px-3 py-1 rounded-full text-sm transition-colors">
+                  {{level}}
+                </button>
               </div>
             </div>
 
@@ -125,8 +101,8 @@ import { QuestionType } from '../../types/question.type';
             <div *ngIf="hasActiveFilters" class="flex flex-wrap gap-2">
               <div *ngFor="let filter of activeFilters"
                    class="px-3 py-1 bg-[#4CAF50]/10 text-[#4CAF50] rounded-full text-sm flex items-center">
-                {{ filter.label }}
-                <button (click)="removeFilter(filter.key)"
+                {{filter}}
+                <button (click)="removeFilter(filter)"
                         class="ml-2 text-[#4CAF50] hover:text-[#43A047]">
                   <span class="material-icons text-sm">close</span>
                 </button>
@@ -141,166 +117,193 @@ import { QuestionType } from '../../types/question.type';
         </div>
 
         <!-- Question List -->
-        <div class="flex-1 overflow-hidden flex">
-          <!-- Questions Grid -->
-          <div class="flex-1 overflow-auto p-6">
-            <div class="grid grid-cols-2 gap-4">
-              <div *ngFor="let question of filteredQuestions"
-                   class="relative border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all"
-                   [class.bg-[#4CAF50]]="isSelected(question.id)"
-                   [class.border-[#4CAF50]]="isSelected(question.id)">
-                <!-- Checkbox -->
-                <div class="absolute top-4 right-4">
-                  <input 
-                    type="checkbox"
-                    [checked]="isSelected(question.id)"
-                    (change)="toggleSelection(question)"
-                    class="w-5 h-5 rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
-                </div>
-
-                <!-- Content -->
-                <div class="pr-8">
-                  <div class="flex items-start gap-3 mb-3">
-                    <h3 class="text-lg font-semibold text-gray-800 flex-1">
-                      {{ question.title }}
-                    </h3>
-                    <span [class]="getDifficultyClass(question.difficulty)">
-                      {{ question.difficulty }}
-                    </span>
-                  </div>
-
-                  <p class="text-gray-600 text-sm mb-4">
-                    {{ question.description }}
-                  </p>
-
-                  <div class="flex flex-wrap gap-2">
-                    <span *ngFor="let tech of question.technologies"
-                          class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
-                      {{ tech }}
-                    </span>
-                  </div>
-
-                  <!-- Preview Button -->
-                  <button 
-                    (click)="previewQuestion(question)"
-                    class="mt-4 text-[#4CAF50] hover:text-[#43A047] text-sm font-medium flex items-center gap-1">
-                    <span class="material-icons text-base">visibility</span>
-                    Preview
-                  </button>
-                </div>
+        <div class="flex-1 overflow-auto p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let question of filteredQuestions"
+                 class="relative border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all"
+                 [class.border-[#4CAF50]]="isSelected(question.id)">
+              <!-- Selection Checkbox -->
+              <div class="absolute top-4 right-4">
+                <input type="checkbox"
+                       [checked]="isSelected(question.id)"
+                       (change)="toggleSelection(question)"
+                       class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
               </div>
-            </div>
-          </div>
 
-          <!-- Selection Sidebar -->
-          <div class="w-80 border-l bg-gray-50 flex flex-col">
-            <div class="p-4 border-b bg-white">
-              <h3 class="font-medium text-gray-800">Selected Questions</h3>
-              <p class="text-sm text-gray-500">{{ selectedQuestions.length }} questions selected</p>
-            </div>
-
-            <div class="flex-1 overflow-auto p-4">
-              <div *ngFor="let question of selectedQuestions" 
-                   class="bg-white rounded-lg p-4 mb-3 shadow-sm">
-                <div class="flex justify-between items-start">
-                  <h4 class="font-medium text-gray-800">{{ question.title }}</h4>
-                  <button 
-                    (click)="toggleSelection(question)"
-                    class="text-red-500 hover:text-red-600">
-                    <span class="material-icons">close</span>
-                  </button>
+              <!-- Question Content -->
+              <div class="pr-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">{{question.title}}</h3>
+                <p class="text-gray-600 text-sm mb-4">{{question.description}}</p>
+                
+                <!-- Tags -->
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let tech of question.technologies"
+                        class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
+                    {{tech}}
+                  </span>
                 </div>
-                <span [class]="getDifficultyClass(question.difficulty)" class="mt-2">
-                  {{ question.difficulty }}
+
+                <!-- Categories -->
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <span *ngFor="let category of question.categories"
+                        class="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full text-xs">
+                    {{category}}
+                  </span>
+                </div>
+
+                <!-- Difficulty -->
+                <span [class]="getDifficultyClass(question.difficulty)" class="mt-3 inline-block">
+                  {{question.difficulty}}
                 </span>
               </div>
             </div>
-
-            <div class="p-4 border-t bg-white">
-              <button 
-                (click)="addSelectedQuestions()"
-                [disabled]="selectedQuestions.length === 0"
-                class="w-full py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                Add Selected Questions
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Question Preview Modal -->
-    <div *ngIf="previewedQuestion"
-         class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center"
-         (click)="previewedQuestion = null">
-      <div class="bg-white w-full max-w-2xl rounded-xl shadow-xl p-6"
-           (click)="$event.stopPropagation()">
-        <div class="flex justify-between items-start mb-6">
-          <div>
-            <h3 class="text-xl font-semibold text-gray-800">{{ previewedQuestion.title }}</h3>
-            <span [class]="getDifficultyClass(previewedQuestion.difficulty)" class="mt-2">
-              {{ previewedQuestion.difficulty }}
-            </span>
-          </div>
-          <button 
-            (click)="previewedQuestion = null"
-            class="text-gray-400 hover:text-gray-600">
-            <span class="material-icons">close</span>
-          </button>
-        </div>
-
-        <div class="space-y-4">
-          <p class="text-gray-600">{{ previewedQuestion.description }}</p>
-
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let tech of previewedQuestion.technologies"
-                  class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
-              {{ tech }}
-            </span>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let category of previewedQuestion.categories"
-                  class="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full text-xs">
-              {{ category }}
-            </span>
           </div>
         </div>
 
-        <div class="mt-6 flex justify-end">
-          <button 
-            (click)="previewedQuestion = null"
-            class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-            Close
-          </button>
+        <!-- Footer -->
+        <div class="border-t bg-gray-50 p-4 flex justify-between items-center">
+          <div class="text-sm text-gray-600">
+            {{selectedQuestions.length}} questions selected
+          </div>
+          <div class="flex gap-2">
+            <button 
+              (click)="close()"
+              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              Cancel
+            </button>
+            <button 
+              (click)="addSelectedQuestions()"
+              [disabled]="selectedQuestions.length === 0"
+              class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Add Selected Questions
+            </button>
+          </div>
         </div>
       </div>
     </div>
   `
 })
 export class QuestionLibraryComponent {
+  @Input() existingQuestionIds: string[] = [];
   @Output() questionsSelected = new EventEmitter<QuestionType[]>();
   @Output() closed = new EventEmitter<void>();
 
   searchQuery = '';
-  searchSuggestions: string[] = [];
-  showAdvancedFilters = false;
-  previewedQuestion: QuestionType | null = null;
   selectedQuestions: QuestionType[] = [];
+  difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
+  selectedDifficulty = '';
 
-  filters = {
-    type: '',
-    difficulty: '',
-    dateRange: '',
-    usage: ''
+  questionTypes = ['Multiple Choice', 'Programming', 'Design', 'Database', 'System Design'];
+  libraries = ['Frontend', 'Backend', 'Full Stack', 'DevOps', 'Security'];
+
+  selectedTypes: { [key: string]: boolean } = {};
+  selectedLibraries: { [key: string]: boolean } = {};
+
+  showDropdowns = {
+    types: false,
+    libraries: false
   };
 
   questions: QuestionType[] = [
-    // Your existing questions array
+    {
+      id: 1,
+      title: "RESTful API Design",
+      description: "Design a scalable REST API for a social media platform with user authentication and post management.",
+      difficulty: "Intermediate",
+      score: 85,
+      technologies: ["Python", "FastAPI", "REST"],
+      categories: ["Backend", "API Design"]
+    },
+    {
+      id: 2,
+      title: "React Component Architecture",
+      description: "Create a reusable component library following React best practices and design patterns.",
+      difficulty: "Basic",
+      score: 75,
+      technologies: ["React", "TypeScript", "Styled Components"],
+      categories: ["Frontend", "Component Design"]
+    },
+    {
+      id: 3,
+      title: "Database Optimization",
+      description: "Optimize database queries and implement caching strategies for a high-traffic e-commerce platform.",
+      difficulty: "Advanced",
+      score: 95,
+      technologies: ["PostgreSQL", "Redis", "SQL"],
+      categories: ["Database", "Performance"]
+    },
+    {
+      id: 4,
+      title: "Authentication System",
+      description: "Implement a secure authentication system with JWT, OAuth, and role-based access control.",
+      difficulty: "Intermediate",
+      score: 88,
+      technologies: ["Node.js", "JWT", "OAuth"],
+      categories: ["Security", "Backend"]
+    },
+    {
+      id: 5,
+      title: "Microservices Architecture",
+      description: "Design and implement a microservices-based system with service discovery and load balancing.",
+      difficulty: "Advanced",
+      score: 92,
+      technologies: ["Docker", "Kubernetes", "gRPC"],
+      categories: ["System Design", "Microservices"]
+    },
+    {
+      id: 6,
+      title: "State Management",
+      description: "Implement global state management using Redux/MobX with proper error handling and side effects.",
+      difficulty: "Intermediate",
+      score: 82,
+      technologies: ["Redux", "MobX", "JavaScript"],
+      categories: ["Frontend", "State Management"]
+    },
+    {
+      id: 7,
+      title: "Testing Strategies",
+      description: "Write comprehensive test suites using modern testing frameworks and methodologies.",
+      difficulty: "Basic",
+      score: 78,
+      technologies: ["Jest", "React Testing Library", "Cypress"],
+      categories: ["Testing", "Quality Assurance"]
+    },
+    {
+      id: 8,
+      title: "CI/CD Pipeline",
+      description: "Set up a complete CI/CD pipeline with automated testing, deployment, and monitoring.",
+      difficulty: "Advanced",
+      score: 90,
+      technologies: ["Jenkins", "GitHub Actions", "AWS"],
+      categories: ["DevOps", "Automation"]
+    },
+    {
+      id: 9,
+      title: "Real-time Chat System",
+      description: "Build a scalable real-time chat system with WebSocket integration and message persistence.",
+      difficulty: "Intermediate",
+      score: 85,
+      technologies: ["WebSocket", "Node.js", "MongoDB"],
+      categories: ["Real-time", "Full Stack"]
+    },
+    {
+      id: 10,
+      title: "Mobile Responsive Design",
+      description: "Create a fully responsive web application with modern CSS frameworks and best practices.",
+      difficulty: "Basic",
+      score: 72,
+      technologies: ["CSS", "Tailwind", "Responsive Design"],
+      categories: ["Frontend", "UI/UX"]
+    }
   ];
 
   get filteredQuestions(): QuestionType[] {
     let filtered = [...this.questions];
+
+    // Filter out existing questions
+    if (this.existingQuestionIds.length > 0) {
+      filtered = filtered.filter(q => !this.existingQuestionIds.includes(q.id.toString()));
+    }
 
     // Apply search
     if (this.searchQuery) {
@@ -313,70 +316,131 @@ export class QuestionLibraryComponent {
       );
     }
 
-    // Apply filters
-    if (this.filters.difficulty) {
-      filtered = filtered.filter(q => q.difficulty === this.filters.difficulty);
+    // Apply difficulty filter
+    if (this.selectedDifficulty) {
+      filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
     }
 
-    // Add more filter logic as needed
+    // Apply question type filters
+    const activeTypes = Object.entries(this.selectedTypes)
+      .filter(([_, selected]) => selected)
+      .map(([type]) => type);
+    if (activeTypes.length > 0) {
+      filtered = filtered.filter(q => 
+        q.categories.some(c => activeTypes.includes(c))
+      );
+    }
+
+    // Apply library filters
+    const activeLibraries = Object.entries(this.selectedLibraries)
+      .filter(([_, selected]) => selected)
+      .map(([lib]) => lib);
+    if (activeLibraries.length > 0) {
+      filtered = filtered.filter(q => 
+        q.categories.some(c => activeLibraries.includes(c))
+      );
+    }
 
     return filtered;
   }
 
   get hasActiveFilters(): boolean {
-    return Object.values(this.filters).some(v => v !== '');
+    return this.selectedDifficulty !== '' ||
+           Object.values(this.selectedTypes).some(v => v) ||
+           Object.values(this.selectedLibraries).some(v => v);
   }
 
-  get activeFilters(): Array<{key: string, label: string}> {
-    return Object.entries(this.filters)
-      .filter(([_, value]) => value !== '')
-      .map(([key, value]) => ({
-        key,
-        label: `${key}: ${value}`
-      }));
+  get activeFilters(): string[] {
+    const filters: string[] = [];
+    
+    if (this.selectedDifficulty) {
+      filters.push(`Difficulty: ${this.selectedDifficulty}`);
+    }
+
+    Object.entries(this.selectedTypes)
+      .filter(([_, selected]) => selected)
+      .forEach(([type]) => filters.push(`Type: ${type}`));
+
+    Object.entries(this.selectedLibraries)
+      .filter(([_, selected]) => selected)
+      .forEach(([lib]) => filters.push(`Library: ${lib}`));
+
+    return filters;
   }
 
-  show() {
-    // Show the library modal
+  toggleDropdown(type: 'types' | 'libraries') {
+    this.showDropdowns[type] = !this.showDropdowns[type];
+    // Close other dropdown
+    const other = type === 'types' ? 'libraries' : 'types';
+    this.showDropdowns[other] = false;
   }
 
-  close() {
-    this.closed.emit();
+  toggleDifficulty(level: string) {
+    this.selectedDifficulty = this.selectedDifficulty === level ? '' : level;
+    this.applyFilters();
   }
 
-  onSearch() {
-    // Implement search logic and update suggestions
-    if (this.searchQuery.length > 2) {
-      this.searchSuggestions = this.questions
-        .filter(q => q.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
-        .map(q => q.title)
-        .slice(0, 5);
-    } else {
-      this.searchSuggestions = [];
+  getDifficultyButtonClass(level: string): string {
+    const isSelected = this.selectedDifficulty === level;
+    const baseClasses = 'border ';
+    
+    switch (level) {
+      case 'Basic':
+        return baseClasses + (isSelected 
+          ? 'bg-green-50 text-green-600 border-green-200'
+          : 'text-gray-600 border-gray-200 hover:bg-green-50 hover:text-green-600');
+      case 'Intermediate':
+        return baseClasses + (isSelected
+          ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
+          : 'text-gray-600 border-gray-200 hover:bg-yellow-50 hover:text-yellow-600');
+      case 'Advanced':
+        return baseClasses + (isSelected
+          ? 'bg-red-50 text-red-600 border-red-200'
+          : 'text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600');
+      default:
+        return baseClasses + 'text-gray-600 border-gray-200';
     }
   }
 
-  selectSuggestion(suggestion: string) {
-    this.searchQuery = suggestion;
-    this.searchSuggestions = [];
-    this.onSearch();
+  getDifficultyClass(difficulty: string): string {
+    const baseClasses = 'px-2 py-0.5 rounded-full text-xs font-medium ';
+    switch (difficulty) {
+      case 'Basic': return baseClasses + 'bg-green-50 text-green-600';
+      case 'Intermediate': return baseClasses + 'bg-yellow-50 text-yellow-600';
+      case 'Advanced': return baseClasses + 'bg-red-50 text-red-600';
+      default: return baseClasses + 'bg-gray-50 text-gray-600';
+    }
+  }
+
+  onSearch() {
+    this.applyFilters();
   }
 
   applyFilters() {
     // Filters are automatically applied through the filteredQuestions getter
   }
 
-  removeFilter(key: string) {
-    (this.filters as any)[key] = '';
+  removeFilter(filter: string) {
+    const [type, value] = filter.split(': ');
+    switch (type) {
+      case 'Difficulty':
+        this.selectedDifficulty = '';
+        break;
+      case 'Type':
+        this.selectedTypes[value] = false;
+        break;
+      case 'Library':
+        this.selectedLibraries[value] = false;
+        break;
+    }
+    this.applyFilters();
   }
 
   clearFilters() {
-    this.filters = {
-      type: '',
-      difficulty: '',
-      dateRange: '',
-      usage: ''
-    };
+    this.selectedDifficulty = '';
+    this.selectedTypes = {};
+    this.selectedLibraries = {};
+    this.applyFilters();
   }
 
   isSelected(id: number): boolean {
@@ -392,22 +456,12 @@ export class QuestionLibraryComponent {
     }
   }
 
-  previewQuestion(question: QuestionType) {
-    this.previewedQuestion = question;
-  }
-
   addSelectedQuestions() {
     this.questionsSelected.emit(this.selectedQuestions);
     this.close();
   }
 
-  getDifficultyClass(difficulty: string): string {
-    const baseClasses = 'px-2 py-0.5 rounded-full text-xs font-medium ';
-    switch (difficulty) {
-      case 'Basic': return baseClasses + 'bg-green-50 text-green-600';
-      case 'Intermediate': return baseClasses + 'bg-yellow-50 text-yellow-600';
-      case 'Advanced': return baseClasses + 'bg-red-50 text-red-600';
-      default: return baseClasses + 'bg-gray-50 text-gray-600';
-    }
+  close() {
+    this.closed.emit();
   }
 }

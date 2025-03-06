@@ -55,6 +55,8 @@ import { TestPublishComponent } from '../test-publish/test-publish.component';
                 <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
                 <input
                   type="text"
+                  [(ngModel)]="searchQuery"
+                  (ngModelChange)="onSearch()"
                   [placeholder]="activeTab === 'assessments' ? 'Search assessments...' : 'Search questions by topic, title, or description...'"
                   class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
                 >
@@ -68,27 +70,78 @@ import { TestPublishComponent } from '../test-publish/test-publish.component';
             </div>
 
             <!-- Library Filters - Only visible in library tab -->
-            <div *ngIf="activeTab === 'library'" class="flex items-center space-x-4 mb-6">
-              <div class="flex items-center space-x-2">
-                <span class="material-icons text-gray-500">filter_list</span>
-                <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                  <option>All Question Types</option>
-                  <option>Multiple Choice</option>
-                  <option>Coding</option>
-                  <option>Design</option>
-                </select>
+            <div *ngIf="activeTab === 'library'" class="flex items-center gap-4 mb-6">
+              <!-- Question Types Dropdown -->
+              <div class="relative">
+                <button 
+                  (click)="toggleDropdown('types')"
+                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  <span class="material-icons text-gray-500">filter_list</span>
+                  Question Types
+                  <span class="material-icons text-gray-500 text-sm">expand_more</span>
+                </button>
+                <div *ngIf="showDropdowns.types"
+                     class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                  <div class="p-3 space-y-2">
+                    <label *ngFor="let type of questionTypes" class="flex items-center gap-2">
+                      <input type="checkbox"
+                             [(ngModel)]="selectedTypes[type]"
+                             (change)="applyFilters()"
+                             class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                      <span>{{type}}</span>
+                    </label>
+                  </div>
+                </div>
               </div>
-              <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                <option>All Libraries</option>
-                <option>Frontend</option>
-                <option>Backend</option>
-                <option>Security</option>
-              </select>
-              <div class="flex items-center space-x-2">
-                <span *ngFor="let level of difficultyLevels"
-                      [class]="getDifficultyColor(level)">
+
+              <!-- Libraries Dropdown -->
+              <div class="relative">
+                <button 
+                  (click)="toggleDropdown('libraries')"
+                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  <span class="material-icons text-gray-500">folder</span>
+                  Libraries
+                  <span class="material-icons text-gray-500 text-sm">expand_more</span>
+                </button>
+                <div *ngIf="showDropdowns.libraries"
+                     class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                  <div class="p-3 space-y-2">
+                    <label *ngFor="let lib of libraries" class="flex items-center gap-2">
+                      <input type="checkbox"
+                             [(ngModel)]="selectedLibraries[lib]"
+                             (change)="applyFilters()"
+                             class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                      <span>{{lib}}</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Difficulty Levels -->
+              <div class="flex items-center gap-2">
+                <button *ngFor="let level of difficultyLevels"
+                        (click)="toggleDifficulty(level)"
+                        [class]="getDifficultyButtonClass(level)"
+                        class="px-3 py-1 rounded-full text-sm transition-colors">
                   {{level}}
-                </span>
+                </button>
+              </div>
+
+              <!-- Active Filters -->
+              <div *ngIf="hasActiveFilters" class="flex flex-wrap gap-2">
+                <div *ngFor="let filter of activeFilters"
+                     class="px-3 py-1 bg-[#4CAF50]/10 text-[#4CAF50] rounded-full text-sm flex items-center">
+                  {{filter}}
+                  <button (click)="removeFilter(filter)"
+                          class="ml-2 text-[#4CAF50] hover:text-[#43A047]">
+                    <span class="material-icons text-sm">close</span>
+                  </button>
+                </div>
+                <button 
+                  (click)="clearFilters()"
+                  class="px-3 py-1 text-gray-600 hover:text-gray-800 text-sm">
+                  Clear all filters
+                </button>
               </div>
             </div>
 
@@ -96,7 +149,7 @@ import { TestPublishComponent } from '../test-publish/test-publish.component';
               <!-- Tabs -->
               <div class="flex space-x-4 mb-6">
                 <button *ngFor="let tab of tabs"
-                        (click)="activeTab = tab.toLowerCase()"
+                        (click)="activeTab = tab.toLowerCase(); clearFilters()"
                         [class]="getTabClass(tab.toLowerCase())">
                   {{tab}}
                 </button>
@@ -107,7 +160,7 @@ import { TestPublishComponent } from '../test-publish/test-publish.component';
                 <ng-container *ngIf="!showingReport">
                   <!-- Cards Grid -->
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <app-test-card *ngFor="let test of tests"
+                    <app-test-card *ngFor="let test of filteredTests"
                                   [test]="test"
                                   (viewReport)="onViewReport($event)"
                                   (invite)="onInvite($event)"
@@ -130,10 +183,9 @@ import { TestPublishComponent } from '../test-publish/test-publish.component';
               </ng-container>
 
               <ng-container *ngIf="activeTab === 'library'">
-                <!-- Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <app-question-card *ngFor="let question of questions"
-                                  [question]="question">
+                  <app-question-card *ngFor="let question of filteredQuestions"
+                                   [question]="question">
                   </app-question-card>
                 </div>
               </ng-container>
@@ -207,6 +259,17 @@ export class AssessmentLibraryComponent {
   showingReport: boolean = false;
   showPublishPage: boolean = false;
 
+  searchQuery = '';
+  questionTypes = ['Multiple Choice', 'Programming', 'Design', 'Database', 'System Design'];
+  libraries = ['Frontend', 'Backend', 'Full Stack', 'DevOps', 'Security'];
+  selectedTypes: { [key: string]: boolean } = {};
+  selectedLibraries: { [key: string]: boolean } = {};
+  selectedDifficulty = '';
+  showDropdowns = {
+    types: false,
+    libraries: false
+  };
+
   questions: QuestionType[] = [
     {
       id: 1,
@@ -272,6 +335,87 @@ export class AssessmentLibraryComponent {
     }
   ];
 
+  get filteredTests(): TestType[] {
+    if (!this.searchQuery) {
+      return this.tests;
+    }
+
+    const query = this.searchQuery.toLowerCase();
+    return this.tests.filter(test => 
+      test.name.toLowerCase().includes(query) ||
+      test.inviteType.toLowerCase().includes(query) ||
+      test.status.toLowerCase().includes(query) ||
+      test.duration.toLowerCase().includes(query) ||
+      test.testDate.toLowerCase().includes(query)
+    );
+  }
+
+  get filteredQuestions(): QuestionType[] {
+    let filtered = [...this.questions];
+
+    // Apply search
+    if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(q => 
+        q.title.toLowerCase().includes(query) ||
+        q.description.toLowerCase().includes(query) ||
+        q.technologies.some(t => t.toLowerCase().includes(query)) ||
+        q.categories.some(c => c.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply difficulty filter
+    if (this.selectedDifficulty) {
+      filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
+    }
+
+    // Apply question type filters
+    const activeTypes = Object.entries(this.selectedTypes)
+      .filter(([_, selected]) => selected)
+      .map(([type]) => type);
+    if (activeTypes.length > 0) {
+      filtered = filtered.filter(q => 
+        q.categories.some(c => activeTypes.includes(c))
+      );
+    }
+
+    // Apply library filters
+    const activeLibraries = Object.entries(this.selectedLibraries)
+      .filter(([_, selected]) => selected)
+      .map(([lib]) => lib);
+    if (activeLibraries.length > 0) {
+      filtered = filtered.filter(q => 
+        q.categories.some(c => activeLibraries.includes(c))
+      );
+    }
+
+    return filtered;
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.selectedDifficulty !== '' ||
+           Object.values(this.selectedTypes).some(v => v) ||
+           Object.values(this.selectedLibraries).some(v => v);
+  }
+
+  get activeFilters(): string[] {
+    const filters: string[] = [];
+    
+    if (this.selectedDifficulty) {
+      filters.push(`Difficulty: ${this.selectedDifficulty}`);
+    }
+
+    Object.entries(this.selectedTypes)
+      .filter(([_, selected]) => selected)
+      .forEach(([type]) => filters.push(`Type: ${type}`));
+
+    Object.entries(this.selectedLibraries)
+      .filter(([_, selected]) => selected)
+      .forEach(([lib]) => filters.push(`Library: ${lib}`));
+
+    return filters;
+  }
+
   getDifficultyColor(difficulty: string): string {
     const baseClasses = 'px-3 py-1 rounded-full text-sm ';
     switch (difficulty) {
@@ -287,6 +431,28 @@ export class AssessmentLibraryComponent {
     return baseClasses + (this.activeTab === tab
       ? 'bg-[#4CAF50] text-white'
       : 'text-gray-600 hover:bg-gray-100');
+  }
+
+  getDifficultyButtonClass(level: string): string {
+    const isSelected = this.selectedDifficulty === level;
+    const baseClasses = 'border ';
+    
+    switch (level) {
+      case 'Basic':
+        return baseClasses + (isSelected 
+          ? 'bg-green-50 text-green-600 border-green-200'
+          : 'text-gray-600 border-gray-200 hover:bg-green-50 hover:text-green-600');
+      case 'Intermediate':
+        return baseClasses + (isSelected
+          ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
+          : 'text-gray-600 border-gray-200 hover:bg-yellow-50 hover:text-yellow-600');
+      case 'Advanced':
+        return baseClasses + (isSelected
+          ? 'bg-red-50 text-red-600 border-red-200'
+          : 'text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600');
+      default:
+        return baseClasses + 'text-gray-600 border-gray-200';
+    }
   }
 
   onCreateClick() {
@@ -372,5 +538,49 @@ export class AssessmentLibraryComponent {
     if (page === 'online-evaluation' || page === 'assessment') {
       this.showPublishPage = false;
     }
+  }
+
+  toggleDropdown(type: 'types' | 'libraries') {
+    this.showDropdowns[type] = !this.showDropdowns[type];
+    // Close other dropdown
+    const other = type === 'types' ? 'libraries' : 'types';
+    this.showDropdowns[other] = false;
+  }
+
+  toggleDifficulty(level: string) {
+    this.selectedDifficulty = this.selectedDifficulty === level ? '' : level;
+    this.applyFilters();
+  }
+
+  onSearch() {
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    // Filters are automatically applied through the filteredQuestions getter
+  }
+
+  removeFilter(filter: string) {
+    const [type, value] = filter.split(': ');
+    switch (type) {
+      case 'Difficulty':
+        this.selectedDifficulty = '';
+        break;
+      case 'Type':
+        this.selectedTypes[value] = false;
+        break;
+      case 'Library':
+        this.selectedLibraries[value] = false;
+        break;
+    }
+    this.applyFilters();
+  }
+
+  clearFilters() {
+    this.searchQuery = '';
+    this.selectedDifficulty = '';
+    this.selectedTypes = {};
+    this.selectedLibraries = {};
+    this.applyFilters();
   }
 }
