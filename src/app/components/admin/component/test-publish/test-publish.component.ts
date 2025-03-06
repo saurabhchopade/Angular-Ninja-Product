@@ -78,84 +78,172 @@ import { QuestionType } from '../../types/question.type';
         <div class="grid grid-cols-3 gap-8">
           <!-- Main Content -->
           <div class="col-span-2 space-y-8">
-            <!-- Question Sections -->
-            <div *ngFor="let section of test.sections; let i = index" 
-                 class="bg-white rounded-xl shadow-sm p-6"
-                 [class.opacity-50]="draggedSectionIndex !== null && draggedSectionIndex !== i"
-                 [class.border-2]="draggedSectionIndex === i"
-                 [class.border-[#4CAF50]]="draggedSectionIndex === i"
-                 draggable="true"
-                 (dragstart)="onDragStart(i)"
-                 (dragend)="onDragEnd()"
-                 (dragover)="onDragOver($event, i)"
-                 (drop)="onDrop(i)">
-              <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center">
-                  <span class="material-icons text-gray-400 cursor-move mr-2">drag_indicator</span>
-                  <h2 class="text-lg font-semibold text-gray-800">{{ section.title }}</h2>
+            <!-- Overview Tab Content -->
+            <ng-container *ngIf="activeTab === 'Overview'">
+              <div *ngFor="let section of test.sections; let i = index" 
+                   class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 class="text-lg font-semibold text-gray-800">{{ section.title }}</h2>
+                    <p class="text-sm text-gray-500">{{ section.questions.length }} questions</p>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <!-- <button 
+                      (click)="deleteSection(i)"
+                      class="text-red-500 hover:text-red-600">
+                      <span class="material-icons">delete</span>
+                    </button> -->
+                  </div>
                 </div>
-                <div class="flex items-center space-x-4">
+
+                <!-- Question Summary -->
+                <div class="space-y-3">
+                  <div class="flex justify-between text-sm text-gray-600 border-b pb-2">
+                    <span>Question Type</span>
+                    <span>Count</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-700">Multiple Choice</span>
+                    <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded-full text-sm">
+                      {{ getQuestionTypeCount(section, 'MCQ') }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-700">Programming</span>
+                    <span class="px-2 py-1 bg-green-50 text-green-600 rounded-full text-sm">
+                      {{ getQuestionTypeCount(section, 'Programming') }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-700">Subjective</span>
+                    <span class="px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-sm">
+                      {{ getQuestionTypeCount(section, 'Subjective') }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-700">Full Stack</span>
+                    <span class="px-2 py-1 bg-orange-50 text-orange-600 rounded-full text-sm">
+                      {{ getQuestionTypeCount(section, 'Full Stack') }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Difficulty Distribution -->
+                <div class="mt-6">
+                  <h3 class="text-sm font-medium text-gray-700 mb-3">Difficulty Distribution</h3>
+                  <div class="flex gap-4">
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span class="text-sm text-gray-600">Basic ({{ getDifficultyCount(section, 'Basic') }})</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <span class="text-sm text-gray-600">Intermediate ({{ getDifficultyCount(section, 'Intermediate') }})</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span class="text-sm text-gray-600">Advanced ({{ getDifficultyCount(section, 'Advanced') }})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Questions Tab Content -->
+            <ng-container *ngIf="activeTab === 'Questions'">
+              <!-- Question Sections -->
+              <div *ngFor="let section of test.sections; let i = index" 
+                   class="bg-white rounded-xl shadow-sm p-6"
+                   [class.opacity-50]="draggedSectionIndex !== null && draggedSectionIndex !== i"
+                   [class.border-2]="draggedSectionIndex === i"
+                   [class.border-[#4CAF50]]="draggedSectionIndex === i"
+                   draggable="true"
+                   (dragstart)="onDragStart(i)"
+                   (dragend)="onDragEnd()"
+                   (dragover)="onDragOver($event, i)"
+                   (drop)="onDrop(i)">
+                <div class="flex items-center justify-between mb-6">
                   <div class="flex items-center">
-                    <span class="text-sm text-gray-600 mr-2">Min. random questions:</span>
-                    <select 
-                      [(ngModel)]="section.minRandomQuestions"
-                      class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
-                      <option [value]="0">00</option>
-                      <option *ngFor="let num of [1,2,3,4,5]" [value]="num">
-                        {{ num.toString().padStart(2, '0') }}
-                      </option>
-                    </select>
-                  </div>
-                  <button (click)="openLibrary(i)" 
-                          class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
-                    Choose from library
-                  </button>
-                  <button class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
-                    Create new question
-                  </button>
-                  <button (click)="deleteSection(i)" 
-                          class="text-red-500 hover:text-red-600">
-                    <span class="material-icons">delete</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Questions List -->
-              <div class="space-y-4">
-                <div *ngFor="let question of section.questions; let qIndex = index" 
-                     class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div class="flex items-start justify-between">
+                    <span class="material-icons text-gray-400 cursor-move mr-2">drag_indicator</span>
                     <div>
-                      <h3 class="font-medium text-gray-800 mb-1">
-                        <span *ngFor="let tag of question.tags" 
-                              class="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs mr-2">
-                          {{ tag }}
-                        </span>
-                        {{ question.title }}
-                      </h3>
-                      <p class="text-sm text-gray-600 line-clamp-2">{{ question.description }}</p>
+                      <h2 class="text-lg font-semibold text-gray-800">{{ section.title }}</h2>
+                      <p class="text-sm text-gray-500">{{ section.questions.length }} questions</p>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <button class="p-1 text-gray-400 hover:text-gray-600">
-                        <span class="material-icons">visibility</span>
-                      </button>
-                      <button 
-                        (click)="deleteQuestion(i, qIndex)"
-                        class="p-1 text-gray-400 hover:text-red-500 transition-colors">
-                        <span class="material-icons">delete</span>
-                      </button>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                      <span class="text-sm text-gray-600 mr-2">Min. random questions:</span>
+                      <select 
+                        [(ngModel)]="section.minRandomQuestions"
+                        class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                        <option [value]="0">00</option>
+                        <option *ngFor="let num of [1,2,3,4,5]" [value]="num">
+                          {{ num.toString().padStart(2, '0') }}
+                        </option>
+                      </select>
+                    </div>
+                    <button (click)="openLibrary(i)" 
+                            class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
+                      Choose from library
+                    </button>
+                    <button class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
+                      Create new question
+                    </button>
+                    <button (click)="deleteSection(i)" 
+                            class="text-red-500 hover:text-red-600">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Questions List -->
+                <div class="space-y-4">
+                  <div *ngFor="let question of section.questions; let qIndex = index" 
+                       class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                          <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                            {{ question.type || 'Question' }}
+                          </span>
+                          <span [class]="getDifficultyClass(question.difficulty || 'Basic')">
+                            {{ question.difficulty || 'Basic' }}
+                          </span>
+                          <span class="px-2 py-0.5 bg-[#4CAF50]/10 text-[#4CAF50] rounded-full text-xs">
+                            Score: {{ question.score || 10 }}
+                          </span>
+                        </div>
+                        <h3 class="font-medium text-gray-800 mb-1">{{ question.title }}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-2">{{ question.description }}</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                          <span *ngFor="let tag of question.tags" 
+                                class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
+                            {{ tag }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-2 ml-4">
+                        <button class="p-1 text-gray-400 hover:text-gray-600">
+                          <span class="material-icons">visibility</span>
+                        </button>
+                        <button 
+                          (click)="deleteQuestion(i, qIndex)"
+                          class="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Add Section Button -->
-            <button (click)="showCreateSectionModal = true"
-                    class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#4CAF50] hover:text-[#4CAF50] transition-colors flex items-center justify-center">
-              <span class="material-icons mr-2">add</span>
-              Create New Section
-            </button>
+              <!-- Add Section Button -->
+              <button (click)="showCreateSectionModal = true"
+                      class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#4CAF50] hover:text-[#4CAF50] transition-colors flex items-center justify-center">
+                <span class="material-icons mr-2">add</span>
+                Create New Section
+              </button>
+            </ng-container>
           </div>
 
           <!-- Sidebar -->
@@ -345,6 +433,7 @@ import { QuestionType } from '../../types/question.type';
     <app-question-library
       #questionLibrary
       *ngIf="showLibrary"
+      [existingQuestionIds]="getExistingQuestionIds()"
       (questionsSelected)="onQuestionsSelected($event)"
       (closed)="showLibrary = false"
     ></app-question-library>
@@ -387,7 +476,10 @@ export class TestPublishComponent implements OnInit {
             id: '1',
             title: 'Profile Details',
             description: 'You are provided with a Spring Boot application to complete automation scripts and step definitions using the Cucumber framework to validate profile ma...',
-            tags: ['Cucumber', 'Java Selenium']
+            tags: ['Cucumber', 'Java Selenium'],
+            type: 'Full Stack',
+            difficulty: 'Intermediate',
+            score: 20
           }
         ]
       }
@@ -417,6 +509,24 @@ export class TestPublishComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  getDifficultyClass(difficulty: string): string {
+    const baseClasses = 'px-2 py-0.5 rounded-full text-xs ';
+    switch (difficulty) {
+      case 'Basic': return baseClasses + 'bg-green-50 text-green-600';
+      case 'Intermediate': return baseClasses + 'bg-yellow-50 text-yellow-600';
+      case 'Advanced': return baseClasses + 'bg-red-50 text-red-600';
+      default: return baseClasses + 'bg-gray-50 text-gray-600';
+    }
+  }
+
+  getQuestionTypeCount(section: TestSection, type: string): number {
+    return section.questions.filter(q => q.type === type).length;
+  }
+
+  getDifficultyCount(section: TestSection, difficulty: string): number {
+    return section.questions.filter(q => q.difficulty === difficulty).length;
   }
 
   get canCreateSection(): boolean {
@@ -491,7 +601,10 @@ export class TestPublishComponent implements OnInit {
         id: q.id.toString(),
         title: q.title,
         description: q.description,
-        tags: [...q.technologies, ...q.categories]
+        tags: [...q.technologies, ...q.categories],
+        type: q.categories[0],
+        difficulty: q.difficulty,
+        score: q.score
       }));
 
       // Add questions to the current section

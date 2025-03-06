@@ -6,6 +6,9 @@ export interface TestSection {
   }
   
   export interface TestQuestion {
+    difficulty: string;
+    type: string;
+    score:number;
     id: string;
     title: string;
     description: string;
