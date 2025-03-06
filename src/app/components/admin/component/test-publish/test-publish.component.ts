@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TestPublishDetails, TestSection } from '../../types/test-publish.type';
+import { QuestionType } from '../../types/question.type';
+import { QuestionLibraryComponent } from '../question-library/question-library.component';
 
 @Component({
   selector: 'app-test-publish',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,QuestionLibraryComponent],
   template: `
     <div class="min-h-screen bg-gray-50 pb-12">
       <!-- Navigation & Header -->
@@ -14,16 +16,28 @@ import { TestPublishDetails, TestSection } from '../../types/test-publish.type';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Breadcrumb -->
           <nav class="py-4">
-            <ol class="flex items-center space-x-2 text-sm text-gray-500">
-              <li>Online Evaluation</li>
+            <ol class="flex items-center space-x-2 text-sm">
+              <li>
+                <button 
+                  (click)="navigateBack('online-evaluation')"
+                  class="text-gray-500 hover:text-gray-700">
+                  Online Evaluation
+                </button>
+              </li>
               <li>
                 <span class="material-icons text-gray-400 text-base">chevron_right</span>
               </li>
-              <li>Assessment</li>
+              <li>
+                <button 
+                  (click)="navigateBack('assessment')"
+                  class="text-gray-500 hover:text-gray-700">
+                  Assessment
+                </button>
+              </li>
               <li>
                 <span class="material-icons text-gray-400 text-base">chevron_right</span>
               </li>
-              <li class="text-gray-900 font-medium">Salesforce Developer Test Creation</li>
+              <li class="text-gray-900 font-medium">{{test.name}}</li>
             </ol>
           </nav>
 
@@ -92,7 +106,8 @@ import { TestPublishDetails, TestSection } from '../../types/test-publish.type';
                       </option>
                     </select>
                   </div>
-                  <button class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
+                  <button (click)="openLibrary(i)" 
+                          class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
                     Choose from library
                   </button>
                   <button class="text-[#4CAF50] hover:text-[#43A047] text-sm font-medium">
@@ -296,17 +311,17 @@ import { TestPublishDetails, TestSection } from '../../types/test-publish.type';
               Section Type
             </label>
             <div class="grid grid-cols-2 gap-3">
-  <div *ngFor="let type of sectionTypes"
-       (click)="selectedSectionType = type"
-       class="p-4 border rounded-lg text-left transition-colors cursor-pointer"
-       [ngClass]="{
-         'border-[#4CAF50]': selectedSectionType === type,
-         'bg-[#4CAF50]/5': selectedSectionType === type
-       }">
-    <span class="block font-medium text-gray-800">{{ type }}</span>
-    <span class="text-sm text-gray-500">{{ getSectionTypeDescription(type) }}</span>
-  </div>
-</div>
+              <div *ngFor="let type of sectionTypes"
+                   (click)="selectedSectionType = type"
+                   class="p-4 border rounded-lg text-left transition-colors cursor-pointer"
+                   [ngClass]="{
+                     'border-[#4CAF50]': selectedSectionType === type,
+                     'bg-[#4CAF50]/5': selectedSectionType === type
+                   }">
+                <span class="block font-medium text-gray-800">{{ type }}</span>
+                <span class="text-sm text-gray-500">{{ getSectionTypeDescription(type) }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -323,15 +338,28 @@ import { TestPublishDetails, TestSection } from '../../types/test-publish.type';
         </div>
       </div>
     </div>
+
+    <!-- Add Question Library Component -->
+    <app-question-library
+      #questionLibrary
+      *ngIf="showLibrary"
+      (questionsSelected)="onQuestionsSelected($event)"
+      (closed)="showLibrary = false"
+    ></app-question-library>
   `
 })
 export class TestPublishComponent implements OnInit {
+//   @ViewChild('questionLibrary') questionLibrary!: QuestionLibraryComponent;
+  @Output() navigate = new EventEmitter<string>();
+
   tabs = ['Overview', 'Questions'];
   activeTab = 'Overview';
   showCreateSectionModal = false;
   newSectionTitle = '';
   selectedSectionType = '';
   draggedSectionIndex: number | null = null;
+  showLibrary = false;
+  currentSectionIndex: number = -1;
 
   sectionTypes = [
     'Add Questions Manually',
@@ -437,5 +465,31 @@ export class TestPublishComponent implements OnInit {
       this.test.sections.splice(index, 0, section);
     }
     this.draggedSectionIndex = null;
+  }
+
+  openLibrary(sectionIndex: number) {
+    this.currentSectionIndex = sectionIndex;
+    this.showLibrary = true;
+  }
+
+  onQuestionsSelected(questions: QuestionType[]) {
+    if (this.currentSectionIndex >= 0) {
+      // Convert QuestionType to TestQuestion
+      const newQuestions = questions.map(q => ({
+        id: q.id.toString(),
+        title: q.title,
+        description: q.description,
+        tags: [...q.technologies, ...q.categories]
+      }));
+
+      // Add questions to the current section
+      this.test.sections[this.currentSectionIndex].questions.push(...newQuestions);
+    }
+    this.showLibrary = false;
+    this.currentSectionIndex = -1;
+  }
+
+  navigateBack(page: string) {
+    this.navigate.emit(page);
   }
 }

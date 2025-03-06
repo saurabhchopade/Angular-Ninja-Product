@@ -142,7 +142,10 @@ import { TestPublishComponent } from '../test-publish/test-publish.component';
         </ng-container>
 
         <!-- Test Publish Page -->
-        <app-test-publish *ngIf="showPublishPage"></app-test-publish>
+        <app-test-publish 
+          *ngIf="showPublishPage"
+          (navigate)="handleNavigation($event)">
+        </app-test-publish>
       </main>
 
       <app-question-type-modal
@@ -363,5 +366,11 @@ export class AssessmentLibraryComponent {
 
   onAssessmentDrafted(assessment: any) {
     console.log('Saved assessment draft:', assessment);
+  }
+
+  handleNavigation(page: string) {
+    if (page === 'online-evaluation' || page === 'assessment') {
+      this.showPublishPage = false;
+    }
   }
 }
