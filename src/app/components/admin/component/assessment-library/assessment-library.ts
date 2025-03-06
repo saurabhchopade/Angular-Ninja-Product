@@ -20,6 +20,8 @@ import { CandidateInviteData } from '../../types/candidate.type';
 import { InviteCandidatesModalComponent } from '../invite-candidates-modal/invite-candidates-modal.component';
 import { AssessmentReportComponent } from '../assessment-report/assessment-report.component';
 import { CreateAssessmentModalComponent } from '../create-assessment-modal/create-assessment-modal.component';
+import { TestPublishComponent } from '../test-publish/test-publish.component';
+
 
 @Component({
   selector: 'app-root',
@@ -37,153 +39,110 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
     CreateFullStackModalComponent,
     InviteCandidatesModalComponent,
     AssessmentReportComponent,
-    CreateAssessmentModalComponent
+    CreateAssessmentModalComponent,
+    TestPublishComponent
   ],
   template: `
     <div class="flex h-screen bg-gray-50">
       <app-sidebar />
       
       <main class="flex-1 overflow-auto">
-        <div class="p-8">
-          <!-- Search and Create Button -->
-          <div class="flex justify-between items-center mb-8">
-            <div class="relative flex-1 max-w-2xl">
-              <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
-              <input
-                type="text"
-                [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearch($event)"
-                [placeholder]="activeTab === 'assessments' ? 'Search assessments...' : 'Search for topics, problem title, or problem description...'"
-                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-              >
+        <ng-container *ngIf="!showPublishPage">
+          <div class="p-8">
+            <!-- Search and Create Button -->
+            <div class="flex justify-between items-center mb-8">
+              <div class="relative flex-1 max-w-2xl">
+                <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+                <input
+                  type="text"
+                  [placeholder]="activeTab === 'assessments' ? 'Search assessments...' : 'Search questions by topic, title, or description...'"
+                  class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+                >
+              </div>
+              <button 
+                (click)="onCreateClick()"
+                class="flex items-center px-4 py-2 bg-gradient-to-r from-[#4CAF50] to-[#8BC34A] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow ml-4">
+                <span class="material-icons mr-2">add</span>
+                Create {{activeTab === 'assessments' ? 'Assessment' : 'Question'}}
+              </button>
             </div>
-            <button 
-              (click)="onCreateClick()"
-              class="flex items-center px-4 py-2 bg-gradient-to-r from-[#4CAF50] to-[#8BC34A] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow ml-4">
-              <span class="material-icons mr-2">add</span>
-              Create {{activeTab === 'assessments' ? 'Assessment' : 'Question'}}
-            </button>
-          </div>
 
-          <!-- Library Filters - Only visible in library tab -->
-          <div *ngIf="activeTab === 'library'" class="mb-6">
-            <div class="flex flex-wrap items-center gap-4">
-              <!-- Question Types Filter -->
-              <div class="relative">
-                <button 
-                  (click)="toggleDropdown('questionTypes')"
-                  class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4CAF50] transition-colors">
-                  <span class="material-icons text-gray-500">filter_list</span>
-                  <span class="text-gray-700">Question Types</span>
-                  <span class="material-icons text-gray-500 text-sm">
-                    {{showQuestionTypesDropdown ? 'expand_less' : 'expand_more'}}
-                  </span>
+            <!-- Library Filters - Only visible in library tab -->
+            <div *ngIf="activeTab === 'library'" class="flex items-center space-x-4 mb-6">
+              <div class="flex items-center space-x-2">
+                <span class="material-icons text-gray-500">filter_list</span>
+                <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                  <option>All Question Types</option>
+                  <option>Multiple Choice</option>
+                  <option>Coding</option>
+                  <option>Design</option>
+                </select>
+              </div>
+              <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                <option>All Libraries</option>
+                <option>Frontend</option>
+                <option>Backend</option>
+                <option>Security</option>
+              </select>
+              <div class="flex items-center space-x-2">
+                <span *ngFor="let level of difficultyLevels"
+                      [class]="getDifficultyColor(level)">
+                  {{level}}
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6">
+              <!-- Tabs -->
+              <div class="flex space-x-4 mb-6">
+                <button *ngFor="let tab of tabs"
+                        (click)="activeTab = tab.toLowerCase()"
+                        [class]="getTabClass(tab.toLowerCase())">
+                  {{tab}}
                 </button>
-                <!-- Dropdown Menu -->
-                <div *ngIf="showQuestionTypesDropdown" 
-                     class="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-                  <label *ngFor="let type of questionTypes"
-                         class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox"
-                           [(ngModel)]="type.selected"
-                           (change)="filterQuestions()"
-                           class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
-                    <span class="ml-2 text-gray-700">{{type.label}}</span>
-                  </label>
-                </div>
               </div>
 
-              <!-- Libraries Filter -->
-              <div class="relative">
-                <button 
-                  (click)="toggleDropdown('libraries')"
-                  class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4CAF50] transition-colors">
-                  <span class="material-icons text-gray-500">library_books</span>
-                  <span class="text-gray-700">Libraries</span>
-                  <span class="material-icons text-gray-500 text-sm">
-                    {{showLibrariesDropdown ? 'expand_less' : 'expand_more'}}
-                  </span>
-                </button>
-                <!-- Dropdown Menu -->
-                <div *ngIf="showLibrariesDropdown" 
-                     class="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-                  <label *ngFor="let lib of libraries"
-                         class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox"
-                           [(ngModel)]="lib.selected"
-                           (change)="filterQuestions()"
-                           class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
-                    <span class="ml-2 text-gray-700">{{lib.label}}</span>
-                  </label>
-                </div>
-              </div>
+              <!-- Content -->
+              <ng-container *ngIf="activeTab === 'assessments'">
+                <ng-container *ngIf="!showingReport">
+                  <!-- Cards Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <app-test-card *ngFor="let test of tests"
+                                  [test]="test"
+                                  (viewReport)="onViewReport($event)"
+                                  (invite)="onInvite($event)"
+                                  (archive)="onArchive($event)">
+                    </app-test-card>
+                  </div>
+                </ng-container>
+                
+                <ng-container *ngIf="showingReport">
+                  <div class="flex items-center mb-6">
+                    <button 
+                      (click)="showingReport = false"
+                      class="flex items-center text-gray-600 hover:text-gray-800">
+                      <span class="material-icons mr-1">arrow_back</span>
+                      Back to Assessments
+                    </button>
+                  </div>
+                  <app-assessment-report [testId]="selectedTestId"></app-assessment-report>
+                </ng-container>
+              </ng-container>
 
-              <!-- Difficulty Filters -->
-              <button *ngFor="let level of difficultyLevels"
-                      (click)="toggleDifficultyFilter(level)"
-                      [class]="getDifficultyFilterClass(level)"
-                      class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-sm">
-                {{level}}
-              </button>
-              <button *ngIf="selectedDifficulties.length > 0"
-                      (click)="clearDifficultyFilters()"
-                      class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-1">
-                <span class="material-icons text-sm">close</span>
-                Clear
-              </button>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-sm p-6">
-            <!-- Tabs -->
-            <div class="flex space-x-4 mb-6">
-              <button *ngFor="let tab of tabs"
-                      (click)="switchTab(tab.toLowerCase())"
-                      [class]="getTabClass(tab.toLowerCase())">
-                {{tab}}
-              </button>
-            </div>
-
-            <!-- Content -->
-            <ng-container *ngIf="activeTab === 'assessments'">
-              <ng-container *ngIf="!showingReport">
+              <ng-container *ngIf="activeTab === 'library'">
                 <!-- Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <app-test-card *ngFor="let test of filteredTests"
-                                [test]="test"
-                                (viewReport)="onViewReport($event)"
-                                (invite)="onInvite($event)"
-                                (archive)="onArchive($event)">
-                  </app-test-card>
+                  <app-question-card *ngFor="let question of questions"
+                                  [question]="question">
+                  </app-question-card>
                 </div>
               </ng-container>
-              
-              <ng-container *ngIf="showingReport">
-                <div class="flex items-center mb-6">
-                  <button 
-                    (click)="showingReport = false"
-                    class="flex items-center text-gray-600 hover:text-gray-800">
-                    <span class="material-icons mr-1">arrow_back</span>
-                    Back to Assessments
-                  </button>
-                </div>
-                <app-assessment-report [testId]="selectedTestId"></app-assessment-report>
-              </ng-container>
-            </ng-container>
-
-            <ng-container *ngIf="activeTab === 'library'">
-              <!-- Questions List -->
-              <div class="space-y-4">
-                <app-question-card *ngFor="let question of filteredQuestions"
-                                 [question]="question"
-                                 class="w-full transition-all duration-300 transform"
-                                 [class.scale-95]="isFiltering"
-                                 [class.opacity-0]="isFiltering">
-                </app-question-card>
-              </div>
-            </ng-container>
+            </div>
           </div>
-        </div>
+        </ng-container>
+
+        <!-- Test Publish Page -->
+        <app-test-publish *ngIf="showPublishPage"></app-test-publish>
       </main>
 
       <app-question-type-modal
@@ -227,12 +186,7 @@ import { CreateAssessmentModalComponent } from '../create-assessment-modal/creat
         (drafted)="onAssessmentDrafted($event)"
       ></app-create-assessment-modal>
     </div>
-  `,
-  styles: [`
-    .scale-95 {
-      transform: scale(0.95);
-    }
-  `]
+  `
 })
 export class AssessmentLibraryComponent {
   @ViewChild('questionTypeModal') questionTypeModal!: QuestionTypeModalComponent;
@@ -246,29 +200,9 @@ export class AssessmentLibraryComponent {
   activeTab: string = 'assessments';
   tabs = ['Assessments', 'Library'];
   difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
-  selectedDifficulties: string[] = [];
   selectedTestId: number = 0;
   showingReport: boolean = false;
-  isFiltering: boolean = false;
-  searchQuery: string = '';
-
-  showQuestionTypesDropdown = false;
-  showLibrariesDropdown = false;
-
-  questionTypes = [
-    { label: 'Multiple Choice', selected: false },
-    { label: 'Programming', selected: false },
-    { label: 'Full Stack', selected: false },
-    { label: 'Subjective', selected: false }
-  ];
-
-  libraries = [
-    { label: 'Frontend', selected: false },
-    { label: 'Backend', selected: false },
-    { label: 'Database', selected: false },
-    { label: 'DevOps', selected: false },
-    { label: 'Security', selected: false }
-  ];
+  showPublishPage: boolean = false;
 
   questions: QuestionType[] = [
     {
@@ -335,150 +269,13 @@ export class AssessmentLibraryComponent {
     }
   ];
 
-  get filteredTests(): TestType[] {
-    if (!this.searchQuery) return this.tests;
-    const query = this.searchQuery.toLowerCase();
-    return this.tests.filter(test => 
-      test.name.toLowerCase().includes(query)
-    );
-  }
-
-  get filteredQuestions(): QuestionType[] {
-    let filtered = [...this.questions];
-
-    // Apply search filter
-    if (this.searchQuery) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.technologies.some(tech => tech.toLowerCase().includes(query)) ||
-        q.categories.some(cat => cat.toLowerCase().includes(query))
-      );
-    }
-
-    // Apply difficulty filters
-    if (this.selectedDifficulties.length > 0) {
-      filtered = filtered.filter(q => this.selectedDifficulties.includes(q.difficulty));
-    }
-
-    // Apply question type filters
-    const selectedTypes = this.questionTypes.filter(t => t.selected).map(t => t.label);
-    if (selectedTypes.length > 0) {
-      filtered = filtered.filter(q => {
-        const questionType = this.mapCategoryToType(q.categories);
-        return selectedTypes.includes(questionType);
-      });
-    }
-
-    // Apply library filters
-    const selectedLibraries = this.libraries.filter(l => l.selected).map(l => l.label);
-    if (selectedLibraries.length > 0) {
-      filtered = filtered.filter(q => 
-        q.categories.some(cat => selectedLibraries.includes(cat)) ||
-        q.technologies.some(tech => selectedLibraries.includes(this.mapTechnologyToLibrary(tech)))
-      );
-    }
-
-    return filtered;
-  }
-
-  async onSearch(query: string) {
-    this.isFiltering = true;
-    await new Promise(resolve => setTimeout(resolve, 150));
-    this.searchQuery = query;
-    await new Promise(resolve => setTimeout(resolve, 150));
-    this.isFiltering = false;
-  }
-
-  switchTab(tab: string) {
-    this.activeTab = tab;
-    this.searchQuery = ''; // Clear search when switching tabs
-  }
-
-  mapCategoryToType(categories: string[]): string {
-    if (categories.includes('Full Stack')) return 'Full Stack';
-    if (categories.includes('Frontend') || categories.includes('Backend')) return 'Programming';
-    if (categories.includes('Theory')) return 'Multiple Choice';
-    return 'Subjective';
-  }
-
-  mapTechnologyToLibrary(technology: string): string {
-    const techMap: { [key: string]: string } = {
-      'React': 'Frontend',
-      'Angular': 'Frontend',
-      'Vue': 'Frontend',
-      'Node.js': 'Backend',
-      'Python': 'Backend',
-      'Java': 'Backend',
-      'MongoDB': 'Database',
-      'PostgreSQL': 'Database',
-      'Docker': 'DevOps',
-      'Kubernetes': 'DevOps',
-      'CyberOps': 'Security'
-    };
-    return techMap[technology] || '';
-  }
-
-  toggleDropdown(type: 'questionTypes' | 'libraries') {
-    if (type === 'questionTypes') {
-      this.showQuestionTypesDropdown = !this.showQuestionTypesDropdown;
-      this.showLibrariesDropdown = false;
-    } else {
-      this.showLibrariesDropdown = !this.showLibrariesDropdown;
-      this.showQuestionTypesDropdown = false;
-    }
-  }
-
-  async filterQuestions() {
-    this.isFiltering = true;
-    await new Promise(resolve => setTimeout(resolve, 150));
-    await new Promise(resolve => setTimeout(resolve, 150));
-    this.isFiltering = false;
-  }
-
-  async toggleDifficultyFilter(difficulty: string) {
-    this.isFiltering = true;
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
-    const index = this.selectedDifficulties.indexOf(difficulty);
-    if (index === -1) {
-      this.selectedDifficulties.push(difficulty);
-    } else {
-      this.selectedDifficulties.splice(index, 1);
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 150));
-    this.isFiltering = false;
-  }
-
-  async clearDifficultyFilters() {
-    this.isFiltering = true;
-    await new Promise(resolve => setTimeout(resolve, 150));
-    this.selectedDifficulties = [];
-    await new Promise(resolve => setTimeout(resolve, 150));
-    this.isFiltering = false;
-  }
-
-  getDifficultyFilterClass(difficulty: string): string {
-    const isSelected = this.selectedDifficulties.includes(difficulty);
-    const baseClasses = 'transition-colors min-w-[120px] ';
-    
+  getDifficultyColor(difficulty: string): string {
+    const baseClasses = 'px-3 py-1 rounded-full text-sm ';
     switch (difficulty) {
-      case 'Basic':
-        return baseClasses + (isSelected 
-          ? 'bg-green-500 text-white'
-          : 'bg-green-100 text-green-800 hover:bg-green-200');
-      case 'Intermediate':
-        return baseClasses + (isSelected
-          ? 'bg-yellow-500 text-white'
-          : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200');
-      case 'Advanced':
-        return baseClasses + (isSelected
-          ? 'bg-red-500 text-white'
-          : 'bg-red-100 text-red-800 hover:bg-red-200');
-      default:
-        return baseClasses + 'bg-gray-100 text-gray-800';
+      case 'Basic': return baseClasses + 'bg-green-100 text-green-800';
+      case 'Intermediate': return baseClasses + 'bg-yellow-100 text-yellow-800';
+      case 'Advanced': return baseClasses + 'bg-red-100 text-red-800';
+      default: return baseClasses + 'bg-gray-100 text-gray-800';
     }
   }
 
@@ -551,7 +348,7 @@ export class AssessmentLibraryComponent {
     this.inviteCandidatesModal.show();
   }
 
-  onInvitesSent(data: any) {
+  onInvitesSent(data: CandidateInviteData) {
     console.log('Invites sent:', data);
   }
 
@@ -561,6 +358,7 @@ export class AssessmentLibraryComponent {
 
   onAssessmentPublished(assessment: any) {
     console.log('Published assessment:', assessment);
+    this.showPublishPage = true;
   }
 
   onAssessmentDrafted(assessment: any) {
