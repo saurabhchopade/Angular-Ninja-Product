@@ -7,3 +7,7 @@ export type QuestionType = {
     technologies: string[];
     categories: string[];
   };
+
+  export type questionIds = {
+    questionIds: []
+  };

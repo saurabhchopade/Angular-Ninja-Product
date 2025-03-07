@@ -21,6 +21,7 @@ import { InviteCandidatesModalComponent } from '../invite-candidates-modal/invit
 import { AssessmentReportComponent } from '../assessment-report/assessment-report.component';
 import { CreateAssessmentModalComponent } from '../create-assessment-modal/create-assessment-modal.component';
 import { TestPublishComponent } from '../test-publish/test-publish.component';
+import { AssessmentDataService } from '../../services/assessment.data.service';
 
 
 @Component({
@@ -252,6 +253,9 @@ export class AssessmentLibraryComponent {
   @ViewChild('inviteCandidatesModal') inviteCandidatesModal!: InviteCandidatesModalComponent;
   @ViewChild('createAssessmentModal') createAssessmentModal!: CreateAssessmentModalComponent;
   
+  constructor(private assessmentDataService: AssessmentDataService) {}
+
+
   activeTab: string = 'assessments';
   tabs = ['Assessments', 'Library'];
   difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
@@ -526,7 +530,8 @@ export class AssessmentLibraryComponent {
   }
 
   onAssessmentPublished(assessment: any) {
-    console.log('Published assessment:', assessment);
+    this.assessmentDataService.addAssessment(assessment);
+    // console.log('Published assessment:', assessment);
     this.showPublishPage = true;
   }
 

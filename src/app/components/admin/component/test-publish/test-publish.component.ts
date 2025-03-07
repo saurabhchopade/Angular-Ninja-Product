@@ -457,7 +457,7 @@ export class TestPublishComponent implements OnInit {
     'Select from Library'
   ];
 
-  test: TestPublishDetails = {
+  test: TestPublishDetails ={
     id: '1234567890',
     name: 'Salesforce Developer Test',
     startDate: 'Feb 15th, 2025, 12:00 PM IST',
@@ -475,7 +475,7 @@ export class TestPublishComponent implements OnInit {
           {
             id: '1',
             title: 'Profile Details',
-            description: 'You are provided with a Spring Boot application to complete automation scripts and step definitions using the Cucumber framework to validate profile ma...',
+            description: 'You are provided with a Spring Boot application to complete automation scripts and step definitions using the Cucumber framework to validate profile management functionality.',
             tags: ['Cucumber', 'Java Selenium'],
             type: 'Full Stack',
             difficulty: 'Intermediate',
@@ -485,9 +485,38 @@ export class TestPublishComponent implements OnInit {
       }
     ],
     settings: {
+      testDescription: 'A Java backend development test covering Spring Boot and Microservices.',
+      testInstruction: 'Complete all sections within the given time. Use a stable internet connection.',
+      enableAudioProctoring: false,
+      enableSmartBrowser: true,
+      idVerification: true,
+      enableRandomQuestionShuffling: true,
+      disableSubmissionResults: false,
+      disableCopyPasteInCodeEditor: true,
+      takeCandidateSnapshots: true,
+      restrictFullScreenMode: true,
+      logoutOnLeavingTest: true,
+      restrictTestAccessForIP: false,
+      emailReport: true,
+      plagiarismReport: true,
+      detailedAssessmentReport: true,
+      slackReport: false,
+      candidateSelfAssessmentReport: false,
+      showQuestions: true,
+      showCandidateAnswers: false,
+      showCorrectAnswers: false,
+      autoReminder: true,
+      enableChatGPTInAssessments: false,
       audioProctoring: false,
       cutoffEnabled: false
-    }
+    },
+    admins: [
+      {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com'
+      }
+    ]
   };
 
   ngOnInit() {
@@ -610,6 +639,7 @@ export class TestPublishComponent implements OnInit {
       // Add questions to the current section
       this.test.sections[this.currentSectionIndex].questions.push(...newQuestions);
     }
+    
     this.showLibrary = false;
     this.currentSectionIndex = -1;
   }
@@ -618,3 +648,4 @@ export class TestPublishComponent implements OnInit {
     this.navigate.emit(page);
   }
 }
+

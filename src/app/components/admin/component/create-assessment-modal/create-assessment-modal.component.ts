@@ -1,14 +1,15 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AssessmentDataService } from '../../services/assessment.data.service';
 
-interface JobRole {
+export interface JobRole {
   id: string;
-  title: string;
+  title: string
   skills: string[];
 }
 
-interface Assessment {
+export interface Assessment {
   name: string;
   jobRole: string;
   skills: string[];
