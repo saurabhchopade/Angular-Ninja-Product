@@ -1,47 +1,38 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { ProgrammingQuestionService } from '../../services/programming-question.service';
 import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programming-question.type';
 
 @Component({
   selector: 'app-create-programming-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
-    <div 
-      *ngIf="isVisible"
-      class="fixed inset-0 bg-black/30 z-50 flex justify-end"
-      (click)="close()"
-    >
-      <div 
-        class="w-full max-w-4xl bg-white shadow-2xl h-full transform transition-transform duration-300"
-        [class.translate-x-0]="isVisible"
-        [class.translate-x-full]="!isVisible"
-        (click)="$event.stopPropagation()"
-      >
+    <div *ngIf="isVisible" class="fixed inset-0 bg-black/30 z-50 flex justify-end" (click)="close()">
+      <div class="w-full max-w-4xl bg-white shadow-2xl h-full transform transition-transform duration-300"
+           [class.translate-x-0]="isVisible"
+           [class.translate-x-full]="!isVisible"
+           (click)="$event.stopPropagation()">
         <!-- Header -->
         <div class="flex justify-between items-center p-4 border-b">
           <h2 class="text-xl font-semibold text-gray-800">Create Programming Question</h2>
-          <button 
-            (click)="close()" 
-            class="text-gray-500 hover:text-gray-700 transition-colors"
-          >
+          <button (click)="close()" class="text-gray-500 hover:text-gray-700 transition-colors">
             <span class="material-icons">close</span>
           </button>
         </div>
 
         <!-- Step Navigation -->
         <div class="flex items-center px-6 py-4 border-b bg-gray-50">
-          <div *ngFor="let step of steps; let i = index" 
-               class="flex items-center">
+          <div *ngFor="let step of steps; let i = index" class="flex items-center">
             <div class="flex items-center">
               <div [class]="getStepNumberClass(i)">
                 {{i + 1}}
               </div>
               <span [class]="getStepTextClass(i)">{{step}}</span>
             </div>
-            <div *ngIf="i < steps.length - 1" 
-                 class="w-16 h-px mx-2"
+            <div *ngIf="i < steps.length - 1" class="w-16 h-px mx-2"
                  [class.bg-green-500]="currentStep > i"
                  [class.bg-gray-300]="currentStep <= i">
             </div>
@@ -57,11 +48,8 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
                 <div class="flex gap-4">
-                  <label *ngFor="let level of difficultyLevels" 
-                         class="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" 
-                           [value]="level" 
-                           [(ngModel)]="question.difficulty"
+                  <label *ngFor="let level of difficultyLevels" class="flex items-center space-x-2 cursor-pointer">
+                    <input type="radio" [value]="level" [(ngModel)]="question.difficultyLevel"
                            class="text-green-500 focus:ring-green-500">
                     <span>{{level}}</span>
                   </label>
@@ -71,60 +59,45 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
               <!-- Problem Name -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Problem Name</label>
-                <input
-                  type="text"
-                  [(ngModel)]="question.title"
-                  class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter problem name..."
-                >
+                <input type="text" [(ngModel)]="question.title"
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="Enter problem name...">
               </div>
 
               <!-- Problem Statement -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Problem Statement</label>
-                <textarea
-                  [(ngModel)]="question.problemStatement"
-                  rows="6"
-                  class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter the problem statement..."
-                ></textarea>
+                <textarea [(ngModel)]="question.problemStatement" rows="6"
+                          class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter the problem statement..."></textarea>
               </div>
 
               <!-- Maximum Score -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Score</label>
-                <input
-                  type="number"
-                  [(ngModel)]="question.maxScore"
-                  class="w-32 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  min="1"
-                >
+                <input type="number" [(ngModel)]="question.maxScore"
+                       class="w-32 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       min="1">
               </div>
 
               <!-- Tags -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
                 <div class="flex flex-wrap gap-2 mb-2">
-                  <span *ngFor="let tag of question.tags; let i = index" 
+                  <span *ngFor="let tag of question.tags; let i = index"
                         class="px-2 py-1 bg-gray-100 rounded-full text-sm flex items-center">
                     {{tag}}
-                    <button (click)="removeTag(i)" 
-                            class="ml-1 text-gray-500 hover:text-gray-700">
+                    <button (click)="removeTag(i)" class="ml-1 text-gray-500 hover:text-gray-700">
                       <span class="material-icons text-sm">close</span>
                     </button>
                   </span>
                 </div>
                 <div class="flex gap-2">
-                  <input
-                    type="text"
-                    [(ngModel)]="newTag"
-                    (keyup.enter)="addTag()"
-                    class="rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Add a tag..."
-                  >
-                  <button 
-                    (click)="addTag()"
-                    class="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                  <input type="text" [(ngModel)]="newTag" (keyup.enter)="addTag()"
+                         class="rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                         placeholder="Add a tag...">
+                  <button (click)="addTag()"
+                          class="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     Add
                   </button>
                 </div>
@@ -135,108 +108,50 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
           <!-- Step 2: Solution & Test Cases -->
           <div *ngIf="currentStep === 1">
             <div class="space-y-6">
-              <!-- Sample Input/Output -->
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Sample Input</label>
-                  <textarea
-                    [(ngModel)]="question.sampleInput"
-                    rows="4"
-                    class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono"
-                    placeholder="Enter sample input..."
-                  ></textarea>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Sample Output</label>
-                  <textarea
-                    [(ngModel)]="question.sampleOutput"
-                    rows="4"
-                    class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono"
-                    placeholder="Enter sample output..."
-                  ></textarea>
-                </div>
-              </div>
-
-              <!-- Sample Explanation -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Sample Explanation</label>
-                <textarea
-                  [(ngModel)]="question.sampleExplanation"
-                  rows="4"
-                  class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Explain the sample case..."
-                ></textarea>
-              </div>
-
               <!-- Test Cases -->
               <div>
                 <div class="flex justify-between items-center mb-4">
                   <label class="block text-sm font-medium text-gray-700">Test Cases</label>
-                  <button 
-                    (click)="addTestCase()"
-                    class="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                  <button (click)="addTestCase()"
+                          class="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
                     Add Test Case
                   </button>
                 </div>
                 <div class="space-y-4">
-                  <div *ngFor="let testCase of question.testCases; let i = index" 
-                       class="border rounded-lg p-4">
+                  <div *ngFor="let testCase of question.testCases; let i = index" class="border rounded-lg p-4">
                     <div class="flex justify-between items-start mb-4">
                       <h4 class="font-medium">Test Case {{i + 1}}</h4>
-                      <button 
-                        (click)="removeTestCase(i)"
-                        class="text-red-500 hover:text-red-700">
+                      <button (click)="removeTestCase(i)" class="text-red-500 hover:text-red-700">
                         <span class="material-icons">delete</span>
                       </button>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <label class="block text-sm text-gray-600 mb-1">Input</label>
-                        <textarea
-                          [(ngModel)]="testCase.input"
-                          rows="3"
-                          class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
-                        ></textarea>
+                        <textarea [(ngModel)]="testCase.inputData" rows="3"
+                                  class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"></textarea>
                       </div>
                       <div>
                         <label class="block text-sm text-gray-600 mb-1">Output</label>
-                        <textarea
-                          [(ngModel)]="testCase.output"
-                          rows="3"
-                          class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
-                        ></textarea>
+                        <textarea [(ngModel)]="testCase.expectedOutput" rows="3"
+                                  class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"></textarea>
                       </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-sm text-gray-600 mb-1">Score</label>
-                        <input
-                          type="number"
-                          [(ngModel)]="testCase.score"
-                          class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          min="1"
-                        >
+                        <label class="block text-sm text-gray-600 mb-1">Score Weight</label>
+                        <input type="number" [(ngModel)]="testCase.scoreWeight"
+                               class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               min="1">
                       </div>
                       <div>
                         <label class="block text-sm text-gray-600 mb-1">Visibility</label>
                         <div class="flex items-center mt-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="testCase.isVisible"
-                            class="rounded text-green-500 focus:ring-green-500"
-                          >
+                          <input type="checkbox" [(ngModel)]="testCase.isPublic"
+                                 class="rounded text-green-500 focus:ring-green-500">
                           <span class="ml-2 text-sm text-gray-600">Visible to candidates</span>
                         </div>
                       </div>
-                    </div>
-                    <div class="mt-4">
-                      <label class="block text-sm text-gray-600 mb-1">Explanation (Optional)</label>
-                      <textarea
-                        [(ngModel)]="testCase.explanation"
-                        rows="2"
-                        class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                        placeholder="Add explanation for this test case..."
-                      ></textarea>
                     </div>
                   </div>
                 </div>
@@ -251,10 +166,9 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-4">Allowed Languages</label>
                 <div class="grid grid-cols-3 gap-3">
-                  <button *ngFor="let lang of availableLanguages"
-                          (click)="toggleLanguage(lang)"
+                  <button *ngFor="let lang of availableLanguages" (click)="toggleLanguage(lang)"
                           [class]="getLanguageButtonClass(lang)">
-                    {{lang}}
+                    {{lang.language}}
                   </button>
                 </div>
               </div>
@@ -265,18 +179,18 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
                 <div class="border rounded-lg overflow-hidden">
                   <!-- Language Tabs -->
                   <div class="flex border-b bg-gray-50">
-                    <button *ngFor="let lang of question.allowedLanguages"
-                            (click)="setActiveSnippetLang(lang)"
-                            [class]="getSnippetTabClass(lang)"
+                    <button *ngFor="let template  of question.templates"
+                            (click)="setActiveSnippetLang(template.languageId)"
+                            [class]="getSnippetTabClass(template.languageId)"
                             class="px-4 py-2 text-sm font-medium">
-                      {{lang}}
+                      {{getLanguageName(template.languageId)}}
                     </button>
                   </div>
                   <!-- Code Editor -->
                   <div class="p-4">
                     <textarea
                       *ngIf="activeSnippetLang"
-                      [(ngModel)]="getCodeSnippet(activeSnippetLang).code"
+                      [(ngModel)]="getCodeSnippet(activeSnippetLang).snippet"
                       rows="15"
                       class="w-full font-mono text-sm p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     ></textarea>
@@ -295,12 +209,9 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
                 </p>
               </div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Editorial</label>
-              <textarea
-                [(ngModel)]="question.editorial"
-                rows="15"
-                class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter the solution approach and explanation..."
-              ></textarea>
+              <textarea [(ngModel)]="question.editorial" rows="15"
+                        class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Enter the solution approach and explanation..."></textarea>
             </div>
           </div>
         </div>
@@ -308,38 +219,81 @@ import { ProgrammingQuestion, TestCase, CodeSnippet } from '../../types/programm
         <!-- Footer -->
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-between items-center">
           <div>
-            <button 
-              (click)="saveDraft()"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors mr-2">
+            <button (click)="saveDraft()"
+                    class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors mr-2">
               Save as Draft
             </button>
           </div>
           <div class="flex gap-2">
-            <button 
-              *ngIf="currentStep > 0"
-              (click)="previousStep()"
-              class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button *ngIf="currentStep > 0" (click)="previousStep()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               Back
             </button>
-            <button 
-              *ngIf="currentStep < 3"
-              (click)="nextStep()"
-              [disabled]="!canProceed"
-              class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <button *ngIf="currentStep < 3" (click)="nextStep()" [disabled]="!canProceed"
+                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               Next
             </button>
-            <button 
-              *ngIf="currentStep === 3"
-              (click)="publish()"
-              [disabled]="!isComplete"
-              class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <button *ngIf="currentStep === 3" (click)="publish()" [disabled]="!isComplete"
+                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               Publish
             </button>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [
+    `
+      .notification {
+        min-width: 300px;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
+      .notification.success {
+        background-color: #22c55e;
+        color: white;
+        border-left: 4px solid #166534;
+      }
+      .notification.error {
+        background-color: #ef4444;
+        color: white;
+        border-left: 4px solid #991b1b;
+      }
+      .notification.info {
+        background-color: #3b82f6;
+        color: white;
+        border-left: 4px solid #1d4ed8;
+      }
+      .notification.warning {
+        background-color: #eab308;
+        color: white;
+        border-left: 4px solid #b45309;
+      }
+      .animate-in {
+        animation: slideIn 0.5s ease-out;
+      }
+      .animate-out {
+        animation: slideOut 0.5s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(100%);
+        }
+      }
+    `,
+  ],
 })
 export class CreateProgrammingModalComponent {
   @Output() closed = new EventEmitter<void>();
@@ -349,26 +303,37 @@ export class CreateProgrammingModalComponent {
   isVisible = false;
   currentStep = 0;
   steps = ['Description', 'Solution & Test Cases', 'Languages', 'Editorial'];
-  difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
+  difficultyLevels = ['EASY', 'MEDIUM', 'HARD'];
   newTag = '';
   activeSnippetLang = '';
 
-  availableLanguages = ['Python 3', 'Python 3.8', 'JavaScript', 'TypeScript', 'Java', 'C#', 'Go'];
+  availableLanguages = [
+    { language: 'Python 3', languageId: '71' },
+    { language: 'Java', languageId: '62' },
+  ];
 
   question: ProgrammingQuestion = {
-    difficulty: 'Basic',
+    id: null,
+    type: 'CODING',
     title: '',
     problemStatement: '',
-    maxScore: 100,
+    difficultyLevel: 'EASY',
+    maxScore: 10,
+    negativeScore: 0,
+    isDraft: false,
+    timeLimit: 2,
+    memoryLimit: 256,
+    timeBoundSeconds: 60,
     tags: [],
-    sampleInput: '',
-    sampleOutput: '',
-    sampleExplanation: '',
+    solutionTemplate: '',
+    editorial: '',
+    ai_evaluation_enabled: true,
+    visibility: 'PUBLIC',
+    templates: [],
     testCases: [],
-    allowedLanguages: [],
-    codeSnippets: [],
-    editorial: ''
   };
+
+  constructor(private programmingQuestionService: ProgrammingQuestionService) {}
 
   show() {
     this.isVisible = true;
@@ -383,18 +348,24 @@ export class CreateProgrammingModalComponent {
   resetForm() {
     this.currentStep = 0;
     this.question = {
-      difficulty: 'Basic',
+      id: null,
+      type: 'CODING',
       title: '',
       problemStatement: '',
-      maxScore: 100,
+      difficultyLevel: 'EASY',
+      maxScore: 10,
+      negativeScore: 0,
+      isDraft: false,
+      timeLimit: 2,
+      memoryLimit: 256,
+      timeBoundSeconds: 60,
       tags: [],
-      sampleInput: '',
-      sampleOutput: '',
-      sampleExplanation: '',
+      solutionTemplate: '',
+      editorial: '',
+      ai_evaluation_enabled: true,
+      visibility: 'PUBLIC',
+      templates: [],
       testCases: [],
-      allowedLanguages: [],
-      codeSnippets: [],
-      editorial: ''
     };
     this.newTag = '';
     this.activeSnippetLang = '';
@@ -413,11 +384,13 @@ export class CreateProgrammingModalComponent {
 
   addTestCase() {
     this.question.testCases.push({
-      input: '',
-      output: '',
-      score: 10,
-      isVisible: false,
-      explanation: ''
+      inputData: '',
+      expectedOutput: '',
+      scoreWeight: 1,
+      isSample: false,
+      timeLimitOverride: 2,
+      memoryLimitOverride: 128,
+      isPublic: true,
     });
   }
 
@@ -425,74 +398,45 @@ export class CreateProgrammingModalComponent {
     this.question.testCases.splice(index, 1);
   }
 
-  toggleLanguage(lang: string) {
-    const index = this.question.allowedLanguages.indexOf(lang);
+  toggleLanguage(lang: { language: string; languageId: string }) {
+    const index = this.question.templates.findIndex(
+      (t) => t.languageId === lang.languageId
+    );
     if (index === -1) {
-      this.question.allowedLanguages.push(lang);
-      this.question.codeSnippets.push({
-        language: lang,
-        code: this.getDefaultSnippet(lang)
+      this.question.templates.push({
+        languageId: lang.languageId,
+        snippet: this.getDefaultSnippet(lang.language),
       });
       if (!this.activeSnippetLang) {
-        this.activeSnippetLang = lang;
+        this.activeSnippetLang = lang.languageId;
       }
     } else {
-      this.question.allowedLanguages.splice(index, 1);
-      this.question.codeSnippets = this.question.codeSnippets.filter(s => s.language !== lang);
-      if (this.activeSnippetLang === lang) {
-        this.activeSnippetLang = this.question.allowedLanguages[0] || '';
+      this.question.templates.splice(index, 1);
+      if (this.activeSnippetLang === lang.languageId) {
+        this.activeSnippetLang = this.question.templates[0]?.languageId || '';
       }
     }
   }
 
-  getLanguageButtonClass(lang: string): string {
-    const isSelected = this.question.allowedLanguages.includes(lang);
+  getLanguageButtonClass(lang: { language: string; languageId: string }): string {
+    const isSelected = this.question.templates.some(
+      (t) => t.languageId === lang.languageId
+    );
     return `px-4 py-2 rounded-lg border ${
-      isSelected 
-        ? 'border-green-500 bg-green-50 text-green-700' 
+      isSelected
+        ? 'border-green-500 bg-green-50 text-green-700'
         : 'border-gray-300 hover:border-green-500 hover:bg-green-50'
     } transition-colors`;
   }
 
-  setActiveSnippetLang(lang: string) {
-    this.activeSnippetLang = lang;
+  setActiveSnippetLang(languageId: string) {
+    this.activeSnippetLang = languageId;
   }
 
-  getSnippetTabClass(lang: string): string {
-    return this.activeSnippetLang === lang
+  getSnippetTabClass(languageId: string): string {
+    return this.activeSnippetLang === languageId
       ? 'border-b-2 border-green-500 text-green-700'
       : 'text-gray-500 hover:text-gray-700';
-  }
-
-  getCodeSnippet(language: string): CodeSnippet {
-    let snippet = this.question.codeSnippets.find(s => s.language === language);
-    if (!snippet) {
-      snippet = {
-        language,
-        code: this.getDefaultSnippet(language)
-      };
-      this.question.codeSnippets.push(snippet);
-    }
-    return snippet;
-  }
-
-  getDefaultSnippet(language: string): string {
-    switch (language) {
-      case 'Python 3':
-      case 'Python 3.8':
-        return 'def solution(M, R, D):\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    M = int(input())\n    R = int(input())\n    D = int(input())\n    result = solution(M, R, D)\n    print(result)';
-      case 'JavaScript':
-      case 'TypeScript':
-        return 'function solution(M, R, D) {\n    // Write your code here\n}\n\nconst M = parseInt(readline());\nconst R = parseInt(readline());\nconst D = parseInt(readline());\nconst result = solution(M, R, D);\nconsole.log(result);';
-      case 'Java':
-        return 'import java.util.*;\n\nclass Solution {\n    public static String solution(int M, int R, int D) {\n        // Write your code here\n        return "";\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int M = scanner.nextInt();\n        int R = scanner.nextInt();\n        int D = scanner.nextInt();\n        String result = solution(M, R, D);\n        System.out.println(result);\n    }\n}';
-      case 'C#':
-        return 'using System;\n\nclass Solution {\n    static string Solution(int M, int R, int D) {\n        // Write your code here\n        return "";\n    }\n\n    static void Main(string[] args) {\n        int M = int.Parse(Console.ReadLine());\n        int R = int.Parse(Console.ReadLine());\n        int D = int.Parse(Console.ReadLine());\n        string result = Solution(M, R, D);\n        Console.WriteLine(result);\n    }';
-      case 'Go':
-        return 'package main\n\nimport "fmt"\n\nfunc solution(M, R, D int) string {\n    // Write your code here\n    return ""\n}\n\nfunc main() {\n    var M, R, D int\n    fmt.Scan(&M, &R, &D)\n    result := solution(M, R, D)\n    fmt.Println(result)\n}';
-      default:
-        return '// Write your solution here';
-    }
   }
 
   getStepNumberClass(index: number): string {
@@ -506,6 +450,12 @@ export class CreateProgrammingModalComponent {
     return baseClasses + 'bg-gray-200 text-gray-500';
   }
 
+  getLanguageName(languageId: string): string {
+    const language = this.availableLanguages.find((lang) => lang.languageId === languageId);
+    return language ? language.language : 'Unknown';
+  }
+
+
   getStepTextClass(index: number): string {
     const baseClasses = 'ml-2 text-sm font-medium ';
     if (this.currentStep >= index) {
@@ -513,33 +463,62 @@ export class CreateProgrammingModalComponent {
     }
     return baseClasses + 'text-gray-500';
   }
+  getCodeSnippet(languageId: string): CodeSnippet {
+    let snippet = this.question.templates.find((t) => t.languageId === languageId);
+    if (!snippet) {
+      snippet = {
+        languageId,
+        snippet: this.getDefaultSnippet(
+          this.availableLanguages.find((l) => l.languageId === languageId)?.language || ''
+        ),
+      };
+      this.question.templates.push(snippet);
+    }
+    return snippet;
+  }
+
+  getDefaultSnippet(language: string): string {
+    switch (language) {
+      case 'Python 3':
+        return 'def solution():\n    # Write your code here\n    pass';
+      case 'Java':
+        return 'public class Solution {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}';
+      default:
+        return '// Write your solution here';
+    }
+  }
 
   get canProceed(): boolean {
     switch (this.currentStep) {
       case 0:
-        return this.question.title.trim() !== '' && 
-               this.question.problemStatement.trim() !== '' && 
-               this.question.maxScore > 0;
+        return (
+          this.question.title.trim() !== '' &&
+          this.question.problemStatement.trim() !== '' &&
+          this.question.maxScore > 0
+        );
       case 1:
-        return this.question.sampleInput.trim() !== '' && 
-               this.question.sampleOutput.trim() !== '' &&
-               this.question.testCases.length > 0;
+        return (
+          this.question.testCases.length > 0 &&
+          this.question.testCases.every(
+            (tc) => tc.inputData.trim() !== '' && tc.expectedOutput.trim() !== ''
+          )
+        );
       case 2:
-        return this.question.allowedLanguages.length > 0;
+        return this.question.templates.length > 0;
       default:
         return true;
     }
   }
 
   get isComplete(): boolean {
-    return this.question.title.trim() !== '' && 
-           this.question.problemStatement.trim() !== '' && 
-           this.question.maxScore > 0 &&
-           this.question.sampleInput.trim() !== '' && 
-           this.question.sampleOutput.trim() !== '' &&
-           this.question.testCases.length > 0 &&
-           this.question.allowedLanguages.length > 0 &&
-           this.question.editorial.trim() !== '';
+    return (
+      this.question.title.trim() !== '' &&
+      this.question.problemStatement.trim() !== '' &&
+      this.question.maxScore > 0 &&
+      this.question.testCases.length > 0 &&
+      this.question.templates.length > 0 &&
+      this.question.editorial.trim() !== ''
+    );
   }
 
   nextStep() {
@@ -555,13 +534,33 @@ export class CreateProgrammingModalComponent {
   }
 
   saveDraft() {
-    this.drafted.emit({...this.question});
+    this.question.isDraft = true;
+    this.programmingQuestionService.createQuestion(this.question).subscribe({
+      next: (response) => {
+        console.log('Draft saved successfully', response);
+        this.drafted.emit({ ...this.question });
+      },
+      error: (error) => {
+        console.error('Error saving draft', error);
+      },
+    });
   }
 
   publish() {
     if (this.isComplete) {
-      this.published.emit({...this.question});
-      this.close();
+      this.question.isDraft = false;
+      this.programmingQuestionService.createQuestion(this.question).subscribe({
+        next: (response) => {
+          this.published.emit({ ...this.question });
+          this.close();
+          alert('Question Got Published');
+          console.log('Question published successfully', response);
+        },
+        error: (error) => {
+          alert('Question is not getting publish: Check with administrator');
+          console.error('Error publishing question', error);
+        },
+      });
     }
   }
 }
