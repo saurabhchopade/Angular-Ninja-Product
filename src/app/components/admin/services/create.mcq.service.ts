@@ -6,7 +6,7 @@ import { MCQQuestion } from '../types/mcq-question.type';
 @Injectable({
     providedIn: 'root'
   })
-  export class QuestionService {
+  export class MCQQuestionService {
     private apiUrl = 'http://localhost:8080/api/question/create-mcq';
   
     constructor(private http: HttpClient) {}

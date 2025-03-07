@@ -2,7 +2,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MCQQuestion, MCQOption } from '../../types/mcq-question.type';
-import { QuestionService } from '../../services/create.mcq.service'; // Import the service
+import { MCQQuestionService } from '../../services/create.mcq.service'; // Import the service
 import { HttpClientModule } from '@angular/common/http';
 
 @Component({
@@ -252,7 +252,7 @@ export class CreateMCQModalComponent {
     aiEvaluationEnabled: false,
   };
 
-  constructor(private questionService: QuestionService) {}
+  constructor(private questionService: MCQQuestionService) {}
 
   show() {
     this.isVisible = true;
