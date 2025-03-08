@@ -345,6 +345,8 @@ export class AssessmentLibraryComponent implements OnInit {
 
   onSearch(): void {
     console.log('Query',this.searchQuery)
+    console.log('Query',this.selectedTypes)
+
     this.currentPage = 0;
     this.cachedQuestions = {}; // Clear cache on new search
     this.fetchQuestions();
@@ -352,10 +354,17 @@ export class AssessmentLibraryComponent implements OnInit {
 
   applyFilters(): void {
     this.currentPage = 0;
-    this.cachedQuestions = {}; // Clear cache on new filters
+    this.cachedQuestions = {}; 
+    this.updateSearchQuestionType()// Clear cache on new filters
+    console.log('TYPES', this.searchQuestionType)
     this.fetchQuestions();
   }
 
+  updateSearchQuestionType() {
+    this.searchQuestionType = Object.keys(this.selectedTypes)
+      .filter(key => this.selectedTypes[key]); // Push only the keys with `true` value
+  }
+  
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
