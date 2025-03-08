@@ -581,27 +581,26 @@ export class AssessmentLibraryComponent implements OnInit {
   }
 
   getDifficultyButtonClass(level: string): string {
-    const isSelected = this.selectedDifficulty === level;
-    const baseClasses = 'border ';
-    
+    const isSelected = this.searchDifficultyLevels.includes(level);
+    const baseClasses = 'px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-sm ';
+  
     switch (level) {
       case 'Basic':
-        return baseClasses + (isSelected 
-          ? 'bg-green-50 text-green-600 border-green-200'
-          : 'text-gray-600 border-gray-200 hover:bg-green-50 hover:text-green-600');
+        return baseClasses + (isSelected
+          ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200' // Darker green for selected state
+          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'); // Default grey state
       case 'Intermediate':
         return baseClasses + (isSelected
-          ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
-          : 'text-gray-600 border-gray-200 hover:bg-yellow-50 hover:text-yellow-600');
+          ? 'bg-yellow-100 text-yellow-700 border border-yellow-300 hover:bg-yellow-200' // Darker yellow for selected state
+          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'); // Default grey state
       case 'Advanced':
         return baseClasses + (isSelected
-          ? 'bg-red-50 text-red-600 border-red-200'
-          : 'text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600');
+          ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200' // Darker red for selected state
+          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'); // Default grey state
       default:
-        return baseClasses + 'text-gray-600 border-gray-200';
+        return baseClasses + 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'; // Default grey state for unknown levels
     }
   }
-
   onCreateClick() {
     if (this.activeTab === 'library') {
       this.questionTypeModal.show();
