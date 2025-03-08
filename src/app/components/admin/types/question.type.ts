@@ -1,11 +1,11 @@
 export type QuestionType = {
     id: number;
     title: string;
-    description: string;
-    difficulty: 'Basic' | 'Intermediate' | 'Advanced';
-    score: number;
-    technologies: string[];
-    categories: string[];
+    problemStatement: string;
+    difficultyLevel: string;
+    type: string;
+    maxScore:number
+    tags: string[];
   };
 
   export type questionIds = {

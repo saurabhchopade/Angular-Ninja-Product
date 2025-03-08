@@ -119,7 +119,7 @@ import { QuestionType } from '../../types/question.type';
         <!-- Question List -->
         <div class="flex-1 overflow-auto p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div *ngFor="let question of filteredQuestions"
+            <div *ngFor="let question of questions"
                  class="relative border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all"
                  [class.border-[#4CAF50]]="isSelected(question.id)">
               <!-- Selection Checkbox -->
@@ -133,11 +133,11 @@ import { QuestionType } from '../../types/question.type';
               <!-- Question Content -->
               <div class="pr-8">
                 <h3 class="text-lg font-semibold text-gray-800 mb-2">{{question.title}}</h3>
-                <p class="text-gray-600 text-sm mb-4">{{question.description}}</p>
+                <p class="text-gray-600 text-sm mb-4">{{question.difficultyLevel}}</p>
                 
                 <!-- Tags -->
                 <div class="flex flex-wrap gap-2">
-                  <span *ngFor="let tech of question.technologies"
+                  <span *ngFor="let tech of question.tags"
                         class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
                     {{tech}}
                   </span>
@@ -145,15 +145,15 @@ import { QuestionType } from '../../types/question.type';
 
                 <!-- Categories -->
                 <div class="flex flex-wrap gap-2 mt-2">
-                  <span *ngFor="let category of question.categories"
+                  <span *ngFor="let category of question.tags"
                         class="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full text-xs">
                     {{category}}
                   </span>
                 </div>
 
                 <!-- Difficulty -->
-                <span [class]="getDifficultyClass(question.difficulty)" class="mt-3 inline-block">
-                  {{question.difficulty}}
+                <span [class]="getDifficultyClass(question.difficultyLevel)" class="mt-3 inline-block">
+                  {{question.difficultyLevel}}
                 </span>
               </div>
             </div>
@@ -204,145 +204,75 @@ export class QuestionLibraryComponent {
     libraries: false
   };
 
+
+  // export interface Question {
+  //   id: number;
+  //   title: string;
+  //   problemStatement: string;
+  //   difficultyLevel: string;
+  //   type: string;
+  //   maxScore: number;
+  //   tags: string[];
+  // }
+  
   questions: QuestionType[] = [
     {
       id: 1,
       title: "RESTful API Design",
-      description: "Design a scalable REST API for a social media platform with user authentication and post management.",
-      difficulty: "Intermediate",
-      score: 85,
-      technologies: ["Python", "FastAPI", "REST"],
-      categories: ["Backend", "API Design"]
+      problemStatement: "Design a scalable REST API for a social media platform with user authentication and post management.",
+      difficultyLevel: "Intermediate",
+      maxScore: 85,
+      type:"Subjective",
+      tags: ["Python", "FastAPI", "REST"]
     },
-    {
-      id: 2,
-      title: "React Component Architecture",
-      description: "Create a reusable component library following React best practices and design patterns.",
-      difficulty: "Basic",
-      score: 75,
-      technologies: ["React", "TypeScript", "Styled Components"],
-      categories: ["Frontend", "Component Design"]
-    },
-    {
-      id: 3,
-      title: "Database Optimization",
-      description: "Optimize database queries and implement caching strategies for a high-traffic e-commerce platform.",
-      difficulty: "Advanced",
-      score: 95,
-      technologies: ["PostgreSQL", "Redis", "SQL"],
-      categories: ["Database", "Performance"]
-    },
-    {
-      id: 4,
-      title: "Authentication System",
-      description: "Implement a secure authentication system with JWT, OAuth, and role-based access control.",
-      difficulty: "Intermediate",
-      score: 88,
-      technologies: ["Node.js", "JWT", "OAuth"],
-      categories: ["Security", "Backend"]
-    },
-    {
-      id: 5,
-      title: "Microservices Architecture",
-      description: "Design and implement a microservices-based system with service discovery and load balancing.",
-      difficulty: "Advanced",
-      score: 92,
-      technologies: ["Docker", "Kubernetes", "gRPC"],
-      categories: ["System Design", "Microservices"]
-    },
-    {
-      id: 6,
-      title: "State Management",
-      description: "Implement global state management using Redux/MobX with proper error handling and side effects.",
-      difficulty: "Intermediate",
-      score: 82,
-      technologies: ["Redux", "MobX", "JavaScript"],
-      categories: ["Frontend", "State Management"]
-    },
-    {
-      id: 7,
-      title: "Testing Strategies",
-      description: "Write comprehensive test suites using modern testing frameworks and methodologies.",
-      difficulty: "Basic",
-      score: 78,
-      technologies: ["Jest", "React Testing Library", "Cypress"],
-      categories: ["Testing", "Quality Assurance"]
-    },
-    {
-      id: 8,
-      title: "CI/CD Pipeline",
-      description: "Set up a complete CI/CD pipeline with automated testing, deployment, and monitoring.",
-      difficulty: "Advanced",
-      score: 90,
-      technologies: ["Jenkins", "GitHub Actions", "AWS"],
-      categories: ["DevOps", "Automation"]
-    },
-    {
-      id: 9,
-      title: "Real-time Chat System",
-      description: "Build a scalable real-time chat system with WebSocket integration and message persistence.",
-      difficulty: "Intermediate",
-      score: 85,
-      technologies: ["WebSocket", "Node.js", "MongoDB"],
-      categories: ["Real-time", "Full Stack"]
-    },
-    {
-      id: 10,
-      title: "Mobile Responsive Design",
-      description: "Create a fully responsive web application with modern CSS frameworks and best practices.",
-      difficulty: "Basic",
-      score: 72,
-      technologies: ["CSS", "Tailwind", "Responsive Design"],
-      categories: ["Frontend", "UI/UX"]
-    }
   ];
 
-  get filteredQuestions(): QuestionType[] {
-    let filtered = [...this.questions];
+  // get filteredQuestions(): QuestionType[] {
+  //   let filtered = [...this.questions];
 
-    // Filter out existing questions
-    if (this.existingQuestionIds.length > 0) {
-      filtered = filtered.filter(q => !this.existingQuestionIds.includes(q.id.toString()));
-    }
+  //   // Filter out existing questions
+  //   if (this.existingQuestionIds.length > 0) {
+  //     filtered = filtered.filter(q => !this.existingQuestionIds.includes(q.id.toString()));
+  //   }
 
-    // Apply search
-    if (this.searchQuery) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.technologies.some(t => t.toLowerCase().includes(query)) ||
-        q.categories.some(c => c.toLowerCase().includes(query))
-      );
-    }
+  //   // Apply search
+  //   if (this.searchQuery) {
+  //     const query = this.searchQuery.toLowerCase();
+  //     filtered = filtered.filter(q => 
+  //       q.title.toLowerCase().includes(query) ||
+  //       q.description.toLowerCase().includes(query) ||
+  //       q.technologies.some(t => t.toLowerCase().includes(query)) ||
+  //       q.categories.some(c => c.toLowerCase().includes(query))
+  //     );
+  //   }
 
-    // Apply difficulty filter
-    if (this.selectedDifficulty) {
-      filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
-    }
+  //   // Apply difficulty filter
+  //   if (this.selectedDifficulty) {
+  //     filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
+  //   }
 
-    // Apply question type filters
-    const activeTypes = Object.entries(this.selectedTypes)
-      .filter(([_, selected]) => selected)
-      .map(([type]) => type);
-    if (activeTypes.length > 0) {
-      filtered = filtered.filter(q => 
-        q.categories.some(c => activeTypes.includes(c))
-      );
-    }
+  //   // Apply question type filters
+  //   const activeTypes = Object.entries(this.selectedTypes)
+  //     .filter(([_, selected]) => selected)
+  //     .map(([type]) => type);
+  //   if (activeTypes.length > 0) {
+  //     filtered = filtered.filter(q => 
+  //       q.categories.some(c => activeTypes.includes(c))
+  //     );
+  //   }
 
-    // Apply library filters
-    const activeLibraries = Object.entries(this.selectedLibraries)
-      .filter(([_, selected]) => selected)
-      .map(([lib]) => lib);
-    if (activeLibraries.length > 0) {
-      filtered = filtered.filter(q => 
-        q.categories.some(c => activeLibraries.includes(c))
-      );
-    }
+  //   // Apply library filters
+  //   const activeLibraries = Object.entries(this.selectedLibraries)
+  //     .filter(([_, selected]) => selected)
+  //     .map(([lib]) => lib);
+  //   if (activeLibraries.length > 0) {
+  //     filtered = filtered.filter(q => 
+  //       q.categories.some(c => activeLibraries.includes(c))
+  //     );
+  //   }
 
-    return filtered;
-  }
+  //   return filtered;
+  // }
 
   get hasActiveFilters(): boolean {
     return this.selectedDifficulty !== '' ||

@@ -7,8 +7,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TestType } from '../../types/test.type';
-import { TestCardComponent } from "../test-card/test-card.component";
-import { QuestionTypeModalComponent, QuestionTypeOption } from "../question-type/question-type-modal.component";
+import { TestCardComponent } from '../test-card/test-card.component';
+import { QuestionTypeModalComponent, QuestionTypeOption } from '../question-type/question-type-modal.component';
 import { CreateSubjectiveModalComponent, SubjectiveQuestion } from '../create-subjective-modal/create-subjective-modal.component';
 import { CreateProgrammingModalComponent } from '../create-programming-modal/create-programming-modal.component';
 import { ProgrammingQuestion } from '../../types/programming-question.type';
@@ -22,7 +22,7 @@ import { AssessmentReportComponent } from '../assessment-report/assessment-repor
 import { CreateAssessmentModalComponent } from '../create-assessment-modal/create-assessment-modal.component';
 import { TestPublishComponent } from '../test-publish/test-publish.component';
 import { AssessmentDataService } from '../../services/assessment.data.service';
-
+import { QuestionService, Question, QuestionResponse } from '../../services/fetch.question.service';
 
 @Component({
   selector: 'app-root',
@@ -41,7 +41,8 @@ import { AssessmentDataService } from '../../services/assessment.data.service';
     InviteCandidatesModalComponent,
     AssessmentReportComponent,
     CreateAssessmentModalComponent,
-    TestPublishComponent
+    TestPublishComponent,
+    HttpClientModule
   ],
   template: `
     <div class="flex h-screen bg-gray-50">
@@ -185,9 +186,26 @@ import { AssessmentDataService } from '../../services/assessment.data.service';
 
               <ng-container *ngIf="activeTab === 'library'">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <app-question-card *ngFor="let question of filteredQuestions"
+                  <app-question-card *ngFor="let question of questions"
                                    [question]="question">
                   </app-question-card>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex justify-between items-center mt-4">
+                  <button 
+                    (click)="previousPage()"
+                    [disabled]="currentPage === 0"
+                    class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    Previous
+                  </button>
+                  <span>Page {{ currentPage + 1 }}</span>
+                  <button 
+                    (click)="nextPage()"
+                    [disabled]="questions.length < pageSize"
+                    class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    Next
+                  </button>
                 </div>
               </ng-container>
             </div>
@@ -201,6 +219,7 @@ import { AssessmentDataService } from '../../services/assessment.data.service';
         </app-test-publish>
       </main>
 
+      <!-- Modals -->
       <app-question-type-modal
         #questionTypeModal
         (typeSelected)="onQuestionTypeSelected($event)"
@@ -242,9 +261,9 @@ import { AssessmentDataService } from '../../services/assessment.data.service';
         (drafted)="onAssessmentDrafted($event)"
       ></app-create-assessment-modal>
     </div>
-  `
+  `,
 })
-export class AssessmentLibraryComponent {
+export class AssessmentLibraryComponent implements OnInit {
   @ViewChild('questionTypeModal') questionTypeModal!: QuestionTypeModalComponent;
   @ViewChild('createSubjectiveModal') createSubjectiveModal!: CreateSubjectiveModalComponent;
   @ViewChild('createProgrammingModal') createProgrammingModal!: CreateProgrammingModalComponent;
@@ -252,11 +271,8 @@ export class AssessmentLibraryComponent {
   @ViewChild('createFullStackModal') createFullStackModal!: CreateFullStackModalComponent;
   @ViewChild('inviteCandidatesModal') inviteCandidatesModal!: InviteCandidatesModalComponent;
   @ViewChild('createAssessmentModal') createAssessmentModal!: CreateAssessmentModalComponent;
-  
-  constructor(private assessmentDataService: AssessmentDataService) {}
 
-
-  activeTab: string = 'assessments';
+  activeTab: string = 'library';
   tabs = ['Assessments', 'Library'];
   difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
   selectedTestId: number = 0;
@@ -271,38 +287,25 @@ export class AssessmentLibraryComponent {
   selectedDifficulty = '';
   showDropdowns = {
     types: false,
-    libraries: false
+    libraries: false,
   };
 
-  questions: QuestionType[] = [
-    {
-      id: 1,
-      title: "RESTful API Design",
-      description: "Design a scalable REST API for a social media platform with user authentication and post management.",
-      difficulty: "Intermediate",
-      score: 85,
-      technologies: ["Python", "FastAPI"],
-      categories: ["Full Stack", "Backend"]
-    },
-    {
-      id: 2,
-      title: "Security Analysis",
-      description: "Perform a security assessment of a web application and identify potential vulnerabilities.",
-      difficulty: "Advanced",
-      score: 92,
-      technologies: ["CyberOps", "Security"],
-      categories: ["Security", "Analysis"]
-    },
-    {
-      id: 3,
-      title: "Frontend Development",
-      description: "Create a responsive dashboard using React and modern CSS techniques.",
-      difficulty: "Basic",
-      score: 78,
-      technologies: ["React", "TypeScript"],
-      categories: ["Frontend", "UI/UX"]
-    }
-  ];
+ 
+
+  questions: Question[] = [];
+  currentPage = 0;
+  pageSize = 10;
+  sortField = 'difficultyLevel';
+  sortOrder = 'desc';
+  searchDifficultyLevels = [];
+  searchQuestionType = [];
+  // filteredQuestions: any;
+
+  constructor(
+    private assessmentDataService: AssessmentDataService,
+    private questionService: QuestionService
+  ) {}
+
 
   tests: TestType[] = [
     {
@@ -339,6 +342,125 @@ export class AssessmentLibraryComponent {
     }
   ];
 
+  ngOnInit(): void {
+    this.fetchQuestions();
+  }
+
+  fetchQuestions(): void {
+    this.questionService
+      .fetchQuestions(
+        this.currentPage,
+        this.pageSize,
+        this.sortField,
+        this.sortOrder,
+        this.searchDifficultyLevels,
+        this.searchQuestionType,
+        this.searchQuery
+      )
+      .subscribe((response) => {
+        if (response.code === 200 && response.status === 'SUCCESS') {
+          // Store the response data
+          this.questions = response.data.list;
+          this.pageSize = response.data.totalPages;
+          this.currentPage = response.data.number;
+
+          console.log("Questions responce from question api",this.questions)
+
+        } else {
+          console.error('Failed to fetch questions:', response.message);
+        }
+      });
+
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    this.fetchQuestions();
+  }
+
+  applyFilters(): void {
+    this.currentPage = 0;
+    this.fetchQuestions();
+  }
+
+  previousPage(): void {
+    this.currentPage--;
+    this.fetchQuestions();
+  }
+
+  nextPage(): void {
+    this.currentPage++;
+    this.fetchQuestions();
+  }
+
+  // ... other existing methods ...
+
+
+  // questions: QuestionType[] = [
+  //   {
+  //     id: 1,
+  //     title: "RESTful API Design",
+  //     description: "Design a scalable REST API for a social media platform with user authentication and post management.",
+  //     difficulty: "Intermediate",
+  //     score: 85,
+  //     technologies: ["Python", "FastAPI"],
+  //     categories: ["Full Stack", "Backend"]
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Security Analysis",
+  //     description: "Perform a security assessment of a web application and identify potential vulnerabilities.",
+  //     difficulty: "Advanced",
+  //     score: 92,
+  //     technologies: ["CyberOps", "Security"],
+  //     categories: ["Security", "Analysis"]
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Frontend Development",
+  //     description: "Create a responsive dashboard using React and modern CSS techniques.",
+  //     difficulty: "Basic",
+  //     score: 78,
+  //     technologies: ["React", "TypeScript"],
+  //     categories: ["Frontend", "UI/UX"]
+  //   }
+  // ];
+
+  // tests: TestType[] = [
+  //   {
+  //     id: 1,
+  //     name: "Frontend Developer Assessment",
+  //     inviteType: "Invite Only",
+  //     duration: "1 hr 30 mins",
+  //     testDate: "Feb 15th, 2025, 12:00 PM IST",
+  //     endDate: "Feb 15th, 2025, 11:59 PM IST",
+  //     invitedCount: 50,
+  //     completedCount: 35,
+  //     status: "Active"
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Backend Engineering Test",
+  //     inviteType: "Public",
+  //     duration: "2 hrs",
+  //     testDate: "Feb 20th, 2025, 10:00 AM IST",
+  //     invitedCount: 100,
+  //     completedCount: 75,
+  //     status: "Active"
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "DevOps Assessment",
+  //     inviteType: "Invite Only",
+  //     duration: "1 hr",
+  //     testDate: "Feb 10th, 2025, 3:00 PM IST",
+  //     endDate: "Feb 10th, 2025, 6:00 PM IST",
+  //     invitedCount: 25,
+  //     completedCount: 25,
+  //     status: "Completed"
+  //   }
+  // ];
+
   get filteredTests(): TestType[] {
     if (!this.searchQuery) {
       return this.tests;
@@ -354,47 +476,47 @@ export class AssessmentLibraryComponent {
     );
   }
 
-  get filteredQuestions(): QuestionType[] {
-    let filtered = [...this.questions];
+  // get filteredQuestions(): QuestionType[] {
+  //   let filtered = [...this.questions];
 
-    // Apply search
-    if (this.searchQuery) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.technologies.some(t => t.toLowerCase().includes(query)) ||
-        q.categories.some(c => c.toLowerCase().includes(query))
-      );
-    }
+  //   // Apply search
+  //   if (this.searchQuery) {
+  //     const query = this.searchQuery.toLowerCase();
+  //     filtered = filtered.filter(q => 
+  //       q.title.toLowerCase().includes(query) ||
+  //       q.description.toLowerCase().includes(query) ||
+  //       q.technologies.some(t => t.toLowerCase().includes(query)) ||
+  //       q.categories.some(c => c.toLowerCase().includes(query))
+  //     );
+  //   }
 
-    // Apply difficulty filter
-    if (this.selectedDifficulty) {
-      filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
-    }
+  //   // Apply difficulty filter
+  //   if (this.selectedDifficulty) {
+  //     filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
+  //   }
 
-    // Apply question type filters
-    const activeTypes = Object.entries(this.selectedTypes)
-      .filter(([_, selected]) => selected)
-      .map(([type]) => type);
-    if (activeTypes.length > 0) {
-      filtered = filtered.filter(q => 
-        q.categories.some(c => activeTypes.includes(c))
-      );
-    }
+  //   // Apply question type filters
+  //   const activeTypes = Object.entries(this.selectedTypes)
+  //     .filter(([_, selected]) => selected)
+  //     .map(([type]) => type);
+  //   if (activeTypes.length > 0) {
+  //     filtered = filtered.filter(q => 
+  //       q.categories.some(c => activeTypes.includes(c))
+  //     );
+  //   }
 
-    // Apply library filters
-    const activeLibraries = Object.entries(this.selectedLibraries)
-      .filter(([_, selected]) => selected)
-      .map(([lib]) => lib);
-    if (activeLibraries.length > 0) {
-      filtered = filtered.filter(q => 
-        q.categories.some(c => activeLibraries.includes(c))
-      );
-    }
+  //   // Apply library filters
+  //   const activeLibraries = Object.entries(this.selectedLibraries)
+  //     .filter(([_, selected]) => selected)
+  //     .map(([lib]) => lib);
+  //   if (activeLibraries.length > 0) {
+  //     filtered = filtered.filter(q => 
+  //       q.categories.some(c => activeLibraries.includes(c))
+  //     );
+  //   }
 
-    return filtered;
-  }
+  //   return filtered;
+  // }
 
   get hasActiveFilters(): boolean {
     return this.selectedDifficulty !== '' ||
@@ -553,17 +675,18 @@ export class AssessmentLibraryComponent {
   }
 
   toggleDifficulty(level: string) {
-    this.selectedDifficulty = this.selectedDifficulty === level ? '' : level;
+    this.selectedDifficulty = this.selectedDifficulty === level ? '' : level;    
+    console.log("Difficulty", this.selectedDifficulty);
     this.applyFilters();
   }
 
-  onSearch() {
-    this.applyFilters();
-  }
+  // onSearch() {
+  //   this.applyFilters();
+  // }
 
-  applyFilters() {
-    // Filters are automatically applied through the filteredQuestions getter
-  }
+  // applyFilters() {
+  //   // Filters are automatically applied through the filteredQuestions getter
+  // }
 
   removeFilter(filter: string) {
     const [type, value] = filter.split(': ');

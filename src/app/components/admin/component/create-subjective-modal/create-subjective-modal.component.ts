@@ -210,9 +210,9 @@ export class CreateSubjectiveModalComponent {
 
   question: SubjectiveQuestion = {
     type: 'SUBJECTIVE',
-    title: 'Explain SQL Query',
-    problemStatement: 'Write create, update, delete queries',
-    difficultyLevel: 'Basic',
+    title: 'Subjective Question',
+    problemStatement: 'Explain the advantages and disadvantages of using Microservices architecture in a large-scale application. Provide real-world examples to support your answer',
+    difficultyLevel: 'Intermediate',
     maxScore: 10,
     tags: ['Architecture', 'Microservices', 'Design Patterns'],
     visibility: 'PUBLIC',

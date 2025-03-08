@@ -238,7 +238,7 @@ export class CreateMCQModalComponent {
 
   question: MCQQuestion = {
     type: 'MCQ',
-    title: '',
+    title: 'MCQ Question',
     difficultyLevel: 'Basic',
     problemStatement: '',
     options: [],
@@ -271,7 +271,7 @@ export class CreateMCQModalComponent {
   resetForm() {
     this.question = {
       type: 'MCQ',
-      title: '',
+      title: 'MCQ Question',
       difficultyLevel: 'Basic',
       problemStatement: '',
       options: [],

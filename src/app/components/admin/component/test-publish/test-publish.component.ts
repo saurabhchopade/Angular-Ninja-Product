@@ -629,11 +629,11 @@ export class TestPublishComponent implements OnInit {
       const newQuestions = questions.map(q => ({
         id: q.id.toString(),
         title: q.title,
-        description: q.description,
-        tags: [...q.technologies, ...q.categories],
-        type: q.categories[0],
-        difficulty: q.difficulty,
-        score: q.score
+        description: q.problemStatement,
+        tags: [...q.tags, ...q.tags],
+        type: q.tags[0],
+        difficulty: q.difficultyLevel,
+        score: q.maxScore
       }));
 
       // Add questions to the current section
