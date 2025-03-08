@@ -284,7 +284,7 @@ export class AssessmentLibraryComponent implements OnInit {
   showPublishPage: boolean = false;
 
   searchQuery = '';
-  questionTypes = ['Multiple Choice', 'Programming', 'Design', 'Database', 'System Design'];
+  questionTypes = ['MCQ', 'CODING', 'SUBJECTIVE', 'FULL STACK'];
   libraries = ['Frontend', 'Backend', 'Full Stack', 'DevOps', 'Security'];
   selectedTypes: { [key: string]: boolean } = {};
   selectedLibraries: { [key: string]: boolean } = {};
@@ -344,6 +344,7 @@ export class AssessmentLibraryComponent implements OnInit {
   }
 
   onSearch(): void {
+    console.log('Query',this.searchQuery)
     this.currentPage = 0;
     this.cachedQuestions = {}; // Clear cache on new search
     this.fetchQuestions();
