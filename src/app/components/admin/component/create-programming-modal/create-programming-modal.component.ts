@@ -303,7 +303,7 @@ export class CreateProgrammingModalComponent {
   isVisible = false;
   currentStep = 0;
   steps = ['Description', 'Solution & Test Cases', 'Languages', 'Editorial'];
-  difficultyLevels = ['EASY', 'MEDIUM', 'HARD'];
+  difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
   newTag = '';
   activeSnippetLang = '';
 
@@ -317,7 +317,7 @@ export class CreateProgrammingModalComponent {
     type: 'CODING',
     title: '',
     problemStatement: '',
-    difficultyLevel: 'EASY',
+    difficultyLevel: 'Advanced',
     maxScore: 10,
     negativeScore: 0,
     isDraft: false,
@@ -352,7 +352,7 @@ export class CreateProgrammingModalComponent {
       type: 'CODING',
       title: '',
       problemStatement: '',
-      difficultyLevel: 'EASY',
+      difficultyLevel: 'Basic',
       maxScore: 10,
       negativeScore: 0,
       isDraft: false,

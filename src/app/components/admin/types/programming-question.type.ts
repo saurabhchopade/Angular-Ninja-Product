@@ -18,7 +18,7 @@ export interface ProgrammingQuestion {
   type: string;
   title: string;
   problemStatement: string;
-  difficultyLevel: 'EASY' | 'MEDIUM' | 'HARD';
+  difficultyLevel: 'Basic' | 'Intermediate' | 'Advanced';
   maxScore: number;
   negativeScore: number;
   isDraft: boolean;
