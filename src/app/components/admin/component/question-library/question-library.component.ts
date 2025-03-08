@@ -1,24 +1,30 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { QuestionType } from '../../types/question.type';
+import { Component, Output, EventEmitter, Input } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { QuestionType } from "../../types/question.type";
 
 @Component({
-  selector: 'app-question-library',
+  selector: "app-question-library",
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center overflow-hidden">
-      <div class="bg-white w-[90vw] h-[90vh] rounded-xl shadow-2xl flex flex-col">
+    <div
+      class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center overflow-hidden"
+    >
+      <div
+        class="bg-white w-[90vw] h-[90vh] rounded-xl shadow-2xl flex flex-col"
+      >
         <!-- Header -->
         <div class="flex justify-between items-center p-6 border-b">
           <div>
-            <h2 class="text-xl font-semibold text-gray-800">Question Library</h2>
-            <p class="text-sm text-gray-500 mt-1">Select questions to add to your test</p>
+            <h2 class="text-xl font-semibold text-gray-800">
+              Question Library
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Select questions to add to your test
+            </p>
           </div>
-          <button 
-            (click)="close()"
-            class="text-gray-500 hover:text-gray-700">
+          <button (click)="close()" class="text-gray-500 hover:text-gray-700">
             <span class="material-icons">close</span>
           </button>
         </div>
@@ -28,36 +34,49 @@ import { QuestionType } from '../../types/question.type';
           <div class="p-6 space-y-4">
             <!-- Search -->
             <div class="relative flex-1 max-w-2xl">
-              <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+              <span
+                class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                >search</span
+              >
               <input
                 type="text"
                 [(ngModel)]="searchQuery"
                 (ngModelChange)="onSearch()"
                 class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
                 placeholder="Search questions by topic, title, or description..."
-              >
+              />
             </div>
 
             <!-- Filter Bar -->
             <div class="flex items-center gap-4">
               <!-- Question Types Dropdown -->
               <div class="relative group">
-                <button 
+                <button
                   (click)="toggleDropdown('types')"
-                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                >
                   <span class="material-icons text-gray-500">filter_list</span>
                   Question Types
-                  <span class="material-icons text-gray-500 text-sm">expand_more</span>
+                  <span class="material-icons text-gray-500 text-sm"
+                    >expand_more</span
+                  >
                 </button>
-                <div *ngIf="showDropdowns.types"
-                     class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                <div
+                  *ngIf="showDropdowns.types"
+                  class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10"
+                >
                   <div class="p-3 space-y-2">
-                    <label *ngFor="let type of questionTypes" class="flex items-center gap-2">
-                      <input type="checkbox"
-                             [(ngModel)]="selectedTypes[type]"
-                             (change)="applyFilters()"
-                             class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
-                      <span>{{type}}</span>
+                    <label
+                      *ngFor="let type of questionTypes"
+                      class="flex items-center gap-2"
+                    >
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectedTypes[type]"
+                        (change)="applyFilters()"
+                        class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]"
+                      />
+                      <span>{{ type }}</span>
                     </label>
                   </div>
                 </div>
@@ -65,22 +84,32 @@ import { QuestionType } from '../../types/question.type';
 
               <!-- Libraries Dropdown -->
               <div class="relative group">
-                <button 
+                <button
                   (click)="toggleDropdown('libraries')"
-                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                >
                   <span class="material-icons text-gray-500">folder</span>
                   Libraries
-                  <span class="material-icons text-gray-500 text-sm">expand_more</span>
+                  <span class="material-icons text-gray-500 text-sm"
+                    >expand_more</span
+                  >
                 </button>
-                <div *ngIf="showDropdowns.libraries"
-                     class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                <div
+                  *ngIf="showDropdowns.libraries"
+                  class="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10"
+                >
                   <div class="p-3 space-y-2">
-                    <label *ngFor="let lib of libraries" class="flex items-center gap-2">
-                      <input type="checkbox"
-                             [(ngModel)]="selectedLibraries[lib]"
-                             (change)="applyFilters()"
-                             class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
-                      <span>{{lib}}</span>
+                    <label
+                      *ngFor="let lib of libraries"
+                      class="flex items-center gap-2"
+                    >
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="selectedLibraries[lib]"
+                        (change)="applyFilters()"
+                        class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]"
+                      />
+                      <span>{{ lib }}</span>
                     </label>
                   </div>
                 </div>
@@ -88,28 +117,35 @@ import { QuestionType } from '../../types/question.type';
 
               <!-- Difficulty Levels -->
               <div class="flex items-center gap-2">
-                <button *ngFor="let level of difficultyLevels"
-                        (click)="toggleDifficulty(level)"
-                        [class]="getDifficultyButtonClass(level)"
-                        class="px-3 py-1 rounded-full text-sm transition-colors">
-                  {{level}}
+                <button
+                  *ngFor="let level of difficultyLevels"
+                  (click)="toggleDifficulty(level)"
+                  [class]="getDifficultyButtonClass(level)"
+                  class="px-3 py-1 rounded-full text-sm transition-colors"
+                >
+                  {{ level }}
                 </button>
               </div>
             </div>
 
             <!-- Active Filters -->
             <div *ngIf="hasActiveFilters" class="flex flex-wrap gap-2">
-              <div *ngFor="let filter of activeFilters"
-                   class="px-3 py-1 bg-[#4CAF50]/10 text-[#4CAF50] rounded-full text-sm flex items-center">
-                {{filter}}
-                <button (click)="removeFilter(filter)"
-                        class="ml-2 text-[#4CAF50] hover:text-[#43A047]">
+              <div
+                *ngFor="let filter of activeFilters"
+                class="px-3 py-1 bg-[#4CAF50]/10 text-[#4CAF50] rounded-full text-sm flex items-center"
+              >
+                {{ filter }}
+                <button
+                  (click)="removeFilter(filter)"
+                  class="ml-2 text-[#4CAF50] hover:text-[#43A047]"
+                >
                   <span class="material-icons text-sm">close</span>
                 </button>
               </div>
-              <button 
+              <button
                 (click)="clearFilters()"
-                class="px-3 py-1 text-gray-600 hover:text-gray-800 text-sm">
+                class="px-3 py-1 text-gray-600 hover:text-gray-800 text-sm"
+              >
                 Clear all filters
               </button>
             </div>
@@ -119,41 +155,56 @@ import { QuestionType } from '../../types/question.type';
         <!-- Question List -->
         <div class="flex-1 overflow-auto p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div *ngFor="let question of questions"
-                 class="relative border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all"
-                 [class.border-[#4CAF50]]="isSelected(question.id)">
+            <div
+              *ngFor="let question of questions"
+              class="relative border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all"
+              [class.border-[#4CAF50]]="isSelected(question.id)"
+            >
               <!-- Selection Checkbox -->
               <div class="absolute top-4 right-4">
-                <input type="checkbox"
-                       [checked]="isSelected(question.id)"
-                       (change)="toggleSelection(question)"
-                       class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(question.id)"
+                  (change)="toggleSelection(question)"
+                  class="rounded border-gray-300 text-[#4CAF50] focus:ring-[#4CAF50]"
+                />
               </div>
 
               <!-- Question Content -->
               <div class="pr-8">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">{{question.title}}</h3>
-                <p class="text-gray-600 text-sm mb-4">{{question.difficultyLevel}}</p>
-                
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                  {{ question.title }}
+                </h3>
+                <p class="text-gray-600 text-sm mb-4">
+                  {{ question.difficultyLevel }}
+                </p>
+
                 <!-- Tags -->
                 <div class="flex flex-wrap gap-2">
-                  <span *ngFor="let tech of question.tags"
-                        class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
-                    {{tech}}
+                  <span
+                    *ngFor="let tech of question.tags"
+                    class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs"
+                  >
+                    {{ tech }}
                   </span>
                 </div>
 
                 <!-- Categories -->
                 <div class="flex flex-wrap gap-2 mt-2">
-                  <span *ngFor="let category of question.tags"
-                        class="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full text-xs">
-                    {{category}}
+                  <span
+                    *ngFor="let category of question.tags"
+                    class="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full text-xs"
+                  >
+                    {{ category }}
                   </span>
                 </div>
 
                 <!-- Difficulty -->
-                <span [class]="getDifficultyClass(question.difficultyLevel)" class="mt-3 inline-block">
-                  {{question.difficultyLevel}}
+                <span
+                  [class]="getDifficultyClass(question.difficultyLevel)"
+                  class="mt-3 inline-block"
+                >
+                  {{ question.difficultyLevel }}
                 </span>
               </div>
             </div>
@@ -163,47 +214,54 @@ import { QuestionType } from '../../types/question.type';
         <!-- Footer -->
         <div class="border-t bg-gray-50 p-4 flex justify-between items-center">
           <div class="text-sm text-gray-600">
-            {{selectedQuestions.length}} questions selected
+            {{ selectedQuestions.length }} questions selected
           </div>
           <div class="flex gap-2">
-            <button 
+            <button
               (click)="close()"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
               Cancel
             </button>
-            <button 
+            <button
               (click)="addSelectedQuestions()"
               [disabled]="selectedQuestions.length === 0"
-              class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Add Selected Questions
             </button>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class QuestionLibraryComponent {
   @Input() existingQuestionIds: string[] = [];
   @Output() questionsSelected = new EventEmitter<QuestionType[]>();
   @Output() closed = new EventEmitter<void>();
 
-  searchQuery = '';
+  searchQuery = "";
   selectedQuestions: QuestionType[] = [];
-  difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
-  selectedDifficulty = '';
+  difficultyLevels = ["Basic", "Intermediate", "Advanced"];
+  selectedDifficulty = "";
 
-  questionTypes = ['Multiple Choice', 'Programming', 'Design', 'Database', 'System Design'];
-  libraries = ['Frontend', 'Backend', 'Full Stack', 'DevOps', 'Security'];
+  questionTypes = [
+    "Multiple Choice",
+    "Programming",
+    "Design",
+    "Database",
+    "System Design",
+  ];
+  libraries = ["Frontend", "Backend", "Full Stack", "DevOps", "Security"];
 
   selectedTypes: { [key: string]: boolean } = {};
   selectedLibraries: { [key: string]: boolean } = {};
 
   showDropdowns = {
     types: false,
-    libraries: false
+    libraries: false,
   };
-
 
   // export interface Question {
   //   id: number;
@@ -214,16 +272,17 @@ export class QuestionLibraryComponent {
   //   maxScore: number;
   //   tags: string[];
   // }
-  
+
   questions: QuestionType[] = [
     {
       id: 1,
       title: "RESTful API Design",
-      problemStatement: "Design a scalable REST API for a social media platform with user authentication and post management.",
+      problemStatement:
+        "Design a scalable REST API for a social media platform with user authentication and post management.",
       difficultyLevel: "Intermediate",
       maxScore: 85,
-      type:"Subjective",
-      tags: ["Python", "FastAPI", "REST"]
+      type: "Subjective",
+      tags: ["Python", "FastAPI", "REST"],
     },
   ];
 
@@ -238,7 +297,7 @@ export class QuestionLibraryComponent {
   //   // Apply search
   //   if (this.searchQuery) {
   //     const query = this.searchQuery.toLowerCase();
-  //     filtered = filtered.filter(q => 
+  //     filtered = filtered.filter(q =>
   //       q.title.toLowerCase().includes(query) ||
   //       q.description.toLowerCase().includes(query) ||
   //       q.technologies.some(t => t.toLowerCase().includes(query)) ||
@@ -256,7 +315,7 @@ export class QuestionLibraryComponent {
   //     .filter(([_, selected]) => selected)
   //     .map(([type]) => type);
   //   if (activeTypes.length > 0) {
-  //     filtered = filtered.filter(q => 
+  //     filtered = filtered.filter(q =>
   //       q.categories.some(c => activeTypes.includes(c))
   //     );
   //   }
@@ -266,7 +325,7 @@ export class QuestionLibraryComponent {
   //     .filter(([_, selected]) => selected)
   //     .map(([lib]) => lib);
   //   if (activeLibraries.length > 0) {
-  //     filtered = filtered.filter(q => 
+  //     filtered = filtered.filter(q =>
   //       q.categories.some(c => activeLibraries.includes(c))
   //     );
   //   }
@@ -275,14 +334,16 @@ export class QuestionLibraryComponent {
   // }
 
   get hasActiveFilters(): boolean {
-    return this.selectedDifficulty !== '' ||
-           Object.values(this.selectedTypes).some(v => v) ||
-           Object.values(this.selectedLibraries).some(v => v);
+    return (
+      this.selectedDifficulty !== "" ||
+      Object.values(this.selectedTypes).some((v) => v) ||
+      Object.values(this.selectedLibraries).some((v) => v)
+    );
   }
 
   get activeFilters(): string[] {
     const filters: string[] = [];
-    
+
     if (this.selectedDifficulty) {
       filters.push(`Difficulty: ${this.selectedDifficulty}`);
     }
@@ -298,47 +359,60 @@ export class QuestionLibraryComponent {
     return filters;
   }
 
-  toggleDropdown(type: 'types' | 'libraries') {
+  toggleDropdown(type: "types" | "libraries") {
     this.showDropdowns[type] = !this.showDropdowns[type];
     // Close other dropdown
-    const other = type === 'types' ? 'libraries' : 'types';
+    const other = type === "types" ? "libraries" : "types";
     this.showDropdowns[other] = false;
   }
 
   toggleDifficulty(level: string) {
-    this.selectedDifficulty = this.selectedDifficulty === level ? '' : level;
+    this.selectedDifficulty = this.selectedDifficulty === level ? "" : level;
     this.applyFilters();
   }
 
   getDifficultyButtonClass(level: string): string {
     const isSelected = this.selectedDifficulty === level;
-    const baseClasses = 'border ';
-    
+    const baseClasses = "border ";
+
     switch (level) {
-      case 'Basic':
-        return baseClasses + (isSelected 
-          ? 'bg-green-50 text-green-600 border-green-200'
-          : 'text-gray-600 border-gray-200 hover:bg-green-50 hover:text-green-600');
-      case 'Intermediate':
-        return baseClasses + (isSelected
-          ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
-          : 'text-gray-600 border-gray-200 hover:bg-yellow-50 hover:text-yellow-600');
-      case 'Advanced':
-        return baseClasses + (isSelected
-          ? 'bg-red-50 text-red-600 border-red-200'
-          : 'text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600');
+      case "Basic":
+        return (
+          baseClasses +
+          (isSelected
+            ? "bg-green-50 text-green-600 border-green-200"
+            : "text-gray-600 border-gray-200 hover:bg-green-50 hover:text-green-600")
+        );
+      case "Intermediate":
+        return (
+          baseClasses +
+          (isSelected
+            ? "bg-yellow-50 text-yellow-600 border-yellow-200"
+            : "text-gray-600 border-gray-200 hover:bg-yellow-50 hover:text-yellow-600")
+        );
+      case "Advanced":
+        return (
+          baseClasses +
+          (isSelected
+            ? "bg-red-50 text-red-600 border-red-200"
+            : "text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600")
+        );
       default:
-        return baseClasses + 'text-gray-600 border-gray-200';
+        return baseClasses + "text-gray-600 border-gray-200";
     }
   }
 
   getDifficultyClass(difficulty: string): string {
-    const baseClasses = 'px-2 py-0.5 rounded-full text-xs font-medium ';
+    const baseClasses = "px-2 py-0.5 rounded-full text-xs font-medium ";
     switch (difficulty) {
-      case 'Basic': return baseClasses + 'bg-green-50 text-green-600';
-      case 'Intermediate': return baseClasses + 'bg-yellow-50 text-yellow-600';
-      case 'Advanced': return baseClasses + 'bg-red-50 text-red-600';
-      default: return baseClasses + 'bg-gray-50 text-gray-600';
+      case "Basic":
+        return baseClasses + "bg-green-50 text-green-600";
+      case "Intermediate":
+        return baseClasses + "bg-yellow-50 text-yellow-600";
+      case "Advanced":
+        return baseClasses + "bg-red-50 text-red-600";
+      default:
+        return baseClasses + "bg-gray-50 text-gray-600";
     }
   }
 
@@ -351,15 +425,15 @@ export class QuestionLibraryComponent {
   }
 
   removeFilter(filter: string) {
-    const [type, value] = filter.split(': ');
+    const [type, value] = filter.split(": ");
     switch (type) {
-      case 'Difficulty':
-        this.selectedDifficulty = '';
+      case "Difficulty":
+        this.selectedDifficulty = "";
         break;
-      case 'Type':
+      case "Type":
         this.selectedTypes[value] = false;
         break;
-      case 'Library':
+      case "Library":
         this.selectedLibraries[value] = false;
         break;
     }
@@ -367,18 +441,18 @@ export class QuestionLibraryComponent {
   }
 
   clearFilters() {
-    this.selectedDifficulty = '';
+    this.selectedDifficulty = "";
     this.selectedTypes = {};
     this.selectedLibraries = {};
     this.applyFilters();
   }
 
   isSelected(id: number): boolean {
-    return this.selectedQuestions.some(q => q.id === id);
+    return this.selectedQuestions.some((q) => q.id === id);
   }
 
   toggleSelection(question: QuestionType) {
-    const index = this.selectedQuestions.findIndex(q => q.id === question.id);
+    const index = this.selectedQuestions.findIndex((q) => q.id === question.id);
     if (index === -1) {
       this.selectedQuestions.push(question);
     } else {

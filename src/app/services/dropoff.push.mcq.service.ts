@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class McqAnswerService {
-  private baseUrl = 'http://localhost:8080/api/questionAndOption';
+  private baseUrl = "http://localhost:8080/api/questionAndOption";
 
   constructor(private http: HttpClient) {}
 
@@ -17,7 +17,7 @@ export class McqAnswerService {
     sectionId: number;
     questionId: number;
     mcqOption: number;
-    candidateAssessmentSessionId:number
+    candidateAssessmentSessionId: number;
   }): Observable<any> {
     const url = `${this.baseUrl}/saveMcq`;
     return this.http.post(url, answerData);

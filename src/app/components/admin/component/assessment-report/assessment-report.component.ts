@@ -1,16 +1,16 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, Input } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
 interface CandidateReport {
   id: number;
   name: string;
   email: string;
   finishedAt: string;
-  status: 'Review Pending' | 'Reviewed' | 'Flagged';
+  status: "Review Pending" | "Reviewed" | "Flagged";
   score: number;
   maxScore: number;
-  integrityIndex: 'Good' | 'Average' | 'Poor';
+  integrityIndex: "Good" | "Average" | "Poor";
   interviewLink?: string;
   attemptPercentage: number;
   duration: number;
@@ -18,7 +18,7 @@ interface CandidateReport {
 }
 
 @Component({
-  selector: 'app-assessment-report',
+  selector: "app-assessment-report",
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
@@ -28,12 +28,15 @@ interface CandidateReport {
         <div class="flex items-center gap-4">
           <!-- Search Input -->
           <div class="relative">
-            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+            <span
+              class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >search</span
+            >
             <input
               type="text"
               placeholder="Search candidates..."
               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
+            />
           </div>
 
           <!-- Date Range Filter -->
@@ -43,18 +46,20 @@ interface CandidateReport {
               [(ngModel)]="startDate"
               (change)="filterByDate()"
               class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
+            />
             <span class="text-gray-400">to</span>
             <input
               type="date"
               [(ngModel)]="endDate"
               (change)="filterByDate()"
               class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
+            />
           </div>
 
           <!-- Status Filter -->
-          <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+          <select
+            class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
             <option>All Status</option>
             <option>Review Pending</option>
             <option>Reviewed</option>
@@ -62,7 +67,9 @@ interface CandidateReport {
           </select>
 
           <!-- Integrity Filter -->
-          <select class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+          <select
+            class="border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
             <option>All Integrity</option>
             <option>Good</option>
             <option>Average</option>
@@ -71,7 +78,9 @@ interface CandidateReport {
         </div>
 
         <!-- Export Button -->
-        <button class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2">
+        <button
+          class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+        >
           <span class="material-icons">download</span>
           Export Report
         </button>
@@ -82,67 +91,101 @@ interface CandidateReport {
         <table class="w-full border-collapse">
           <thead>
             <tr class="bg-gray-50 border-b border-gray-200">
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Candidate Info</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Finished At</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Score</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Integrity Index</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Interview</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Attempt %</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Duration</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Tab Switches</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Candidate Info
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Finished At
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Status
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Score
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Integrity Index
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Interview
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Attempt %
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Duration
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Tab Switches
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let report of filteredReports" class="border-b border-gray-100 hover:bg-gray-50">
+            <tr
+              *ngFor="let report of filteredReports"
+              class="border-b border-gray-100 hover:bg-gray-50"
+            >
               <td class="px-4 py-3">
                 <div>
-                  <div class="font-medium text-gray-800">{{report.name}}</div>
-                  <div class="text-sm text-gray-500">{{report.email}}</div>
+                  <div class="font-medium text-gray-800">{{ report.name }}</div>
+                  <div class="text-sm text-gray-500">{{ report.email }}</div>
                 </div>
               </td>
-              <td class="px-4 py-3 text-gray-600">{{report.finishedAt}}</td>
+              <td class="px-4 py-3 text-gray-600">{{ report.finishedAt }}</td>
               <td class="px-4 py-3">
                 <span [class]="getStatusClass(report.status)">
-                  {{report.status}}
+                  {{ report.status }}
                 </span>
               </td>
               <td class="px-4 py-3">
-                <span class="font-medium text-gray-800">{{report.score}}</span>
-                <span class="text-gray-500">/{{report.maxScore}}</span>
+                <span class="font-medium text-gray-800">{{
+                  report.score
+                }}</span>
+                <span class="text-gray-500">/{{ report.maxScore }}</span>
               </td>
               <td class="px-4 py-3">
                 <span [class]="getIntegrityClass(report.integrityIndex)">
-                  {{report.integrityIndex}}
+                  {{ report.integrityIndex }}
                 </span>
               </td>
               <td class="px-4 py-3">
-                <a *ngIf="report.interviewLink"
-                   [href]="report.interviewLink"
-                   class="text-blue-600 hover:text-blue-800 underline text-sm">
+                <a
+                  *ngIf="report.interviewLink"
+                  [href]="report.interviewLink"
+                  class="text-blue-600 hover:text-blue-800 underline text-sm"
+                >
                   Interview Link
                 </a>
-                <span *ngIf="!report.interviewLink" class="text-gray-400 text-sm">
+                <span
+                  *ngIf="!report.interviewLink"
+                  class="text-gray-400 text-sm"
+                >
                   Not Scheduled
                 </span>
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center">
                   <div class="w-16 h-2 bg-gray-200 rounded-full mr-2">
-                    <div class="h-full bg-green-500 rounded-full"
-                         [style.width.%]="report.attemptPercentage">
-                    </div>
+                    <div
+                      class="h-full bg-green-500 rounded-full"
+                      [style.width.%]="report.attemptPercentage"
+                    ></div>
                   </div>
-                  <span class="text-sm text-gray-600">{{report.attemptPercentage}}%</span>
+                  <span class="text-sm text-gray-600"
+                    >{{ report.attemptPercentage }}%</span
+                  >
                 </div>
               </td>
-              <td class="px-4 py-3 text-gray-600">{{report.duration}} min</td>
-              <td class="px-4 py-3 text-gray-600">{{report.tabSwitches}}</td>
+              <td class="px-4 py-3 text-gray-600">{{ report.duration }} min</td>
+              <td class="px-4 py-3 text-gray-600">{{ report.tabSwitches }}</td>
               <td class="px-4 py-3">
-                <button 
+                <button
                   (click)="showDetailedReport(report)"
-                  class="text-green-600 hover:text-green-800">
+                  class="text-green-600 hover:text-green-800"
+                >
                   <span class="material-icons">visibility</span>
                 </button>
               </td>
@@ -152,21 +195,30 @@ interface CandidateReport {
       </div>
 
       <!-- Detailed Report Modal -->
-      <div *ngIf="selectedReport"
-           class="fixed inset-0 bg-black/30 flex items-center justify-center"
-           (click)="selectedReport = null">
-        <div class="bg-white w-full max-w-4xl rounded-xl shadow-2xl"
-             (click)="$event.stopPropagation()">
+      <div
+        *ngIf="selectedReport"
+        class="fixed inset-0 bg-black/30 flex items-center justify-center"
+        (click)="selectedReport = null"
+      >
+        <div
+          class="bg-white w-full max-w-4xl rounded-xl shadow-2xl"
+          (click)="$event.stopPropagation()"
+        >
           <!-- Modal Header -->
           <div class="p-6 border-b">
             <div class="flex justify-between items-start">
               <div>
-                <h2 class="text-2xl font-semibold text-gray-800">Performance Report</h2>
-                <p class="text-gray-500 mt-1">{{selectedReport.name}} - {{selectedReport.email}}</p>
+                <h2 class="text-2xl font-semibold text-gray-800">
+                  Performance Report
+                </h2>
+                <p class="text-gray-500 mt-1">
+                  {{ selectedReport.name }} - {{ selectedReport.email }}
+                </p>
               </div>
-              <button 
+              <button
                 (click)="selectedReport = null"
-                class="text-gray-400 hover:text-gray-600">
+                class="text-gray-400 hover:text-gray-600"
+              >
                 <span class="material-icons">close</span>
               </button>
             </div>
@@ -179,25 +231,25 @@ interface CandidateReport {
               <div class="bg-gray-50 p-4 rounded-lg">
                 <div class="text-sm text-gray-500">Total Score</div>
                 <div class="text-2xl font-semibold text-gray-800">
-                  {{selectedReport.score}}/{{selectedReport.maxScore}}
+                  {{ selectedReport.score }}/{{ selectedReport.maxScore }}
                 </div>
               </div>
               <div class="bg-gray-50 p-4 rounded-lg">
                 <div class="text-sm text-gray-500">Attempt Rate</div>
                 <div class="text-2xl font-semibold text-gray-800">
-                  {{selectedReport.attemptPercentage}}%
+                  {{ selectedReport.attemptPercentage }}%
                 </div>
               </div>
               <div class="bg-gray-50 p-4 rounded-lg">
                 <div class="text-sm text-gray-500">Duration</div>
                 <div class="text-2xl font-semibold text-gray-800">
-                  {{selectedReport.duration}} min
+                  {{ selectedReport.duration }} min
                 </div>
               </div>
               <div class="bg-gray-50 p-4 rounded-lg">
                 <div class="text-sm text-gray-500">Tab Switches</div>
                 <div class="text-2xl font-semibold text-gray-800">
-                  {{selectedReport.tabSwitches}}
+                  {{ selectedReport.tabSwitches }}
                 </div>
               </div>
             </div>
@@ -205,33 +257,47 @@ interface CandidateReport {
             <!-- Performance Analysis -->
             <div class="space-y-6">
               <div>
-                <h3 class="text-lg font-medium text-gray-800 mb-4">Performance Analysis</h3>
+                <h3 class="text-lg font-medium text-gray-800 mb-4">
+                  Performance Analysis
+                </h3>
                 <div class="bg-gray-50 p-4 rounded-lg">
                   <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
-                      <span class="text-sm font-medium text-gray-600">Programming</span>
+                      <span class="text-sm font-medium text-gray-600"
+                        >Programming</span
+                      >
                       <span class="text-sm text-gray-500">85%</span>
                     </div>
                     <div class="w-full h-2 bg-gray-200 rounded-full">
-                      <div class="h-full w-[85%] bg-green-500 rounded-full"></div>
+                      <div
+                        class="h-full w-[85%] bg-green-500 rounded-full"
+                      ></div>
                     </div>
                   </div>
                   <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
-                      <span class="text-sm font-medium text-gray-600">Problem Solving</span>
+                      <span class="text-sm font-medium text-gray-600"
+                        >Problem Solving</span
+                      >
                       <span class="text-sm text-gray-500">92%</span>
                     </div>
                     <div class="w-full h-2 bg-gray-200 rounded-full">
-                      <div class="h-full w-[92%] bg-green-500 rounded-full"></div>
+                      <div
+                        class="h-full w-[92%] bg-green-500 rounded-full"
+                      ></div>
                     </div>
                   </div>
                   <div>
                     <div class="flex justify-between items-center mb-2">
-                      <span class="text-sm font-medium text-gray-600">System Design</span>
+                      <span class="text-sm font-medium text-gray-600"
+                        >System Design</span
+                      >
                       <span class="text-sm text-gray-500">78%</span>
                     </div>
                     <div class="w-full h-2 bg-gray-200 rounded-full">
-                      <div class="h-full w-[78%] bg-green-500 rounded-full"></div>
+                      <div
+                        class="h-full w-[78%] bg-green-500 rounded-full"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -240,31 +306,45 @@ interface CandidateReport {
               <!-- Strengths & Areas for Improvement -->
               <div class="grid grid-cols-2 gap-6">
                 <div>
-                  <h3 class="text-lg font-medium text-gray-800 mb-4">Strengths</h3>
+                  <h3 class="text-lg font-medium text-gray-800 mb-4">
+                    Strengths
+                  </h3>
                   <ul class="space-y-2">
                     <li class="flex items-center text-gray-600">
-                      <span class="material-icons text-green-500 mr-2">check_circle</span>
+                      <span class="material-icons text-green-500 mr-2"
+                        >check_circle</span
+                      >
                       Strong problem-solving skills
                     </li>
                     <li class="flex items-center text-gray-600">
-                      <span class="material-icons text-green-500 mr-2">check_circle</span>
+                      <span class="material-icons text-green-500 mr-2"
+                        >check_circle</span
+                      >
                       Excellent code quality
                     </li>
                     <li class="flex items-center text-gray-600">
-                      <span class="material-icons text-green-500 mr-2">check_circle</span>
+                      <span class="material-icons text-green-500 mr-2"
+                        >check_circle</span
+                      >
                       Efficient algorithm implementation
                     </li>
                   </ul>
                 </div>
                 <div>
-                  <h3 class="text-lg font-medium text-gray-800 mb-4">Areas for Improvement</h3>
+                  <h3 class="text-lg font-medium text-gray-800 mb-4">
+                    Areas for Improvement
+                  </h3>
                   <ul class="space-y-2">
                     <li class="flex items-center text-gray-600">
-                      <span class="material-icons text-yellow-500 mr-2">info</span>
+                      <span class="material-icons text-yellow-500 mr-2"
+                        >info</span
+                      >
                       Time management
                     </li>
                     <li class="flex items-center text-gray-600">
-                      <span class="material-icons text-yellow-500 mr-2">info</span>
+                      <span class="material-icons text-yellow-500 mr-2"
+                        >info</span
+                      >
                       Edge case handling
                     </li>
                   </ul>
@@ -273,17 +353,22 @@ interface CandidateReport {
 
               <!-- Integrity Analysis -->
               <div>
-                <h3 class="text-lg font-medium text-gray-800 mb-4">Integrity Analysis</h3>
+                <h3 class="text-lg font-medium text-gray-800 mb-4">
+                  Integrity Analysis
+                </h3>
                 <div class="bg-gray-50 p-4 rounded-lg">
                   <div class="flex items-center mb-4">
-                    <span [class]="getIntegrityClass(selectedReport.integrityIndex)">
-                      {{selectedReport.integrityIndex}}
+                    <span
+                      [class]="getIntegrityClass(selectedReport.integrityIndex)"
+                    >
+                      {{ selectedReport.integrityIndex }}
                     </span>
                     <span class="text-gray-500 ml-2">Integrity Index</span>
                   </div>
                   <p class="text-gray-600">
-                    The candidate maintained good assessment integrity with minimal tab switches
-                    and consistent focus throughout the duration.
+                    The candidate maintained good assessment integrity with
+                    minimal tab switches and consistent focus throughout the
+                    duration.
                   </p>
                 </div>
               </div>
@@ -292,26 +377,29 @@ interface CandidateReport {
 
           <!-- Modal Footer -->
           <div class="p-6 border-t bg-gray-50 flex justify-end gap-4">
-            <button 
+            <button
               class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-              (click)="selectedReport = null">
+              (click)="selectedReport = null"
+            >
               Close
             </button>
-            <button class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+            <button
+              class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
               Download PDF
             </button>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class AssessmentReportComponent {
   @Input() testId!: number;
-  
+
   selectedReport: CandidateReport | null = null;
-  startDate: string = '';
-  endDate: string = '';
+  startDate: string = "";
+  endDate: string = "";
 
   reports: CandidateReport[] = [
     {
@@ -326,7 +414,7 @@ export class AssessmentReportComponent {
       interviewLink: "https://meet.google.com/abc-defg-hij",
       attemptPercentage: 92,
       duration: 85,
-      tabSwitches: 2
+      tabSwitches: 2,
     },
     {
       id: 2,
@@ -339,7 +427,7 @@ export class AssessmentReportComponent {
       integrityIndex: "Good",
       attemptPercentage: 98,
       duration: 90,
-      tabSwitches: 1
+      tabSwitches: 1,
     },
     {
       id: 3,
@@ -352,8 +440,8 @@ export class AssessmentReportComponent {
       integrityIndex: "Poor",
       attemptPercentage: 75,
       duration: 92,
-      tabSwitches: 8
-    }
+      tabSwitches: 8,
+    },
   ];
 
   get filteredReports(): CandidateReport[] {
@@ -361,7 +449,7 @@ export class AssessmentReportComponent {
       return this.reports;
     }
 
-    return this.reports.filter(report => {
+    return this.reports.filter((report) => {
       const reportDate = new Date(report.finishedAt);
       const start = this.startDate ? new Date(this.startDate) : null;
       const end = this.endDate ? new Date(this.endDate) : null;
@@ -380,26 +468,34 @@ export class AssessmentReportComponent {
 
   filterByDate() {
     // The filtering is handled by the filteredReports getter
-    console.log('Filtering by date range:', this.startDate, 'to', this.endDate);
+    console.log("Filtering by date range:", this.startDate, "to", this.endDate);
   }
 
   getStatusClass(status: string): string {
-    const baseClasses = 'px-2 py-1 rounded-full text-xs ';
+    const baseClasses = "px-2 py-1 rounded-full text-xs ";
     switch (status) {
-      case 'Review Pending': return baseClasses + 'bg-yellow-100 text-yellow-800';
-      case 'Reviewed': return baseClasses + 'bg-green-100 text-green-800';
-      case 'Flagged': return baseClasses + 'bg-red-100 text-red-800';
-      default: return baseClasses + 'bg-gray-100 text-gray-800';
+      case "Review Pending":
+        return baseClasses + "bg-yellow-100 text-yellow-800";
+      case "Reviewed":
+        return baseClasses + "bg-green-100 text-green-800";
+      case "Flagged":
+        return baseClasses + "bg-red-100 text-red-800";
+      default:
+        return baseClasses + "bg-gray-100 text-gray-800";
     }
   }
 
   getIntegrityClass(index: string): string {
-    const baseClasses = 'px-2 py-1 rounded-full text-xs ';
+    const baseClasses = "px-2 py-1 rounded-full text-xs ";
     switch (index) {
-      case 'Good': return baseClasses + 'bg-green-100 text-green-800';
-      case 'Average': return baseClasses + 'bg-yellow-100 text-yellow-800';
-      case 'Poor': return baseClasses + 'bg-red-100 text-red-800';
-      default: return baseClasses + 'bg-gray-100 text-gray-800';
+      case "Good":
+        return baseClasses + "bg-green-100 text-green-800";
+      case "Average":
+        return baseClasses + "bg-yellow-100 text-yellow-800";
+      case "Poor":
+        return baseClasses + "bg-red-100 text-red-800";
+      default:
+        return baseClasses + "bg-gray-100 text-gray-800";
     }
   }
 

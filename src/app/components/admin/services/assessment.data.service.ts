@@ -1,18 +1,19 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { Assessment } from '../component/create-assessment-modal/create-assessment-modal.component';
-import { JobRole } from '../component/create-assessment-modal/create-assessment-modal.component';
-
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { Assessment } from "../component/create-assessment-modal/create-assessment-modal.component";
+import { JobRole } from "../component/create-assessment-modal/create-assessment-modal.component";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class AssessmentDataService {
   private jobRoles: JobRole[] = [];
   private assessments: Assessment[] = [];
 
   private jobRolesSubject = new BehaviorSubject<JobRole[]>(this.jobRoles);
-  private assessmentsSubject = new BehaviorSubject<Assessment[]>(this.assessments);
+  private assessmentsSubject = new BehaviorSubject<Assessment[]>(
+    this.assessments,
+  );
 
   jobRoles$ = this.jobRolesSubject.asObservable();
   assessments$ = this.assessmentsSubject.asObservable();
@@ -31,7 +32,7 @@ export class AssessmentDataService {
 
   // Assessment methods
   addAssessment(assessment: Assessment): void {
-    console.log('DataService - ',assessment)
+    console.log("DataService - ", assessment);
     this.assessments.push(assessment);
     this.assessmentsSubject.next(this.assessments);
   }

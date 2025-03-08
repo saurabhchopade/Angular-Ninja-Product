@@ -44,8 +44,8 @@ export interface AssessmentSettings {
   showCorrectAnswers: boolean;
   autoReminder: boolean;
   enableChatGPTInAssessments: boolean;
-  audioProctoring:boolean
-  cutoffEnabled:boolean
+  audioProctoring: boolean;
+  cutoffEnabled: boolean;
 }
 
 export interface TestPublishDetails {
@@ -53,7 +53,7 @@ export interface TestPublishDetails {
   name: string;
   startDate: string;
   endDate?: string;
-  type: 'Invite Only' | 'Public';
+  type: "Invite Only" | "Public";
   isAccessEnabled: boolean;
   testLink: string;
   practiceLink?: string;

@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { BehaviorSubject, Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 // Interfaces remain the same as provided
 
@@ -72,7 +72,12 @@ interface CodingQuestion {
   id: number;
   title: string;
   problemStatement: string;
-  languages: { id: string; name: string; snippet: string;language_id:number }[];
+  languages: {
+    id: string;
+    name: string;
+    snippet: string;
+    language_id: number;
+  }[];
   testCases: {
     input: string;
     expectedOutput: string;
@@ -82,7 +87,7 @@ interface CodingQuestion {
   userCode: string;
 }
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class CodeSnippetService {
   // Map to store code snippets in memory for quick access
@@ -92,19 +97,24 @@ export class CodeSnippetService {
   private codingQuestions: CodingQuestion[] = [];
 
   // BehaviorSubject to track the current code snippet
-  private currentCodeSubject = new BehaviorSubject<string>('');
+  private currentCodeSubject = new BehaviorSubject<string>("");
   currentCode$ = this.currentCodeSubject.asObservable();
 
   // API endpoint to fetch coding questions
-  private apiUrl = 'http://localhost:8080/api/codingQuestion/fetch-codingQuestion';
+  private apiUrl =
+    "http://localhost:8080/api/codingQuestion/fetch-codingQuestion";
 
   constructor(private http: HttpClient) {
     // Listen to the beforeunload event to clear local storage
-    window.addEventListener('beforeunload', () => this.clearLocalStorage());
+    window.addEventListener("beforeunload", () => this.clearLocalStorage());
   }
 
   // Fetch coding questions from the API using POST request
-  fetchCodingQuestions(assessmentId: number, candidateId: number, sectionId: number): Observable<CodingQuestion[]> {
+  fetchCodingQuestions(
+    assessmentId: number,
+    candidateId: number,
+    sectionId: number,
+  ): Observable<CodingQuestion[]> {
     const body = { assessmentId, candidateId, sectionId };
     return this.http.post<ApiResponse>(this.apiUrl, body).pipe(
       map((response) => {
@@ -112,24 +122,32 @@ export class CodeSnippetService {
         this.codingQuestions = response.data.map((item: ApiResponseItem) => ({
           id: item.codingQuestionResponse.id,
           title: item.codingQuestionResponse.questionResponse.title,
-          problemStatement: item.codingQuestionResponse.questionResponse.problemStatement,
-          languages: item.codingQuestionTemplateResponse.map((template: CodingQuestionTemplateResponse) => ({
-            id: template.language.code,
-            name: template.language.displayName,
-            snippet: template.snippet,
-            language_id:template.language.languageId
-          })),
-          testCases: item.testcaseResponse.map((testCase: TestCaseResponse) => ({
-            input: testCase.inputData,
-            expectedOutput: testCase.expectedOutput,
-            actualOutput: '',
-            passed: false,
-          })),
+          problemStatement:
+            item.codingQuestionResponse.questionResponse.problemStatement,
+          languages: item.codingQuestionTemplateResponse.map(
+            (template: CodingQuestionTemplateResponse) => ({
+              id: template.language.code,
+              name: template.language.displayName,
+              snippet: template.snippet,
+              language_id: template.language.languageId,
+            }),
+          ),
+          testCases: item.testcaseResponse.map(
+            (testCase: TestCaseResponse) => ({
+              input: testCase.inputData,
+              expectedOutput: testCase.expectedOutput,
+              actualOutput: "",
+              passed: false,
+            }),
+          ),
           // Retrieve the stored code snippet for the default language
-          userCode: this.getStoredCode(item.codingQuestionResponse.id, item.codingQuestionTemplateResponse[0].language.code),
+          userCode: this.getStoredCode(
+            item.codingQuestionResponse.id,
+            item.codingQuestionTemplateResponse[0].language.code,
+          ),
         }));
         return this.codingQuestions;
-      })
+      }),
     );
   }
 
@@ -148,7 +166,10 @@ export class CodeSnippetService {
   // Retrieve a code snippet for a specific question and language
   getCodeSnippet(questionId: number, languageId: string): string | undefined {
     // Check the Map first, then fall back to localStorage
-    return this.codeSnippets.get(questionId.toString())?.get(languageId) || this.getStoredCode(questionId, languageId);
+    return (
+      this.codeSnippets.get(questionId.toString())?.get(languageId) ||
+      this.getStoredCode(questionId, languageId)
+    );
   }
 
   // Update the current code snippet in the BehaviorSubject
@@ -170,7 +191,7 @@ export class CodeSnippetService {
   // Retrieve a code snippet from localStorage
   private getStoredCode(questionId: number, languageId: string): string {
     const key = `code_${questionId}_${languageId}`;
-    return localStorage.getItem(key) || '';
+    return localStorage.getItem(key) || "";
   }
 
   // Clear local storage data

@@ -1,15 +1,15 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Feedback, FeedbackResponse } from '../models/feedback.model';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { Feedback, FeedbackResponse } from "../models/feedback.model";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class FeedbackService {
-  private apiUrl = 'http://localhost:8080/api/feedback/create';
+  private apiUrl = "http://localhost:8080/api/feedback/create";
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   submitFeedback(feedback: Feedback): Observable<FeedbackResponse> {
     return this.http.post<FeedbackResponse>(this.apiUrl, feedback);

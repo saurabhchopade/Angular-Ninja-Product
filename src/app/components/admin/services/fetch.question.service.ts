@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
 
 export interface Question {
   id: number;
@@ -32,10 +32,10 @@ export interface QuestionResponse {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class QuestionService {
-  private apiUrl = 'http://localhost:8080/api/question/fetch-questions';
+  private apiUrl = "http://localhost:8080/api/question/fetch-questions";
 
   constructor(private http: HttpClient) {}
 
@@ -46,7 +46,7 @@ export class QuestionService {
     sortOrder: string,
     searchDifficultyLevels: string[],
     searchQuestionType: string[],
-    searchQuery: string
+    searchQuery: string,
   ): Observable<QuestionResponse> {
     // Create the request body object
     const requestBody = {

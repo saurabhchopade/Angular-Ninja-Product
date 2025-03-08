@@ -1,17 +1,17 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform } from "@angular/core";
 
 @Pipe({
-  name: 'truncate',
-  standalone: true
+  name: "truncate",
+  standalone: true,
 })
 export class TruncatePipe implements PipeTransform {
   transform(value: string, limit: number = 100): string {
-    if (!value) return '';
-    
+    if (!value) return "";
+
     if (value.length <= limit) {
       return value;
     }
-    
-    return value.slice(0, limit) + '...';
+
+    return value.slice(0, limit) + "...";
   }
 }

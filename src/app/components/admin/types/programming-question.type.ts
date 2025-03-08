@@ -18,7 +18,7 @@ export interface ProgrammingQuestion {
   type: string;
   title: string;
   problemStatement: string;
-  difficultyLevel: 'Basic' | 'Intermediate' | 'Advanced';
+  difficultyLevel: "Basic" | "Intermediate" | "Advanced";
   maxScore: number;
   negativeScore: number;
   isDraft: boolean;
@@ -29,7 +29,7 @@ export interface ProgrammingQuestion {
   solutionTemplate: string;
   editorial: string;
   ai_evaluation_enabled: boolean;
-  visibility: 'PUBLIC' | 'PRIVATE';
+  visibility: "PUBLIC" | "PRIVATE";
   templates: CodeSnippet[];
   testCases: TestCase[];
 }

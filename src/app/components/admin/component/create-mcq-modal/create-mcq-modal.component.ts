@@ -1,21 +1,21 @@
-import { Component, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MCQQuestion, MCQOption } from '../../types/mcq-question.type';
-import { MCQQuestionService } from '../../services/create.mcq.service'; // Import the service
-import { HttpClientModule } from '@angular/common/http';
+import { Component, Output, EventEmitter } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { MCQQuestion, MCQOption } from "../../types/mcq-question.type";
+import { MCQQuestionService } from "../../services/create.mcq.service"; // Import the service
+import { HttpClientModule } from "@angular/common/http";
 
 @Component({
-  selector: 'app-create-mcq-modal',
+  selector: "app-create-mcq-modal",
   standalone: true,
-  imports: [CommonModule, FormsModule,HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
-    <div 
+    <div
       *ngIf="isVisible"
       class="fixed inset-0 bg-black/30 z-50 flex justify-end"
       (click)="close()"
     >
-      <div 
+      <div
         class="w-full max-w-3xl bg-white shadow-2xl h-full transform transition-transform duration-300"
         [class.translate-x-0]="isVisible"
         [class.translate-x-full]="!isVisible"
@@ -23,9 +23,11 @@ import { HttpClientModule } from '@angular/common/http';
       >
         <!-- Header -->
         <div class="flex justify-between items-center p-4 border-b">
-          <h2 class="text-xl font-semibold text-gray-800">Create Multiple Choice Question</h2>
-          <button 
-            (click)="close()" 
+          <h2 class="text-xl font-semibold text-gray-800">
+            Create Multiple Choice Question
+          </h2>
+          <button
+            (click)="close()"
             class="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <span class="material-icons">close</span>
@@ -37,29 +39,41 @@ import { HttpClientModule } from '@angular/common/http';
           <div class="space-y-6">
             <!-- Difficulty Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Difficulty Level</label
+              >
               <div class="flex gap-4">
-                <label *ngFor="let level of difficultyLevels" 
-                       class="flex items-center space-x-2 cursor-pointer">
-                  <input type="radio" 
-                         [value]="level" 
-                         [(ngModel)]="question.difficultyLevel"
-                         class="text-green-500 focus:ring-green-500">
-                  <span>{{level}}</span>
+                <label
+                  *ngFor="let level of difficultyLevels"
+                  class="flex items-center space-x-2 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    [value]="level"
+                    [(ngModel)]="question.difficultyLevel"
+                    class="text-green-500 focus:ring-green-500"
+                  />
+                  <span>{{ level }}</span>
                 </label>
               </div>
             </div>
 
             <!-- Question Editor -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Question</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Question</label
+              >
               <div class="border rounded-lg">
                 <!-- Rich Text Toolbar -->
                 <div class="flex items-center gap-1 p-2 border-b bg-gray-50">
-                  <button *ngFor="let tool of editorTools"
-                          class="p-1.5 rounded hover:bg-gray-200 transition-colors"
-                          [title]="tool.label">
-                    <span class="material-icons text-gray-600 text-lg">{{tool.icon}}</span>
+                  <button
+                    *ngFor="let tool of editorTools"
+                    class="p-1.5 rounded hover:bg-gray-200 transition-colors"
+                    [title]="tool.label"
+                  >
+                    <span class="material-icons text-gray-600 text-lg">{{
+                      tool.icon
+                    }}</span>
                   </button>
                 </div>
                 <!-- Editor Area -->
@@ -75,10 +89,13 @@ import { HttpClientModule } from '@angular/common/http';
             <!-- Answer Options -->
             <div>
               <div class="flex justify-between items-center mb-4">
-                <label class="block text-sm font-medium text-gray-700">Answer Options</label>
-                <button 
+                <label class="block text-sm font-medium text-gray-700"
+                  >Answer Options</label
+                >
+                <button
                   (click)="addOption()"
-                  class="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                  class="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
                   Add Option
                 </button>
               </div>
@@ -90,33 +107,41 @@ import { HttpClientModule } from '@angular/common/http';
                   [(ngModel)]="question.allowMultipleAnswers"
                   id="multiple-answers"
                   class="rounded text-green-500 focus:ring-green-500"
+                />
+                <label
+                  for="multiple-answers"
+                  class="ml-2 text-sm text-gray-600"
                 >
-                <label for="multiple-answers" class="ml-2 text-sm text-gray-600">
                   Allow multiple correct answers
                 </label>
               </div>
 
               <!-- Options List -->
               <div class="space-y-3">
-                <div *ngFor="let option of question.options; let i = index" 
-                     class="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
+                <div
+                  *ngFor="let option of question.options; let i = index"
+                  class="flex items-center gap-3 bg-gray-50 p-3 rounded-lg"
+                >
                   <input
-                    [type]="question.allowMultipleAnswers ? 'checkbox' : 'radio'"
+                    [type]="
+                      question.allowMultipleAnswers ? 'checkbox' : 'radio'
+                    "
                     [(ngModel)]="option.isCorrect"
                     [name]="'option-group'"
                     class="text-green-500 focus:ring-green-500"
                     [class.rounded-full]="!question.allowMultipleAnswers"
                     [class.rounded]="question.allowMultipleAnswers"
-                  >
+                  />
                   <input
                     type="text"
                     [(ngModel)]="option.optionText"
                     class="flex-1 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     [placeholder]="'Option ' + (i + 1)"
-                  >
-                  <button 
+                  />
+                  <button
                     (click)="removeOption(i)"
-                    class="text-red-500 hover:text-red-700 p-1">
+                    class="text-red-500 hover:text-red-700 p-1"
+                  >
                     <span class="material-icons">close</span>
                   </button>
                 </div>
@@ -126,22 +151,26 @@ import { HttpClientModule } from '@angular/common/http';
             <!-- Scoring Settings -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Score</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Maximum Score</label
+                >
                 <input
                   type="number"
                   [(ngModel)]="question.maxScore"
                   class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   min="1"
-                >
+                />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Negative Score</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Negative Score</label
+                >
                 <input
                   type="number"
                   [(ngModel)]="question.negativeScore"
                   class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   min="0"
-                >
+                />
               </div>
             </div>
 
@@ -152,7 +181,7 @@ import { HttpClientModule } from '@angular/common/http';
                 [(ngModel)]="question.enablePartialScoring"
                 id="partial-scoring"
                 class="rounded text-green-500 focus:ring-green-500"
-              >
+              />
               <label for="partial-scoring" class="ml-2 text-sm text-gray-600">
                 Enable partial scoring
               </label>
@@ -160,13 +189,19 @@ import { HttpClientModule } from '@angular/common/http';
 
             <!-- Tags -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Tags</label
+              >
               <div class="flex flex-wrap gap-2 mb-2">
-                <span *ngFor="let tag of question.tags; let i = index" 
-                      class="px-2 py-1 bg-gray-100 rounded-full text-sm flex items-center">
-                  {{tag}}
-                  <button (click)="removeTag(i)" 
-                          class="ml-1 text-gray-500 hover:text-gray-700">
+                <span
+                  *ngFor="let tag of question.tags; let i = index"
+                  class="px-2 py-1 bg-gray-100 rounded-full text-sm flex items-center"
+                >
+                  {{ tag }}
+                  <button
+                    (click)="removeTag(i)"
+                    class="ml-1 text-gray-500 hover:text-gray-700"
+                  >
                     <span class="material-icons text-sm">close</span>
                   </button>
                 </span>
@@ -178,10 +213,11 @@ import { HttpClientModule } from '@angular/common/http';
                   (keyup.enter)="addTag()"
                   class="rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Add a tag..."
-                >
-                <button 
+                />
+                <button
                   (click)="addTag()"
-                  class="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                  class="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
                   Add
                 </button>
               </div>
@@ -190,29 +226,34 @@ import { HttpClientModule } from '@angular/common/http';
         </div>
 
         <!-- Footer -->
-        <div class="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-between items-center">
-          <button 
+        <div
+          class="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-between items-center"
+        >
+          <button
             (click)="saveDraft()"
-            class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+            class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
             Save as Draft
           </button>
           <div class="flex gap-2">
-            <button 
+            <button
               (click)="close()"
-              class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               Cancel
             </button>
-            <button 
+            <button
               (click)="publish()"
               [disabled]="!isComplete"
-              class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Publish
             </button>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class CreateMCQModalComponent {
   @Output() closed = new EventEmitter<void>();
@@ -220,27 +261,27 @@ export class CreateMCQModalComponent {
   @Output() drafted = new EventEmitter<MCQQuestion>();
 
   isVisible = false;
-  difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
-  newTag = '';
+  difficultyLevels = ["Basic", "Intermediate", "Advanced"];
+  newTag = "";
   editorTools = [
-    { icon: 'format_bold', label: 'Bold' },
-    { icon: 'format_italic', label: 'Italic' },
-    { icon: 'format_underlined', label: 'Underline' },
-    { icon: 'subscript', label: 'Subscript' },
-    { icon: 'superscript', label: 'Superscript' },
-    { icon: 'functions', label: 'Equation' },
-    { icon: 'format_list_bulleted', label: 'Bullet List' },
-    { icon: 'format_list_numbered', label: 'Numbered List' },
-    { icon: 'format_align_left', label: 'Align Left' },
-    { icon: 'format_align_center', label: 'Align Center' },
-    { icon: 'format_align_right', label: 'Align Right' }
+    { icon: "format_bold", label: "Bold" },
+    { icon: "format_italic", label: "Italic" },
+    { icon: "format_underlined", label: "Underline" },
+    { icon: "subscript", label: "Subscript" },
+    { icon: "superscript", label: "Superscript" },
+    { icon: "functions", label: "Equation" },
+    { icon: "format_list_bulleted", label: "Bullet List" },
+    { icon: "format_list_numbered", label: "Numbered List" },
+    { icon: "format_align_left", label: "Align Left" },
+    { icon: "format_align_center", label: "Align Center" },
+    { icon: "format_align_right", label: "Align Right" },
   ];
 
   question: MCQQuestion = {
-    type: 'MCQ',
-    title: 'MCQ Question',
-    difficultyLevel: 'Basic',
-    problemStatement: '',
+    type: "MCQ",
+    title: "MCQ Question",
+    difficultyLevel: "Basic",
+    problemStatement: "",
     options: [],
     allowMultipleAnswers: false,
     enablePartialScoring: false,
@@ -270,10 +311,10 @@ export class CreateMCQModalComponent {
 
   resetForm() {
     this.question = {
-      type: 'MCQ',
-      title: 'MCQ Question',
-      difficultyLevel: 'Basic',
-      problemStatement: '',
+      type: "MCQ",
+      title: "MCQ Question",
+      difficultyLevel: "Basic",
+      problemStatement: "",
       options: [],
       allowMultipleAnswers: false,
       enablePartialScoring: false,
@@ -282,16 +323,16 @@ export class CreateMCQModalComponent {
       tags: [],
       isDraft: false,
       timeBoundSeconds: 30,
-      aiEvaluationEnabled: false
+      aiEvaluationEnabled: false,
     };
-    this.newTag = '';
+    this.newTag = "";
   }
 
   addOption() {
     this.question.options.push({
-      optionText: '',
+      optionText: "",
       isCorrect: false,
-      scoreIfSelected: 0
+      scoreIfSelected: 0,
     });
   }
 
@@ -300,9 +341,12 @@ export class CreateMCQModalComponent {
   }
 
   addTag() {
-    if (this.newTag.trim() && !this.question.tags.includes(this.newTag.trim())) {
+    if (
+      this.newTag.trim() &&
+      !this.question.tags.includes(this.newTag.trim())
+    ) {
       this.question.tags.push(this.newTag.trim());
-      this.newTag = '';
+      this.newTag = "";
     }
   }
 
@@ -311,11 +355,13 @@ export class CreateMCQModalComponent {
   }
 
   get isComplete(): boolean {
-    return this.question.problemStatement.trim() !== '' && 
-           this.question.options.length >= 2 &&
-           this.question.options.every(opt => opt.optionText.trim() !== '') &&
-           this.question.options.some(opt => opt.isCorrect) &&
-           this.question.maxScore > 0;
+    return (
+      this.question.problemStatement.trim() !== "" &&
+      this.question.options.length >= 2 &&
+      this.question.options.every((opt) => opt.optionText.trim() !== "") &&
+      this.question.options.some((opt) => opt.isCorrect) &&
+      this.question.maxScore > 0
+    );
   }
 
   saveDraft() {
@@ -326,14 +372,14 @@ export class CreateMCQModalComponent {
   publish() {
     if (this.isComplete) {
       const payload: MCQQuestion = {
-        type: 'MCQ',
+        type: "MCQ",
         title: this.question.title,
         difficultyLevel: this.question.difficultyLevel,
         problemStatement: this.question.problemStatement,
-        options: this.question.options.map(opt => ({
+        options: this.question.options.map((opt) => ({
           optionText: opt.optionText,
           isCorrect: opt.isCorrect,
-          scoreIfSelected: opt.isCorrect ? this.question.maxScore : 0
+          scoreIfSelected: opt.isCorrect ? this.question.maxScore : 0,
         })),
         allowMultipleAnswers: this.question.allowMultipleAnswers,
         enablePartialScoring: this.question.enablePartialScoring,
@@ -342,20 +388,20 @@ export class CreateMCQModalComponent {
         tags: this.question.tags,
         isDraft: false,
         timeBoundSeconds: this.question.timeBoundSeconds,
-        aiEvaluationEnabled: this.question.aiEvaluationEnabled
+        aiEvaluationEnabled: this.question.aiEvaluationEnabled,
       };
 
-      console.log('Payload being sent:', payload);
+      console.log("Payload being sent:", payload);
 
       this.questionService.createMCQ(payload).subscribe({
         next: (response) => {
-          console.log('MCQ created successfully:', response);
+          console.log("MCQ created successfully:", response);
           this.published.emit({ ...this.question });
           this.close();
         },
         error: (error) => {
-          console.error('Error creating MCQ:', error);
-        }
+          console.error("Error creating MCQ:", error);
+        },
       });
     }
   }

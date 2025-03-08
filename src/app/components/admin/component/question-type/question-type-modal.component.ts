@@ -1,19 +1,23 @@
-import { Component, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Output, EventEmitter } from "@angular/core";
+import { CommonModule } from "@angular/common";
 
-export type QuestionTypeOption = 'programming' | 'fullstack' | 'subjective' | 'mcq';
+export type QuestionTypeOption =
+  | "programming"
+  | "fullstack"
+  | "subjective"
+  | "mcq";
 
 @Component({
-  selector: 'app-question-type-modal',
+  selector: "app-question-type-modal",
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div 
+    <div
       *ngIf="isVisible"
       class="fixed inset-0 bg-black/30 z-40 flex justify-end"
       (click)="close()"
     >
-      <div 
+      <div
         class="w-full max-w-lg bg-white shadow-2xl h-full transform transition-transform duration-300"
         [class.translate-x-0]="isVisible"
         [class.translate-x-full]="!isVisible"
@@ -21,9 +25,11 @@ export type QuestionTypeOption = 'programming' | 'fullstack' | 'subjective' | 'm
       >
         <!-- Header -->
         <div class="flex justify-between items-center p-4 border-b">
-          <h2 class="text-xl font-semibold text-gray-800">Select Question Type</h2>
-          <button 
-            (click)="close()" 
+          <h2 class="text-xl font-semibold text-gray-800">
+            Select Question Type
+          </h2>
+          <button
+            (click)="close()"
             class="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <span class="material-icons">close</span>
@@ -33,24 +39,28 @@ export type QuestionTypeOption = 'programming' | 'fullstack' | 'subjective' | 'm
         <!-- Content -->
         <div class="p-4">
           <div class="grid grid-cols-1 gap-3">
-            <button *ngFor="let option of questionTypes"
-                    (click)="selectType(option.type)"
-                    class="flex items-center p-3 border rounded-lg hover:border-green-500 hover:bg-green-500/5 transition-all group"
-                    [class.border-green-500]="selectedType === option.type"
-                    [class.bg-green-500]="selectedType === option.type">
-              <span class="material-icons text-xl mr-3 text-gray-600 group-hover:text-green-500"
-                    [class.text-green-500]="selectedType === option.type">
-                {{option.icon}}
+            <button
+              *ngFor="let option of questionTypes"
+              (click)="selectType(option.type)"
+              class="flex items-center p-3 border rounded-lg hover:border-green-500 hover:bg-green-500/5 transition-all group"
+              [class.border-green-500]="selectedType === option.type"
+              [class.bg-green-500]="selectedType === option.type"
+            >
+              <span
+                class="material-icons text-xl mr-3 text-gray-600 group-hover:text-green-500"
+                [class.text-green-500]="selectedType === option.type"
+              >
+                {{ option.icon }}
               </span>
               <div class="text-left">
-                <h3 class="font-medium text-gray-800">{{option.label}}</h3>
-                <p class="text-sm text-gray-600">{{option.description}}</p>
+                <h3 class="font-medium text-gray-800">{{ option.label }}</h3>
+                <p class="text-sm text-gray-600">{{ option.description }}</p>
               </div>
             </button>
           </div>
 
           <div class="mt-4 flex justify-end">
-            <button 
+            <button
               (click)="proceed()"
               [disabled]="!selectedType"
               class="px-4 py-2 bg-green-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors"
@@ -61,7 +71,7 @@ export type QuestionTypeOption = 'programming' | 'fullstack' | 'subjective' | 'm
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class QuestionTypeModalComponent {
   @Output() typeSelected = new EventEmitter<QuestionTypeOption>();
@@ -72,29 +82,29 @@ export class QuestionTypeModalComponent {
 
   questionTypes = [
     {
-      type: 'programming' as QuestionTypeOption,
-      label: 'Programming',
-      icon: 'code',
-      description: 'Create coding challenges with automated test cases'
+      type: "programming" as QuestionTypeOption,
+      label: "Programming",
+      icon: "code",
+      description: "Create coding challenges with automated test cases",
     },
     {
-      type: 'fullstack' as QuestionTypeOption,
-      label: 'Full Stack',
-      icon: 'layers',
-      description: 'Design comprehensive full-stack development tasks'
+      type: "fullstack" as QuestionTypeOption,
+      label: "Full Stack",
+      icon: "layers",
+      description: "Design comprehensive full-stack development tasks",
     },
     {
-      type: 'subjective' as QuestionTypeOption,
-      label: 'Subjective',
-      icon: 'edit_note',  // Added missing icon
-      description: 'Open-ended questions for detailed written responses'
+      type: "subjective" as QuestionTypeOption,
+      label: "Subjective",
+      icon: "edit_note", // Added missing icon
+      description: "Open-ended questions for detailed written responses",
     },
     {
-      type: 'mcq' as QuestionTypeOption,
-      label: 'Multiple Choice Questions',
-      icon: 'check_circle',
-      description: 'Create multiple choice questions with options'
-    }
+      type: "mcq" as QuestionTypeOption,
+      label: "Multiple Choice Questions",
+      icon: "check_circle",
+      description: "Create multiple choice questions with options",
+    },
   ];
 
   show() {

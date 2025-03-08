@@ -20,7 +20,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
   line-height: 1.6;
@@ -148,7 +150,8 @@ input.error {
 }
 
 /* Button styles */
-.submit-button, .test-button {
+.submit-button,
+.test-button {
   padding: 0.875rem;
   border: none;
   border-radius: 6px;
@@ -179,7 +182,8 @@ input.error {
   background: var(--test-button-hover);
 }
 
-.submit-button:disabled, .test-button:disabled {
+.submit-button:disabled,
+.test-button:disabled {
   background: var(--border);
   cursor: not-allowed;
 }
@@ -256,7 +260,6 @@ input.error {
     font-size: 1.5rem;
   }
 }
-
 
 .test-button {
   background-color: #007bff; /* Blue button */

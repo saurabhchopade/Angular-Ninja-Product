@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { BehaviorSubject, Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 // Interfaces remain the same as provided
 
@@ -72,7 +72,12 @@ interface CodingQuestion {
   id: number;
   title: string;
   problemStatement: string;
-  languages: { id: string; name: string; snippet: string;language_id:number }[];
+  languages: {
+    id: string;
+    name: string;
+    snippet: string;
+    language_id: number;
+  }[];
   testCases: {
     input: string;
     expectedOutput: string;
@@ -82,7 +87,7 @@ interface CodingQuestion {
   userCode: string;
 }
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class CodeSnippetServiceForReset {
   // Map to store code snippets in memory for quick access
@@ -92,25 +97,28 @@ export class CodeSnippetServiceForReset {
   private codingQuestions: CodingQuestion[] = [];
 
   // BehaviorSubject to track the current code snippet
-  private currentCodeSubject = new BehaviorSubject<string>('');
+  private currentCodeSubject = new BehaviorSubject<string>("");
   currentCode$ = this.currentCodeSubject.asObservable();
-;
   constructor(private http: HttpClient) {
     // Listen to the beforeunload event to clear local storage
-    window.addEventListener('beforeunload', () => this.clearLocalStorageForReset());
+    window.addEventListener("beforeunload", () =>
+      this.clearLocalStorageForReset(),
+    );
   }
 
-
-
-  saveCodeSnippetForReset(questionId: number, languageId: string, code: string) {
+  saveCodeSnippetForReset(
+    questionId: number,
+    languageId: string,
+    code: string,
+  ) {
     // Initialize a new Map for the question if it doesn't exist
     if (!this.codeSnippets.has(questionId.toString())) {
       this.codeSnippets.set(questionId.toString(), new Map<string, string>());
     }
-  
+
     // Get the map for the questionId
     const questionMap = this.codeSnippets.get(questionId.toString());
-  
+
     // Check if the map already has exactly one value
     if (questionMap && questionMap.size !== 1) {
       // Save the code snippet in the Map only if the map does not have exactly one value
@@ -118,14 +126,22 @@ export class CodeSnippetServiceForReset {
       // Persist the code snippet in localStorage
       this.storeCodeForReset(questionId, languageId, code);
     } else {
-      console.log(`Map for questionId ${questionId} already has exactly one entry. No new value added.`);
+      console.log(
+        `Map for questionId ${questionId} already has exactly one entry. No new value added.`,
+      );
     }
   }
 
   // Retrieve a code snippet for a specific question and language
-  getCodeSnippetForReset(questionId: number, languageId: string): string | undefined {
+  getCodeSnippetForReset(
+    questionId: number,
+    languageId: string,
+  ): string | undefined {
     // Check the Map first, then fall back to localStorage
-    return this.codeSnippets.get(questionId.toString())?.get(languageId) || this.getStoredCodeForReset(questionId, languageId);
+    return (
+      this.codeSnippets.get(questionId.toString())?.get(languageId) ||
+      this.getStoredCodeForReset(questionId, languageId)
+    );
   }
 
   // Update the current code snippet in the BehaviorSubject
@@ -139,15 +155,22 @@ export class CodeSnippetServiceForReset {
   }
 
   // Save a code snippet to localStorage
-  private storeCodeForReset(questionId: number, languageId: string, code: string) {
+  private storeCodeForReset(
+    questionId: number,
+    languageId: string,
+    code: string,
+  ) {
     const key = `code_${questionId}_${languageId}`;
     localStorage.setItem(key, code);
   }
 
   // Retrieve a code snippet from localStorage
-  private getStoredCodeForReset(questionId: number, languageId: string): string {
+  private getStoredCodeForReset(
+    questionId: number,
+    languageId: string,
+  ): string {
     const key = `code_${questionId}_${languageId}`;
-    return localStorage.getItem(key) || '';
+    return localStorage.getItem(key) || "";
   }
 
   // Clear local storage data

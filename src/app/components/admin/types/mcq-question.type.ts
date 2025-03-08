@@ -8,7 +8,7 @@ export interface MCQQuestion {
   type: "MCQ";
   title: string;
   problemStatement: string;
-  difficultyLevel: 'Basic' | 'Intermediate' | 'Advanced';
+  difficultyLevel: "Basic" | "Intermediate" | "Advanced";
   maxScore: number;
   negativeScore: number;
   timeBoundSeconds: number;
