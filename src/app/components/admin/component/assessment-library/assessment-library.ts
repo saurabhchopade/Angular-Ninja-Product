@@ -185,36 +185,33 @@ import { QuestionService, Question, QuestionResponse } from '../../services/fetc
               </ng-container>
 
               <ng-container *ngIf="activeTab === 'library'">
-  <div class="flex flex-col h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm">
-    <!-- Questions Grid with Scrollable Container -->
-    <div class="flex-1 overflow-y-auto p-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <app-question-card *ngFor="let question of questions" [question]="question">
-        </app-question-card>
-      </div>
-    </div>
+                <div class="flex flex-col h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm">
+                  <!-- Questions Grid with Scrollable Container -->
+                  <div class="flex-1 overflow-y-auto p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <app-question-card *ngFor="let question of paginatedQuestions" [question]="question">
+                      </app-question-card>
+                    </div>
+                  </div>
 
-    <!-- Pagination Controls (Fixed at Bottom) -->
-    <div class="flex justify-between items-center p-4 border-t border-gray-200 bg-white">
-      <button 
-        (click)="previousPage()"
-        [disabled]="currentPage === 0"
-        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
-        Previous
-      </button>
-      <span class="text-gray-600">Page {{ currentPage + 1 }}</span>
-      <button 
-        (click)="nextPage()"
-        [disabled]="questions.length < pageSize"
-        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
-        Next
-      </button>
-    </div>
-  </div>
-</ng-container>
-
-
-
+                  <!-- Pagination Controls (Fixed at Bottom) -->
+                  <div class="flex justify-between items-center p-4 border-t border-gray-200 bg-white">
+                    <button 
+                      (click)="previousPage()"
+                      [disabled]="currentPage === 0"
+                      class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                      Previous
+                    </button>
+                    <span class="text-gray-600">Page {{ currentPage + 1 }}</span>
+                    <button 
+                      (click)="nextPage()"
+                      [disabled]="paginatedQuestions.length < pageSize"
+                      class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </ng-container>
             </div>
           </div>
         </ng-container>
@@ -297,21 +294,79 @@ export class AssessmentLibraryComponent implements OnInit {
     libraries: false,
   };
 
- 
-
   questions: Question[] = [];
+  cachedQuestions: { [key: number]: Question[] } = {}; // Cache for paginated questions
   currentPage = 0;
   pageSize = 9;
-  sortField = 'difficultyLevel';
-  sortOrder = 'desc';
-  searchDifficultyLevels = [];
-  searchQuestionType = [];
-  // filteredQuestions: any;
+  sortField = '';
+  sortOrder = '';
+  searchDifficultyLevels: string[] = [];
+  searchQuestionType: string[] = [];
 
   constructor(
     private assessmentDataService: AssessmentDataService,
     private questionService: QuestionService
   ) {}
+
+  ngOnInit(): void {
+    this.fetchQuestions();
+  }
+
+  fetchQuestions(): void {
+    if (this.cachedQuestions[this.currentPage]) {
+      // Use cached questions if available
+      this.questions = this.cachedQuestions[this.currentPage];
+      return;
+    }
+
+    this.questionService
+      .fetchQuestions(
+        this.currentPage,
+        this.pageSize,
+        this.sortField,
+        this.sortOrder,
+        this.searchDifficultyLevels,
+        this.searchQuestionType,
+        this.searchQuery
+      )
+      .subscribe((response) => {
+        if (response.code === 200 && response.status === 'SUCCESS') {
+          this.questions = response.data.list;
+          this.cachedQuestions[this.currentPage] = this.questions; // Cache the fetched questions
+        } else {
+          console.error('Failed to fetch questions:', response.message);
+        }
+      });
+  }
+
+  get paginatedQuestions(): Question[] {
+    return this.questions;
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    this.cachedQuestions = {}; // Clear cache on new search
+    this.fetchQuestions();
+  }
+
+  applyFilters(): void {
+    this.currentPage = 0;
+    this.cachedQuestions = {}; // Clear cache on new filters
+    this.fetchQuestions();
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.fetchQuestions();
+    }
+  }
+
+  nextPage(): void {
+    this.currentPage++;
+    this.fetchQuestions();
+  }
+
 
 
   tests: TestType[] = [
@@ -348,57 +403,6 @@ export class AssessmentLibraryComponent implements OnInit {
       status: "Completed"
     }
   ];
-
-  ngOnInit(): void {
-    this.fetchQuestions();
-  }
-
-  fetchQuestions(): void {
-    this.questionService
-      .fetchQuestions(
-        this.currentPage,
-        this.pageSize,
-        this.sortField,
-        this.sortOrder,
-        this.searchDifficultyLevels,
-        this.searchQuestionType,
-        this.searchQuery
-      )
-      .subscribe((response) => {
-        if (response.code === 200 && response.status === 'SUCCESS') {
-          // Store the response data
-          this.questions = response.data.list;
-          this.pageSize = response.data.totalPages;
-          this.currentPage = response.data.number;
-
-          console.log("Questions responce from question api",this.questions)
-
-        } else {
-          console.error('Failed to fetch questions:', response.message);
-        }
-      });
-
-  }
-
-  onSearch(): void {
-    this.currentPage = 0;
-    this.fetchQuestions();
-  }
-
-  applyFilters(): void {
-    this.currentPage = 0;
-    this.fetchQuestions();
-  }
-
-  previousPage(): void {
-    this.currentPage--;
-    this.fetchQuestions();
-  }
-
-  nextPage(): void {
-    this.currentPage++;
-    this.fetchQuestions();
-  }
 
   // ... other existing methods ...
 
@@ -682,11 +686,17 @@ export class AssessmentLibraryComponent implements OnInit {
   }
 
   toggleDifficulty(level: string) {
-    this.selectedDifficulty = this.selectedDifficulty === level ? '' : level;    
-    console.log("Difficulty", this.selectedDifficulty);
+    if (this.searchDifficultyLevels.includes(level)) {
+      // If level already exists, remove it (toggle off)
+      this.searchDifficultyLevels = this.searchDifficultyLevels.filter(d => d !== level);
+    } else {
+      // If level doesn't exist, add it (toggle on)
+      this.searchDifficultyLevels.push(level);
+    }
+  
+    console.log("Selected Difficulty Levels:", this.searchDifficultyLevels);
     this.applyFilters();
   }
-
   // onSearch() {
   //   this.applyFilters();
   // }
