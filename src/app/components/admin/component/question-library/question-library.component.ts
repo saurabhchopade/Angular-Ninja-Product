@@ -334,9 +334,16 @@ export class QuestionLibraryComponent {
     this.currentPage = 0; // Reset to the first page
     this.questions = []; // Clear existing questions
     this.cachedQuestions = {}; // Clear cache
+    this.updateSearchQuestionType(); // Clear cache on new filters
     this.fetchQuestions(); // Fetch fresh data
   }
 
+  
+  updateSearchQuestionType() {
+    this.searchQuestionType = Object.keys(this.selectedTypes).filter(
+      (key) => this.selectedTypes[key],
+    ); // Push only the keys with `true` value
+  }
   // Toggle dropdown visibility
   toggleDropdown(type: 'types' | 'libraries') {
     this.showDropdowns[type] = !this.showDropdowns[type];
@@ -385,6 +392,7 @@ export class QuestionLibraryComponent {
 
   // Handle search
   onSearch(): void {
+    console.log("Query", this.selectedTypes);
     this.currentPage = 0; // Reset to the first page
     this.questions = []; // Clear existing questions
     this.cachedQuestions = {}; // Clear cache

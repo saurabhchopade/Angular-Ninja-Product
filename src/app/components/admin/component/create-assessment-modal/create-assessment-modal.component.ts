@@ -536,14 +536,14 @@ export class CreateAssessmentModalComponent {
   ];
 
   assessment: Assessment = {
-    name: "",
-    jobRole: "",
-    skills: [],
-    experienceLevel: "",
-    duration: "90",
-    startDate: "",
-    endDate: "",
-    tags: [],
+    name: "Sample Backend Developer",
+    jobRole: "Sample Forntend",
+    skills: ["Sample Java"],
+    experienceLevel: "Sample experence",
+    duration: "Sample 90",
+    startDate: "Sample",
+    endDate: "123",
+    tags: ["123"],
     isAutomatic: true,
   };
 
