@@ -67,6 +67,19 @@ export class AssessmentDataService {
       });
   }
 
+
+  // export interface Assessment {
+  //   name: string;
+  //   jobRole: string;
+  //   skills: string[];
+  //   experienceLevel: string;
+  //   duration: string;
+  //   startDate: string;
+  //   endDate: string;
+  //   tags: string[];
+  //   isAutomatic: boolean;
+  // }
+  
   private combineData(testDetails: TestPublishDetails, assessment: Assessment): any {
     return {
       assessmentName: testDetails.name,
@@ -75,7 +88,7 @@ export class AssessmentDataService {
       assessmentStartTime: assessment.startDate,
       assessmentEndTime:assessment.endDate,
       
-      duration: '1 hr 30 mins', // You can modify this as needed
+      duration: assessment.duration, // You can modify this as needed
       assessmentAccess: testDetails.isAccessEnabled,
       difficultyLevel: 'Hard', // You can modify this as needed
       aiPoweredQuestion: false, // You can modify this as needed

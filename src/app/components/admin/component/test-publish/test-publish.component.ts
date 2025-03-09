@@ -70,9 +70,9 @@ import { AssessmentDataService } from "../../services/assessment.data.service";
                 <span class="material-icons mr-2">preview</span>
                 Preview
               </button>
-              <button
-                class="flex items-center px-6 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors"
-              >
+              <button (click)="onPublish()"
+               class="flex items-center px-6 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors">
+
                 <span class="material-icons mr-2">publish</span>
                 Publish
               </button>
@@ -603,6 +603,8 @@ export class TestPublishComponent implements OnInit {
   draggedSectionIndex: number | null = null;
   showLibrary = false;
   currentSectionIndex: number = -1;
+  sectionCounter: number = 1; // Initialize the counter
+
 
   sectionTypes = ["Add Questions Manually", "Select from Library"];
 
@@ -617,23 +619,23 @@ export class TestPublishComponent implements OnInit {
     practiceLink: "https://www.loremipsum.com/practice-test-262576",
     tags: [".NET", "Asynchronous Programming"],
     sections: [
-      {
-        id: "1",
-        title: "Full Stack Questions",
-        minRandomQuestions: 0,
-        questions: [
-          {
-            id: "1",
-            title: "Profile Details",
-            description:
-              "You are provided with a Spring Boot application to complete automation scripts and step definitions using the Cucumber framework to validate profile management functionality.",
-            tags: ["Cucumber", "Java Selenium"],
-            type: "Full Stack",
-            difficulty: "Intermediate",
-            score: 20,
-          },
-        ],
-      },
+      // {
+      //   id: "1",
+      //   title: "Full Stack Questions",
+      //   minRandomQuestions: 0,
+      //   questions: [
+      //     {
+      //       id: "1",
+      //       title: "Profile Details",
+      //       description:
+      //         "You are provided with a Spring Boot application to complete automation scripts and step definitions using the Cucumber framework to validate profile management functionality.",
+      //       tags: ["Cucumber", "Java Selenium"],
+      //       type: "Full Stack",
+      //       difficulty: "Intermediate",
+      //       score: 20,
+      //     },
+      //   ],
+      // },
     ],
     settings: {
       testDescription:
@@ -674,6 +676,26 @@ export class TestPublishComponent implements OnInit {
 
   ngOnInit() {
     // Initialize component
+    this. setDetails();
+  }
+
+  setDetails(): void {
+    // Get the assessment data from the service
+    const assessments = this.assessmentDataService.getAssessments();
+
+    if (assessments.length > 0) {
+      const assessment = assessments[0]; // Use the first assessment for simplicity
+
+      // Map values from the assessment to the test object
+      this.test.name = assessment.name;
+      this.test.startDate = assessment.startDate;
+      this.test.endDate = assessment.endDate;
+      this.test.tags = assessment.tags;
+
+      // Update other fields as needed
+      this.test.settings.testDescription = `A ${assessment.jobRole} test covering ${assessment.skills.join(', ')}.`;
+      this.test.settings.testInstruction = `Complete all sections within ${assessment.duration}. Use a stable internet connection.`;
+    }
   }
 
   getTabClass(tab: string): string {
@@ -724,7 +746,7 @@ export class TestPublishComponent implements OnInit {
   createSection() {
     if (this.canCreateSection) {
       const newSection: TestSection = {
-        id: crypto.randomUUID(),
+        id: this.sectionCounter.toString(),
         title: this.newSectionTitle.trim(),
         minRandomQuestions: 0,
         questions: [],
@@ -733,6 +755,8 @@ export class TestPublishComponent implements OnInit {
       this.test.sections.push(newSection);
       this.resetSectionModal();
     }
+    this.sectionCounter++; // Increment the counter
+
   }
 
   resetSectionModal() {
@@ -810,7 +834,12 @@ export class TestPublishComponent implements OnInit {
 
   navigateBack(page: string) {
     // console.log("Publish data in Component",this.test)
-    this.assessmentDataService.addTestPublishDetails(this.test);
+    // this.assessmentDataService.addTestPublishDetails(this.test);
     this.navigate.emit(page);
+  }
+
+  onPublish() {
+    // console.log("Publish data in Component",this.test)
+    this.assessmentDataService.addTestPublishDetails(this.test);
   }
 }
