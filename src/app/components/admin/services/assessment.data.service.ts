@@ -98,10 +98,11 @@ export class AssessmentDataService {
         maxExperience: 5, // You can modify this as needed
         tags: assessment.skills,
       },
-      assessmentSectionDto: testDetails.sections.map((section: any) => ({
+      assessmentSectionDto: testDetails.sections.map((section: any,index: number) => ({
         name: section.title,
         description: section.questions[0].description,
-        sequenceNo: section.id,
+        //It used even if the section swapped it changes section sequence how it appears on the user
+        sequenceNo: index+1,
         minRandomQuestions: section.minRandomQuestions,
         questionIds: section.questions.map((question: any) => question.id),
       })),
@@ -148,9 +149,11 @@ export class AssessmentDataService {
       .post('http://localhost:8080/api/assessment/create', data)
       .subscribe(
         (response) => {
+          alert("Assessment created successfully");
           console.log('Assessment created successfully:', response);
         },
         (error) => {
+          alert("Issue while Publishing Assignement");
           console.error('Error creating assessment:', error);
         }
       );

@@ -525,16 +525,19 @@ import { AssessmentDataService } from "../../services/assessment.data.service";
         <div class="space-y-6">
           <!-- Section Title -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Section Title
-            </label>
-            <input
-              type="text"
-              [(ngModel)]="newSectionTitle"
-              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-              placeholder="Enter section title..."
-            />
-          </div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">
+    Section Title
+  </label>
+  <select
+    [(ngModel)]="newSectionTitle"
+    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+  >
+    <option value="" disabled selected>Select a section title...</option>
+    <option *ngFor="let title of predefinedSectionTitles" [value]="title">
+      {{ title }}
+    </option>
+  </select>
+</div>
 
           <!-- Section Type -->
           <div>
@@ -598,6 +601,12 @@ export class TestPublishComponent implements OnInit {
   tabs = ["Overview", "Questions"];
   activeTab = "Overview";
   showCreateSectionModal = false;
+  predefinedSectionTitles: string[] = [
+    "MCQ",
+    "CODING",
+    "SUBJECTIVE",
+    "FULL STACK"
+    ];
   newSectionTitle = "";
   selectedSectionType = "";
   draggedSectionIndex: number | null = null;
@@ -618,25 +627,7 @@ export class TestPublishComponent implements OnInit {
     testLink: "https://www.loremipsum.com/salesforce-developer-test-35",
     practiceLink: "https://www.loremipsum.com/practice-test-262576",
     tags: [".NET", "Asynchronous Programming"],
-    sections: [
-      // {
-      //   id: "1",
-      //   title: "Full Stack Questions",
-      //   minRandomQuestions: 0,
-      //   questions: [
-      //     {
-      //       id: "1",
-      //       title: "Profile Details",
-      //       description:
-      //         "You are provided with a Spring Boot application to complete automation scripts and step definitions using the Cucumber framework to validate profile management functionality.",
-      //       tags: ["Cucumber", "Java Selenium"],
-      //       type: "Full Stack",
-      //       difficulty: "Intermediate",
-      //       score: 20,
-      //     },
-      //   ],
-      // },
-    ],
+    sections: [],
     settings: {
       testDescription:
         "A Java backend development test covering Spring Boot and Microservices.",
@@ -839,7 +830,7 @@ export class TestPublishComponent implements OnInit {
   }
 
   onPublish() {
-    // console.log("Publish data in Component",this.test)
-    this.assessmentDataService.addTestPublishDetails(this.test);
-  }
+  this.assessmentDataService.addTestPublishDetails(this.test);
+  this.navigate.emit('assessment');
+}
 }
