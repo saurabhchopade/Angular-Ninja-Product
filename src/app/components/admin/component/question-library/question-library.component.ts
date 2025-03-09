@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input, HostListener } from "@angular/core";
+import { Component, Output, EventEmitter, Input, HostListener, ElementRef, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { QuestionType } from "../../types/question.type";
@@ -101,7 +101,7 @@ import { TruncatePipe } from "../../../../shared/pipes/truncate.pipe";
             <button
               *ngFor="let level of difficultyLevels"
               (click)="toggleDifficulty(level)"
-              [class]="getDifficultyButtonClass(level)"
+              [class]="getDifficultyClass(level)"
               class="px-3 py-1 rounded-full text-sm transition-colors"
             >
               {{ level }}
@@ -134,7 +134,11 @@ import { TruncatePipe } from "../../../../shared/pipes/truncate.pipe";
     </div>
 
     <!-- Question List -->
-    <div class="flex-1 overflow-auto p-6">
+    <div
+      #questionList
+      class="flex-1 overflow-auto p-6"
+      (scroll)="onScroll($event)"
+    >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           *ngFor="let question of questions"
@@ -142,7 +146,7 @@ import { TruncatePipe } from "../../../../shared/pipes/truncate.pipe";
           [class.border-[#4CAF50]]="isSelected(question.id)"
         >
           <!-- Difficulty Strip -->
-          <!-- <div [class]="getDifficultyButtonClass(question.difficultyLevel)"></div> -->
+          <div [class]="getDifficultyStripClass(question.difficultyLevel)"></div>
 
           <!-- Selection Checkbox -->
           <div class="absolute top-4 right-4">
@@ -192,6 +196,11 @@ import { TruncatePipe } from "../../../../shared/pipes/truncate.pipe";
           </div>
         </div>
       </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="flex justify-center p-4">
+        <span class="text-gray-600">Loading more questions...</span>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -224,6 +233,8 @@ export class QuestionLibraryComponent {
   @Output() questionsSelected = new EventEmitter<QuestionType[]>();
   @Output() closed = new EventEmitter<void>();
 
+  @ViewChild('questionList') questionList!: ElementRef; // Reference to the question list container
+
   searchQuery = '';
   selectedQuestions: QuestionType[] = [];
   difficultyLevels = ['Basic', 'Intermediate', 'Advanced'];
@@ -249,6 +260,9 @@ export class QuestionLibraryComponent {
   searchDifficultyLevels: string[] = [];
   searchQuestionType: string[] = [];
 
+  isLoading = false; // Track loading state
+  hasMoreQuestions = true; // Track if more questions are available
+
   constructor(private questionService: QuestionService) {}
 
   ngOnInit(): void {
@@ -263,6 +277,8 @@ export class QuestionLibraryComponent {
       return;
     }
 
+    this.isLoading = true; // Set loading state
+
     this.questionService
       .fetchQuestions(
         this.currentPage,
@@ -275,22 +291,18 @@ export class QuestionLibraryComponent {
       )
       .subscribe((response) => {
         if (response.code === 200 && response.status === 'SUCCESS') {
-          this.questions = response.data.list;
-          this.cachedQuestions[this.currentPage] = this.questions; // Cache the fetched questions
+          const newQuestions = response.data.list;
+          this.questions = [...this.questions, ...newQuestions]; // Append new questions
+          this.cachedQuestions[this.currentPage] = newQuestions; // Cache the fetched questions
+
+          // Check if there are more questions to load
+          this.hasMoreQuestions = newQuestions.length === this.pageSize;
         } else {
           console.error('Failed to fetch questions:', response.message);
         }
+        this.isLoading = false; // Reset loading state
       });
   }
-
-  // Pagination controls
-  previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.fetchQuestions();
-    }
-  }
-
   removeFilter(filter: string) {
     const [type, value] = filter.split(": ");
     switch (type) {
@@ -306,23 +318,23 @@ export class QuestionLibraryComponent {
     }
     this.applyFilters();
   }
-  nextPage(): void {
-    this.currentPage++;
-    this.fetchQuestions();
+  // Handle scroll event
+  onScroll(event: Event): void {
+    const element = this.questionList.nativeElement;
+    const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+
+    if (atBottom && !this.isLoading && this.hasMoreQuestions) {
+      this.currentPage++; // Increment page
+      this.fetchQuestions(); // Fetch next set of questions
+    }
   }
 
   // Apply filters
   applyFilters(): void {
-    this.currentPage = 0;
-    this.cachedQuestions = {}; // Clear cache on new filters
-    this.updateSearchQuestionType(); // Update selected question types
-    this.fetchQuestions();
-  }
-
-  updateSearchQuestionType() {
-    this.searchQuestionType = Object.keys(this.selectedTypes).filter(
-      (key) => this.selectedTypes[key]
-    );
+    this.currentPage = 0; // Reset to the first page
+    this.questions = []; // Clear existing questions
+    this.cachedQuestions = {}; // Clear cache
+    this.fetchQuestions(); // Fetch fresh data
   }
 
   // Toggle dropdown visibility
@@ -333,41 +345,6 @@ export class QuestionLibraryComponent {
     this.showDropdowns[other] = false;
   }
 
-  
-  getDifficultyButtonClass(level: string): string {
-    const isSelected = this.searchDifficultyLevels.includes(level);
-    const baseClasses =
-      "px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-sm ";
-
-    switch (level) {
-      case "Basic":
-        return (
-          baseClasses +
-          (isSelected
-            ? "bg-green-100 text-green-700 border border-green-300 hover:bg-green-200" // Darker green for selected state
-            : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200")
-        ); // Default grey state
-      case "Intermediate":
-        return (
-          baseClasses +
-          (isSelected
-            ? "bg-yellow-100 text-yellow-700 border border-yellow-300 hover:bg-yellow-200" // Darker yellow for selected state
-            : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200")
-        ); // Default grey state
-      case "Advanced":
-        return (
-          baseClasses +
-          (isSelected
-            ? "bg-red-100 text-red-700 border border-red-300 hover:bg-red-200" // Darker red for selected state
-            : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200")
-        ); // Default grey state
-      default:
-        return (
-          baseClasses +
-          "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200"
-        ); // Default grey state for unknown levels
-    }
-  }
   // Toggle difficulty filter
   toggleDifficulty(level: string) {
     if (this.searchDifficultyLevels.includes(level)) {
@@ -406,14 +383,15 @@ export class QuestionLibraryComponent {
     this.closed.emit();
   }
 
+  // Handle search
   onSearch(): void {
-    console.log("Query", this.searchQuery);
-    console.log("Query", this.selectedTypes);
-
-    this.currentPage = 0;
-    this.cachedQuestions = {}; // Clear cache on new search
-    this.fetchQuestions();
+    this.currentPage = 0; // Reset to the first page
+    this.questions = []; // Clear existing questions
+    this.cachedQuestions = {}; // Clear cache
+    this.fetchQuestions(); // Fetch fresh data
   }
+
+  // Check if there are active filters
   get hasActiveFilters(): boolean {
     return (
       this.selectedDifficulty !== "" ||
@@ -422,19 +400,7 @@ export class QuestionLibraryComponent {
     );
   }
 
-  getDifficultyClass(difficulty: string): string {
-    const baseClasses = 'px-2 py-0.5 rounded-full text-xs font-medium ';
-    switch (difficulty) {
-      case 'Basic':
-        return baseClasses + 'bg-green-50 text-green-600';
-      case 'Intermediate':
-        return baseClasses + 'bg-yellow-50 text-yellow-600';
-      case 'Advanced':
-        return baseClasses + 'bg-red-50 text-red-600';
-      default:
-        return baseClasses + 'bg-gray-50 text-gray-600';
-    }
-  }
+  // Get active filters
   get activeFilters(): string[] {
     const filters: string[] = [];
 
@@ -453,6 +419,7 @@ export class QuestionLibraryComponent {
     return filters;
   }
 
+  // Clear all filters
   clearFilters() {
     this.searchQuery = "";
     this.selectedDifficulty = "";
@@ -472,6 +439,36 @@ export class QuestionLibraryComponent {
     ) {
       this.showDropdowns.types = false;
       this.showDropdowns.libraries = false;
+    }
+  }
+
+  // Get difficulty strip class
+  getDifficultyStripClass(difficulty: string): string {
+    const baseClasses = "w-1.5 h-full absolute left-0 top-0 ";
+    switch (difficulty) {
+      case "Basic":
+        return baseClasses + "bg-green-500";
+      case "Intermediate":
+        return baseClasses + "bg-yellow-500";
+      case "Advanced":
+        return baseClasses + "bg-red-500";
+      default:
+        return baseClasses + "bg-gray-500";
+    }
+  }
+
+  // Get difficulty class
+  getDifficultyClass(difficulty: string): string {
+    const baseClasses = "px-2 py-0.5 rounded-full text-xs font-medium ";
+    switch (difficulty) {
+      case "Basic":
+        return baseClasses + "bg-green-50 text-green-600";
+      case "Intermediate":
+        return baseClasses + "bg-yellow-50 text-yellow-600";
+      case "Advanced":
+        return baseClasses + "bg-red-50 text-red-600";
+      default:
+        return baseClasses + "bg-gray-50 text-gray-600";
     }
   }
 }
