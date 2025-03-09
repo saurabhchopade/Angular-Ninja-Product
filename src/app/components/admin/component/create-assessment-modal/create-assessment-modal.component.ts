@@ -468,6 +468,9 @@ export class CreateAssessmentModalComponent {
   @Output() published = new EventEmitter<Assessment>();
   @Output() drafted = new EventEmitter<Assessment>();
 
+
+  constructor(private sssessmentDataService: AssessmentDataService) {}
+
   isVisible = false;
   currentStep = 0;
   steps = ["Job Role", "Skills", "Settings", "Review"];
@@ -726,6 +729,8 @@ export class CreateAssessmentModalComponent {
 
   publish() {
     if (this.isComplete) {
+      // console.log('Create Assessment'+this.assessment)
+      this.sssessmentDataService.addAssessment(this.assessment);
       this.published.emit({ ...this.assessment });
       this.close();
     }

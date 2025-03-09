@@ -52,7 +52,7 @@ export interface TestPublishDetails {
   id: string;
   name: string;
   startDate: string;
-  endDate?: string;
+  endDate: string;
   type: "Invite Only" | "Public";
   isAccessEnabled: boolean;
   testLink: string;

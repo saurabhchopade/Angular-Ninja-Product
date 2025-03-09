@@ -491,7 +491,7 @@ export class AssessmentLibraryComponent implements OnInit {
       testDate: "Feb 20th, 2025, 10:00 AM IST",
       invitedCount: 100,
       completedCount: 75,
-      status: "Active",
+      status: "Archived",
     },
     {
       id: 3,

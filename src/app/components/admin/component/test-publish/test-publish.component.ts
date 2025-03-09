@@ -10,6 +10,7 @@ import { FormsModule } from "@angular/forms";
 import { TestPublishDetails, TestSection } from "../../types/test-publish.type";
 import { QuestionLibraryComponent } from "../question-library/question-library.component";
 import { QuestionType } from "../../types/question.type";
+import { AssessmentDataService } from "../../services/assessment.data.service";
 
 @Component({
   selector: "app-test-publish",
@@ -591,6 +592,9 @@ export class TestPublishComponent implements OnInit {
   @ViewChild("questionLibrary") questionLibrary!: QuestionLibraryComponent;
   @Output() navigate = new EventEmitter<string>();
 
+    constructor(private assessmentDataService: AssessmentDataService) {}
+  
+    
   tabs = ["Overview", "Questions"];
   activeTab = "Overview";
   showCreateSectionModal = false;
@@ -606,6 +610,7 @@ export class TestPublishComponent implements OnInit {
     id: "1234567890",
     name: "Salesforce Developer Test",
     startDate: "Feb 15th, 2025, 12:00 PM IST",
+    endDate: "Feb 15th, 2025, 12:00 PM IST",
     type: "Invite Only",
     isAccessEnabled: true,
     testLink: "https://www.loremipsum.com/salesforce-developer-test-35",
@@ -804,6 +809,8 @@ export class TestPublishComponent implements OnInit {
   }
 
   navigateBack(page: string) {
+    // console.log("Publish data in Component",this.test)
+    this.assessmentDataService.addTestPublishDetails(this.test);
     this.navigate.emit(page);
   }
 }
