@@ -1,11 +1,18 @@
 export type TestType = {
-  id: number;
-  name: string;
-  inviteType: "Invite Only" | "Public";
+  assessmentId: number;
+  assessmentName: string;
+  assessmentType: string;
+  assessmentStatus: "Active" | "Completed" | "Archived";
+  assessmentStartTime: string;
+  assessmentEndTime: string;
   duration: string;
-  testDate: string;
-  endDate?: string;
-  invitedCount: number;
-  completedCount: number;
-  status: "Active" | "Completed" | "Archived";
+  assessmentAccess: boolean;
+  difficultyLevel: string;
+  jobRoleDto: any;
+  testLink: string;
+  practiceLink: string;
+  aiPoweredQuestion: boolean;
+  assessmentSectionDto: any;
+  assessmentSettingDto: any;
+  assessmentAdminDto: any;
 };

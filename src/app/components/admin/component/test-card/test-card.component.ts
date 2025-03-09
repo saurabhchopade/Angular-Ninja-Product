@@ -12,8 +12,8 @@ import { TestType } from "../../types/test.type";
     >
       <!-- Header -->
       <div class="flex justify-between items-start mb-3">
-        <h3 class="text-base font-semibold text-gray-800">{{ test.name }}</h3>
-        <span [class]="getStatusClass()">{{ test.status }}</span>
+        <h3 class="text-base font-semibold text-gray-800">{{ test.assessmentName }}</h3>
+        <span [class]="getStatusClass()">{{ test.assessmentStatus }}</span>
       </div>
 
       <!-- Info Grid -->
@@ -24,17 +24,17 @@ import { TestType } from "../../types/test.type";
         </div>
         <div class="flex items-center gap-1">
           <span class="material-icons text-gray-400 text-base">group</span>
-          <span class="text-gray-600">{{ test.invitedCount }} Invited</span>
+          <span class="text-gray-600">{{ 20 }} Invited</span>
         </div>
         <div class="flex items-center gap-1">
           <span class="material-icons text-gray-400 text-base">event</span>
-          <span class="text-gray-600">{{ test.testDate }}</span>
+          <span class="text-gray-600">{{ test.assessmentStartTime }}</span>
         </div>
         <div class="flex items-center gap-1">
           <span class="material-icons text-gray-400 text-base"
             >check_circle</span
           >
-          <span class="text-gray-600">{{ test.completedCount }} Completed</span>
+          <span class="text-gray-600">{{ 10 }} Completed</span>
         </div>
       </div>
 
@@ -72,7 +72,7 @@ export class TestCardComponent {
 
   getStatusClass(): string {
     const baseClasses = "px-2 py-1 rounded-full text-xs ";
-    switch (this.test.status) {
+    switch (this.test.assessmentStatus) {
       case "Active":
         return baseClasses + "bg-green-100 text-green-800";
       case "Completed":
@@ -85,14 +85,14 @@ export class TestCardComponent {
   }
 
   onViewReport() {
-    this.viewReport.emit(this.test.id);
+    this.viewReport.emit(this.test.assessmentId);
   }
 
   onInvite() {
-    this.invite.emit(this.test.id);
+    this.invite.emit(this.test.assessmentId);
   }
 
   onArchive() {
-    this.archive.emit(this.test.id);
+    this.archive.emit(this.test.assessmentId);
   }
 }

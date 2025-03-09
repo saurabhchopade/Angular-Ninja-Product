@@ -33,6 +33,7 @@ import {
   Question,
   QuestionResponse,
 } from "../../services/fetch.question.service";
+import { AssessmentService } from "../../services/fetch.assessment.service";
 
 @Component({
   selector: "app-root",
@@ -210,37 +211,65 @@ import {
 
               <!-- Content -->
               <ng-container *ngIf="activeTab === 'assessments'">
-                <ng-container *ngIf="!showingReport">
-                  <!-- Cards Grid -->
-                  <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                  >
-                    <app-test-card
-                      *ngFor="let test of filteredTests"
-                      [test]="test"
-                      (viewReport)="onViewReport($event)"
-                      (invite)="onInvite($event)"
-                      (archive)="onArchive($event)"
-                    >
-                    </app-test-card>
-                  </div>
-                </ng-container>
+  <!-- Show Assessments Grid if not showing report -->
+  <ng-container *ngIf="!showingReport">
+    <div class="flex flex-col h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm">
+      <!-- Assessments Grid with Scrollable Container -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <app-test-card
+            *ngFor="let assessment of paginatedAssessments"
+            [test]="assessment"
+            (viewReport)="onViewReport($event)"
+            (invite)="onInvite($event)"
+            (archive)="onArchive($event)"
+          >
+          </app-test-card>
+        </div>
+      </div>
 
-                <ng-container *ngIf="showingReport">
-                  <div class="flex items-center mb-6">
-                    <button
-                      (click)="showingReport = false"
-                      class="flex items-center text-gray-600 hover:text-gray-800"
-                    >
-                      <span class="material-icons mr-1">arrow_back</span>
-                      Back to Assessments
-                    </button>
-                  </div>
-                  <app-assessment-report
-                    [testId]="selectedTestId"
-                  ></app-assessment-report>
-                </ng-container>
-              </ng-container>
+      <!-- Pagination Controls (Fixed at Bottom) -->
+      <div class="flex justify-between items-center p-4 border-t border-gray-200 bg-white">
+        <button
+          (click)="previousPage()"
+          [disabled]="currentPageOfA === 0"
+          class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span class="text-gray-600">Page {{ currentPageOfA + 1 }}</span>
+        <button
+          (click)="nextPage()"
+          [disabled]="paginatedAssessments.length < pageSize"
+          class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Show Report if showingReport is true -->
+  <ng-container *ngIf="showingReport">
+    <div class="flex flex-col h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm">
+      <!-- Back Button -->
+      <div class="flex items-center p-4 border-b border-gray-200">
+        <button
+          (click)="showingReport = false"
+          class="flex items-center text-gray-600 hover:text-gray-800"
+        >
+          <span class="material-icons mr-1">arrow_back</span>
+          Back to Assessments
+        </button>
+      </div>
+
+      <!-- Report Content -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <app-assessment-report [testId]="selectedTestId"></app-assessment-report>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
 
               <ng-container *ngIf="activeTab === 'library'">
                 <div
@@ -373,9 +402,14 @@ export class AssessmentLibraryComponent implements OnInit {
   };
 
   questions: Question[] = [];
+  assessments: any[] = [];
+  cachedAssessments: { [key: number]: any[] } = {}; // Cache for paginated assessments
   cachedQuestions: { [key: number]: Question[] } = {}; // Cache for paginated questions
   currentPage = 0;
   pageSize = 9;
+
+  currentPageOfA = 0;
+  // pageSizeOfA = 9;
   sortField = "";
   sortOrder = "";
   searchDifficultyLevels: string[] = [];
@@ -384,30 +418,26 @@ export class AssessmentLibraryComponent implements OnInit {
   constructor(
     private assessmentDataService: AssessmentDataService,
     private questionService: QuestionService,
+    private assessmentService: AssessmentService
   ) {}
 
   ngOnInit(): void {
+    // this.fetchData();
     this.fetchQuestions();
+    this.fetchAssessments();
+
   }
 
-  // Listens for clicks anywhere on the document
-  @HostListener("document:click", ["$event"])
-  onDocumentClick(event: MouseEvent) {
-    const dropdownButton = event.target as HTMLElement;
-
-    // Check if the click is outside the dropdown button and dropdown content
-    if (
-      !dropdownButton.closest(".dropdown-button") &&
-      !dropdownButton.closest(".dropdown-content")
-    ) {
-      this.showDropdowns.types = false; // Close the dropdown
-      // this.showDropdowns.libraries = false; // Close the dropdown
+  fetchData(): void {
+    if (this.activeTab === "library") {
+      this.fetchQuestions();
+    } else if (this.activeTab === "assessments") {
+      this.fetchAssessments();
     }
   }
 
   fetchQuestions(): void {
     if (this.cachedQuestions[this.currentPage]) {
-      // Use cached questions if available
       this.questions = this.cachedQuestions[this.currentPage];
       return;
     }
@@ -420,29 +450,30 @@ export class AssessmentLibraryComponent implements OnInit {
         this.sortOrder,
         this.searchDifficultyLevels,
         this.searchQuestionType,
-        this.searchQuery,
+        this.searchQuery
       )
       .subscribe((response) => {
         if (response.code === 200 && response.status === "SUCCESS") {
           this.questions = response.data.list;
-          this.cachedQuestions[this.currentPage] = this.questions; // Cache the fetched questions
+          this.cachedQuestions[this.currentPage] = this.questions;
         } else {
           console.error("Failed to fetch questions:", response.message);
         }
       });
   }
 
-  get paginatedQuestions(): Question[] {
-    return this.questions;
-  }
+  @HostListener("document:click", ["$event"])
+  onDocumentClick(event: MouseEvent) {
+    const dropdownButton = event.target as HTMLElement;
 
-  onSearch(): void {
-    console.log("Query", this.searchQuery);
-    console.log("Query", this.selectedTypes);
-
-    this.currentPage = 0;
-    this.cachedQuestions = {}; // Clear cache on new search
-    this.fetchQuestions();
+    // Check if the click is outside the dropdown button and dropdown content
+    if (
+      !dropdownButton.closest(".dropdown-button") &&
+      !dropdownButton.closest(".dropdown-content")
+    ) {
+      this.showDropdowns.types = false; // Close the dropdown
+      // this.showDropdowns.libraries = false; // Close the dropdown
+    }
   }
 
   applyFilters(): void {
@@ -459,69 +490,105 @@ export class AssessmentLibraryComponent implements OnInit {
     ); // Push only the keys with `true` value
   }
 
+  fetchAssessments(): void {
+    if (this.cachedAssessments[this.currentPageOfA]) {
+      this.assessments = this.cachedAssessments[this.currentPageOfA];
+      return;
+    }
+
+    const request = {
+      pageNumber: this.currentPageOfA,
+      pageSize: this.pageSize,
+      sortField: this.sortField,
+      sortOrder: this.sortOrder,
+      searchCommonString: this.searchQuery,
+      searchDifficultyLevel: "",
+      searchStatus: "",
+    };
+    this.assessmentService.searchAssessments(request.pageNumber,request.pageSize,request.searchCommonString).subscribe((response) => {
+      if (response.code === 200 && response.status === "SUCCESS") {
+        this.assessments = response.data.list;
+        this.cachedAssessments[this.currentPageOfA] = this.assessments;
+      } else {
+        console.error("Failed to fetch assessments:", response.message);
+      }
+    });
+  }
+
+  get paginatedQuestions(): Question[] {
+    return this.questions;
+  }
+
+  get paginatedAssessments(): any[] {
+    return this.assessments;
+  }
+
+  onSearch(): void {
+
+    if (this.activeTab === "library") {
+      this.currentPage = 0;
+      this.cachedQuestions = {};
+      this.fetchQuestions();
+      this.applyFilters();
+    } else if (this.activeTab === "assessments") {
+      this.currentPageOfA = 0;
+      this.cachedAssessments = {};
+      this.fetchAssessments();
+    }
+
+    // this.currentPage = 0;
+    // this.cachedQuestions = {};
+    // this.cachedAssessments = {};
+    // this.fetchData();
+  }
+
+  onTabChange(tab: string): void {
+    this.activeTab = tab;
+    // this.currentPage = 0;
+    // this.fetchData();
+
+    
+    if (this.activeTab === "library") {
+      this.currentPage = 0;
+      this.cachedQuestions = {};
+      this.fetchQuestions();
+    } else if (this.activeTab === "assessments") {
+      this.currentPageOfA = 0;
+      this.cachedAssessments = {};
+      this.fetchAssessments();
+
+    }
+  }
+
   previousPage(): void {
-    if (this.currentPage > 0) {
+    // if (this.currentPage > 0) {
+    //   this.currentPage--;
+    //   this.fetchData();
+    // }
+
+    if (this.activeTab === "library") {
       this.currentPage--;
       this.fetchQuestions();
+    } else if (this.activeTab === "assessments") {
+      this.currentPageOfA--;
+      this.fetchAssessments();
     }
   }
 
   nextPage(): void {
-    this.currentPage++;
-    this.fetchQuestions();
-  }
+    // this.currentPage++;
+    // this.fetchData();
 
-  tests: TestType[] = [
-    {
-      id: 1,
-      name: "Frontend Developer Assessment",
-      inviteType: "Invite Only",
-      duration: "1 hr 30 mins",
-      testDate: "Feb 15th, 2025, 12:00 PM IST",
-      endDate: "Feb 15th, 2025, 11:59 PM IST",
-      invitedCount: 50,
-      completedCount: 35,
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Backend Engineering Test",
-      inviteType: "Public",
-      duration: "2 hrs",
-      testDate: "Feb 20th, 2025, 10:00 AM IST",
-      invitedCount: 100,
-      completedCount: 75,
-      status: "Archived",
-    },
-    {
-      id: 3,
-      name: "DevOps Assessment",
-      inviteType: "Invite Only",
-      duration: "1 hr",
-      testDate: "Feb 10th, 2025, 3:00 PM IST",
-      endDate: "Feb 10th, 2025, 6:00 PM IST",
-      invitedCount: 25,
-      completedCount: 25,
-      status: "Completed",
-    },
-  ];
 
-  get filteredTests(): TestType[] {
-    if (!this.searchQuery) {
-      return this.tests;
+    if (this.activeTab === "library") {
+      this.currentPage++;
+      this.fetchQuestions();
+    } else if (this.activeTab === "assessments") {
+      this.currentPageOfA++;
+      this.fetchAssessments();
     }
-
-    const query = this.searchQuery.toLowerCase();
-    return this.tests.filter(
-      (test) =>
-        test.name.toLowerCase().includes(query) ||
-        test.inviteType.toLowerCase().includes(query) ||
-        test.status.toLowerCase().includes(query) ||
-        test.duration.toLowerCase().includes(query) ||
-        test.testDate.toLowerCase().includes(query),
-    );
   }
-
+  
   get hasActiveFilters(): boolean {
     return (
       this.selectedDifficulty !== "" ||
@@ -713,7 +780,7 @@ export class AssessmentLibraryComponent implements OnInit {
 
     console.log("Selected Difficulty Levels:", this.searchDifficultyLevels);
     this.applyFilters();
-  }
+    }
   // onSearch() {
   //   this.applyFilters();
   // }
@@ -735,7 +802,7 @@ export class AssessmentLibraryComponent implements OnInit {
         this.selectedLibraries[value] = false;
         break;
     }
-    this.applyFilters();
+    // this.applyFilters();
   }
 
   clearFilters() {
@@ -743,6 +810,8 @@ export class AssessmentLibraryComponent implements OnInit {
     this.selectedDifficulty = "";
     this.selectedTypes = {};
     this.selectedLibraries = {};
-    this.applyFilters();
+    // this.applyFilters();
   }
+
+
 }

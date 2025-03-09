@@ -539,14 +539,14 @@ export class CreateAssessmentModalComponent {
   ];
 
   assessment: Assessment = {
-    name: "Sample Backend Developer",
-    jobRole: "Sample Forntend",
-    skills: ["Sample Java"],
-    experienceLevel: "Sample experence",
-    duration: "Sample 90",
+    name: "Backend Developer",
+    jobRole: "Forntend",
+    skills: ["Java"],
+    experienceLevel: "0-10 years",
+    duration: "60",
     startDate: "Sample",
-    endDate: "123",
-    tags: ["123"],
+    endDate: "2025",
+    tags: ["2025"],
     isAutomatic: true,
   };
 
