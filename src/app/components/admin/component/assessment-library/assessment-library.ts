@@ -506,73 +506,6 @@ export class AssessmentLibraryComponent implements OnInit {
     },
   ];
 
-  // ... other existing methods ...
-
-  // questions: QuestionType[] = [
-  //   {
-  //     id: 1,
-  //     title: "RESTful API Design",
-  //     description: "Design a scalable REST API for a social media platform with user authentication and post management.",
-  //     difficulty: "Intermediate",
-  //     score: 85,
-  //     technologies: ["Python", "FastAPI"],
-  //     categories: ["Full Stack", "Backend"]
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Security Analysis",
-  //     description: "Perform a security assessment of a web application and identify potential vulnerabilities.",
-  //     difficulty: "Advanced",
-  //     score: 92,
-  //     technologies: ["CyberOps", "Security"],
-  //     categories: ["Security", "Analysis"]
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "Frontend Development",
-  //     description: "Create a responsive dashboard using React and modern CSS techniques.",
-  //     difficulty: "Basic",
-  //     score: 78,
-  //     technologies: ["React", "TypeScript"],
-  //     categories: ["Frontend", "UI/UX"]
-  //   }
-  // ];
-
-  // tests: TestType[] = [
-  //   {
-  //     id: 1,
-  //     name: "Frontend Developer Assessment",
-  //     inviteType: "Invite Only",
-  //     duration: "1 hr 30 mins",
-  //     testDate: "Feb 15th, 2025, 12:00 PM IST",
-  //     endDate: "Feb 15th, 2025, 11:59 PM IST",
-  //     invitedCount: 50,
-  //     completedCount: 35,
-  //     status: "Active"
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Backend Engineering Test",
-  //     inviteType: "Public",
-  //     duration: "2 hrs",
-  //     testDate: "Feb 20th, 2025, 10:00 AM IST",
-  //     invitedCount: 100,
-  //     completedCount: 75,
-  //     status: "Active"
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "DevOps Assessment",
-  //     inviteType: "Invite Only",
-  //     duration: "1 hr",
-  //     testDate: "Feb 10th, 2025, 3:00 PM IST",
-  //     endDate: "Feb 10th, 2025, 6:00 PM IST",
-  //     invitedCount: 25,
-  //     completedCount: 25,
-  //     status: "Completed"
-  //   }
-  // ];
-
   get filteredTests(): TestType[] {
     if (!this.searchQuery) {
       return this.tests;
@@ -588,48 +521,6 @@ export class AssessmentLibraryComponent implements OnInit {
         test.testDate.toLowerCase().includes(query),
     );
   }
-
-  // get filteredQuestions(): QuestionType[] {
-  //   let filtered = [...this.questions];
-
-  //   // Apply search
-  //   if (this.searchQuery) {
-  //     const query = this.searchQuery.toLowerCase();
-  //     filtered = filtered.filter(q =>
-  //       q.title.toLowerCase().includes(query) ||
-  //       q.description.toLowerCase().includes(query) ||
-  //       q.technologies.some(t => t.toLowerCase().includes(query)) ||
-  //       q.categories.some(c => c.toLowerCase().includes(query))
-  //     );
-  //   }
-
-  //   // Apply difficulty filter
-  //   if (this.selectedDifficulty) {
-  //     filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
-  //   }
-
-  //   // Apply question type filters
-  //   const activeTypes = Object.entries(this.selectedTypes)
-  //     .filter(([_, selected]) => selected)
-  //     .map(([type]) => type);
-  //   if (activeTypes.length > 0) {
-  //     filtered = filtered.filter(q =>
-  //       q.categories.some(c => activeTypes.includes(c))
-  //     );
-  //   }
-
-  //   // Apply library filters
-  //   const activeLibraries = Object.entries(this.selectedLibraries)
-  //     .filter(([_, selected]) => selected)
-  //     .map(([lib]) => lib);
-  //   if (activeLibraries.length > 0) {
-  //     filtered = filtered.filter(q =>
-  //       q.categories.some(c => activeLibraries.includes(c))
-  //     );
-  //   }
-
-  //   return filtered;
-  // }
 
   get hasActiveFilters(): boolean {
     return (
