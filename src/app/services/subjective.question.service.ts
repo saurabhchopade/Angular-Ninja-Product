@@ -7,7 +7,7 @@ import { SubjectiveQuestion } from "../models/question.model";
   providedIn: "root",
 })
 export class QuestionService {
-  private apiUrl = "http://localhost:8080/api/questions/find/fetch-subjective";
+  private apiUrl = "http://localhost:8080/api/subjective-questions/find/fetch-subjective";
 
   constructor(private http: HttpClient) {}
 

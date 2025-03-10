@@ -538,9 +538,9 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
   }
 
   fetchQuestions(): void {
-    const assessmentId = 7;
-    const sectionId = 7;
-    const candidateId = 7;
+    const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    const candidateId = 4; // Replace with dynamic candidate ID if needed
+    const sectionId = 5; // Replace with dynamic section ID if needed
 
     // Check if questions are available in local storage
     const cachedQuestions = localStorage.getItem("subjectiveQuestions");

@@ -569,8 +569,9 @@ export class LoginComponent {
     if (!this.testStartTime || !this.testEndTime) return;
 
     const now = this.currentTime;
-
-    this.isTestActive = now >= this.testStartTime && now <= this.testEndTime;
+//As of now hardcoded change chnage this to TODO
+//    this.isTestActive = now >= this.testStartTime && now <= this.testEndTime;
+    this.isTestActive = true;
     this.isTestUpcoming = now < this.testStartTime;
     this.isTestExpired = now > this.testEndTime;
   }

@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
   providedIn: "root",
 })
 export class McqService {
-  private baseUrl = "http://localhost:8080/api/questionAndOption";
+  private baseUrl = "http://localhost:8080/api/mcq-question";
 
   constructor(private http: HttpClient) {
     // Listen to the beforeunload event to clear local storage or perform cleanup

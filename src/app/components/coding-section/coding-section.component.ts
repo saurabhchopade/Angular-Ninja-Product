@@ -892,9 +892,9 @@ export class CodingSectionComponent
     //   userCode: ''
     // };
 
-    const assessmentId = 1; // Replace with actual assessment ID
-    const candidateId = 1; // Replace with actual candidate ID
-    const sectionId = 1; // Replace with actual section ID
+    const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    const candidateId = 4; // Replace with dynamic candidate ID if needed
+    const sectionId = 4; // Replace with dynamic section ID if needed
 
     this.loading = true;
 

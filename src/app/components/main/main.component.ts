@@ -40,7 +40,7 @@ export class MainComponent implements OnInit {
         console.log("API Response:", response);
         if (response.code === 200 && response.status === "SUCCESS") {
           const inviteStatus = response.data.inviteDto.inviteStatus;
-          if (inviteStatus === "Published") {
+          if (inviteStatus === "Published" ||  inviteStatus === "Active") {
             // Allow navigation to the login page with the invite ID as a query parameter
             this.router.navigate(["login"], { queryParams: { inviteId: id } });
           } else {
