@@ -11,7 +11,7 @@ import { InvalidInviteComponent } from "../app/components/invalid-invite/invalid
 import { AssessmentLibraryComponent } from "./components/admin/component/assessment-library/assessment-library";
 
 export const routes: Routes = [
-  { path: "invite/find/:id", component: MainComponent },
+  { path: "api/invite/find/:id", component: MainComponent },
   { path: "login", component: LoginComponent },
   { path: "test", component: McqSectionComponent },
   { path: "feedback", component: FeedbackComponent },

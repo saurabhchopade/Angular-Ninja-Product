@@ -7,7 +7,7 @@ import { catchError, map } from "rxjs/operators";
   providedIn: "root",
 })
 export class InviteService {
-  private baseUrl = "http://localhost:8080/invite/find/";
+  private baseUrl = "http://localhost:8080/api/invite/find/";
 
   constructor(private http: HttpClient) {}
 

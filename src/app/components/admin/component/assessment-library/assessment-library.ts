@@ -36,7 +36,7 @@ import {
 import { AssessmentService } from "../../services/fetch.assessment.service";
 
 @Component({
-  selector: "app-root",
+  selector: "asseesment-library",
   standalone: true,
   imports: [
     CommonModule,
