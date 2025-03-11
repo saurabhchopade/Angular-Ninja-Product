@@ -25,20 +25,19 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
     HttpClientModule,
     RouterModule,
   ],
-  providers: [SubmitTestService], // Add the service here
-
+  providers: [SubmitTestService],
   template: `
     <div class="app-container">
       <header>
         <div class="header-content">
           <!-- Left Side: Assessment Title -->
           <div class="brand">
-            <h1>Java Assessment</h1>
+            <h1>{{ assessmentData?.assessmentDto?.assessmentName }}</h1>
           </div>
 
           <!-- Right Side: Test Info, Timer, and Submit Button -->
           <div class="test-info">
-            <span class="user-info">Candidate: Saurabh Chopade</span>
+            <span class="user-info">Candidate: {{ assessmentData?.candidateDto?.candidateFullName }}</span>
             <div class="timer" [class.timer-warning]="remainingTime < 1800">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -118,45 +117,17 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
 
           <div class="nav-section">
             <div class="section-label">Sections</div>
-            <!-- MCQ Section -->
-            <button
-              (click)="currentSection = 'mcq'"
-              [class.active]="currentSection === 'mcq'"
-              title="MCQ Section"
-            >
-              <div class="section-number">1</div>
-              <span class="nav-label">Multiple Choice</span>
-            </button>
-
-            <!-- Coding Section -->
-            <button
-              (click)="currentSection = 'coding'"
-              [class.active]="currentSection === 'coding'"
-              title="Coding Section"
-            >
-              <div class="section-number">2</div>
-              <span class="nav-label">Coding</span>
-            </button>
-
-            <!-- Subjective Section -->
-            <button
-              (click)="currentSection = 'subjective'"
-              [class.active]="currentSection === 'subjective'"
-              title="Subjective Section"
-            >
-              <div class="section-number">3</div>
-              <span class="nav-label">Subjective</span>
-            </button>
-
-            <!-- FullStack Section -->
-            <button
-              (click)="currentSection = 'fullstack'"
-              [class.active]="currentSection === 'fullstack'"
-              title="FullStack Section"
-            >
-              <div class="section-number">4</div>
-              <span class="nav-label">Full Stack</span>
-            </button>
+            <!-- Dynamically Generated Sections -->
+            @for (section of assessmentData?.assessmentSectionList; track section.sectionId) {
+              <button
+                (click)="currentSection = section.name.toLowerCase()"
+                [class.active]="currentSection === section.name.toLowerCase()"
+                [title]="section.name"
+              >
+                <div class="section-number">{{ section.sequenceNo }}</div>
+                <span class="nav-label">{{ section.name }}</span>
+              </button>
+            }
           </div>
         </nav>
 
@@ -202,50 +173,15 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
                       <div class="instruction-group">
                         <h3>Test Sections</h3>
                         <div class="section-info">
-                          <div class="section-info-item">
-                            <div class="section-info-number">1</div>
-                            <div class="section-info-details">
-                              <h4>Multiple Choice Questions</h4>
-                              <p>
-                                Select the correct option for each question. All
-                                questions carry equal marks.
-                              </p>
+                          @for (section of assessmentData?.assessmentSectionList; track section.sectionId) {
+                            <div class="section-info-item">
+                              <div class="section-info-number">{{ section.sequenceNo }}</div>
+                              <div class="section-info-details">
+                                <h4>{{ section.name }}</h4>
+                                <p>{{ section.description }}</p>
+                              </div>
                             </div>
-                          </div>
-
-                          <div class="section-info-item">
-                            <div class="section-info-number">2</div>
-                            <div class="section-info-details">
-                              <h4>Coding Section</h4>
-                              <p>
-                                Write code to solve the given problems. Your
-                                code will be evaluated for correctness and
-                                efficiency.
-                              </p>
-                            </div>
-                          </div>
-
-                          <div class="section-info-item">
-                            <div class="section-info-number">3</div>
-                            <div class="section-info-details">
-                              <h4>Subjective Questions</h4>
-                              <p>
-                                Provide detailed answers to the given questions.
-                                Be concise and to the point.
-                              </p>
-                            </div>
-                          </div>
-
-                          <div class="section-info-item">
-                            <div class="section-info-number">4</div>
-                            <div class="section-info-details">
-                              <h4>Full Stack Implementation</h4>
-                              <p>
-                                Complete the full stack implementation task and
-                                upload your solution files.
-                              </p>
-                            </div>
-                          </div>
+                          }
                         </div>
                       </div>
 
@@ -270,8 +206,8 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
                       <div class="start-button-container">
                         <button
                           class="start-test-btn"
-                          (click)="currentSection = 'mcq'"
-                        >
+                          (click)="currentSection = assessmentData?.assessmentSectionList?.[0]?.name?.toLowerCase() ?? ''"
+                          >
                           Start Test
                         </button>
                       </div>
@@ -310,22 +246,12 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
               </p>
 
               <div class="section-summary">
-                <div class="summary-item">
-                  <span>MCQ Section:</span>
-                  <span class="summary-status completed">Completed</span>
-                </div>
-                <div class="summary-item">
-                  <span>Coding Section:</span>
-                  <span class="summary-status incomplete">Incomplete</span>
-                </div>
-                <div class="summary-item">
-                  <span>Subjective Section:</span>
-                  <span class="summary-status not-started">Not Started</span>
-                </div>
-                <div class="summary-item">
-                  <span>Full Stack Section:</span>
-                  <span class="summary-status not-started">Not Started</span>
-                </div>
+                @for (section of assessmentData?.assessmentSectionList; track section.sectionId) {
+                  <div class="summary-item">
+                    <span>{{ section.name }} Section:</span>
+                    <span class="summary-status not-started">Not Started</span>
+                  </div>
+                }
               </div>
             </div>
             <div class="modal-footer">
@@ -956,18 +882,12 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
   ],
 })
 export class AppDashboard implements OnInit {
-  currentSection:
-    | "instructions"
-    | "mcq"
-    | "coding"
-    | "subjective"
-    | "fullstack" = "instructions";
+  currentSection: string = "instructions";
   remainingTime: number = 7200; // 2 hours in seconds
   showSubmitConfirmation: boolean = false;
   testSubmitted: boolean = false;
   navCollapsed: boolean = false;
   assessmentData: StartAssessmentResponse['data'] | null = null;
-  inviteData: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -1008,32 +928,9 @@ export class AppDashboard implements OnInit {
   }
 
   submitTest() {
-    // // Here you would implement the actual submission logic
     this.testSubmitted = true;
     this.showSubmitConfirmation = false;
-    console.log("dsdsds");
-    // this.router.navigate(['feedback']);
-
-    const inviteId = 2; // Dummy inviteId
-    const email = "john.doe@example.com"; // Dummy email
-
-    this.router.navigate(["feedback"]).then((success) => {
-      if (success) {
-        console.log("Navigation to feedback successful");
-      } else {
-        console.error("Navigation to feedback failed");
-      }
-    });
-
-    // this.submitTestService.submitAssessment(inviteId, email).subscribe({
-    //   next: (response: any) => {
-    //     console.log('Submission successful', response);
-    //     this.testSubmitted = true;
-    //     this.showSubmitConfirmation = false;
-    //     this.router.navigate(['/feedback']);
-    //   }
-
-    // });
+    this.router.navigate(["feedback"]);
   }
 
   startAssessment(): void {
@@ -1041,21 +938,19 @@ export class AppDashboard implements OnInit {
 
     if (!inviteData || !inviteData.inviteId || !inviteData.email) {
       console.error("Invalid invite data. Missing inviteId or email.");
-      return; // Exit the method if data is invalid
+      return;
     }
-  
-    const inviteId = inviteData.inviteId; // inviteId is guaranteed to be a number
-    const email = inviteData.email; // email is guaranteed to be a string
-  
+
+    const inviteId = inviteData.inviteId;
+    const email = inviteData.email;
+
     this.inviteService.startAssessment(inviteId, email).subscribe(
       (response) => {
         console.log("Assessment started successfully:", response);
-        // Retrieve the stored assessment data
-        this.assessmentData = this.inviteService.getAssessmentData();
+        this.assessmentData = response.data;
       },
       (error) => {
         console.error("Failed to start assessment:", error);
-        // If the API call fails, try to retrieve existing data from local storage
         this.assessmentData = this.inviteService.getAssessmentData();
         if (!this.assessmentData) {
           console.log("No assessment data found. Please try again.");
@@ -1063,5 +958,4 @@ export class AppDashboard implements OnInit {
       },
     );
   }
-
 }
