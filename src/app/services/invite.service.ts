@@ -38,6 +38,12 @@ export class InviteService {
       inviteId: data.inviteDto.inviteId,
       startTime: data.assessmentDto.assessmentStartTime, // Add startTime
       endTime: data.assessmentDto.assessmentEndTime, // Add endTime
+      assessmentName:data.assessmentDto.assessmentName,
+      assessmentType:data.assessmentDto.assessmentType,
+      duration:data.assessmentDto.duration,
+      difficultyLevel:data.assessmentDto.difficultyLevel,
+      assessmentStatus: data.assessmentDto.assessmentStatus,
+      candidateFullName:data.candidateDto.candidateFullName
     };
     localStorage.setItem("inviteData", JSON.stringify(inviteData));
   }
@@ -51,6 +57,12 @@ export class InviteService {
     inviteId: number;
     startTime: string;
     endTime: string;
+    assessmentName:string;
+    assessmentType:string;
+    duration:string;
+    difficultyLevel:string;
+    assessmentStatus:string;
+    candidateFullName:string
   } | null {
     const inviteData = localStorage.getItem("inviteData");
     if (inviteData) {

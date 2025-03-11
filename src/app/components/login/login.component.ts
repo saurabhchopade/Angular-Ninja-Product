@@ -1,5 +1,4 @@
 import { Component, OnInit } from "@angular/core";
-import { bootstrapApplication } from "@angular/platform-browser";
 import { CommonModule } from "@angular/common";
 import {
   FormBuilder,
@@ -118,414 +117,483 @@ import { InviteService } from "../../services/invite.service";
             </form>
           </div>
 
-          <div class="features-section">
-            <div class="feature-card">
-              <span class="feature-icon">🏆</span>
-              <h3>Test Your Skills</h3>
-              <p>
-                Showcase your coding expertise and tackle real-world challenges.
-              </p>
-            </div>
-            <div class="feature-card">
-              <span class="feature-icon">👥</span>
-              <h3>Challenge Yourself</h3>
-              <p>Go head-to-head with top coders.</p>
-            </div>
-            <div class="feature-card">
-              <span class="feature-icon">🚀</span>
-              <h3>Stay Focused</h3>
-              <p>Take the test with confidence!</p>
+          <div class="test-details-section">
+            <div class="test-details-card">
+              <div class="test-header">
+                <h3>{{ this.assessmentName }}</h3>
+                <span class="test-type-badge">{{ this.assessmentType }}</span>
+              </div>
+
+              <div class="details-group">
+                <div class="detail-item">
+                  <span class="detail-icon">👤</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Candidate</span>
+                    <span class="detail-value">{{ this.candidateFullName }}</span>
+                  </div>
+                </div>
+
+                <div class="detail-item">
+                  <span class="detail-icon">⏱️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Duration</span>
+                    <span class="detail-value">{{ this.duration }} minutes</span>
+                  </div>
+                </div>
+
+                <div class="detail-item">
+                  <span class="detail-icon">📊</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Difficulty</span>
+                    <span class="detail-value difficulty-badge">
+                      {{ this.difficultyLevel }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="detail-item">
+                  <span class="detail-icon">📝</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value status-badge">
+                      {{ this.assessmentStatus }}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   `,
-  styles: [
-    `
-      /* Global Container */
-      .page-container {
-        min-height: 100vh;
-        background-color: #f8f9fa;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        display: flex;
-        flex-direction: column;
-      }
+  styles: [`
+    /* Global Container */
+    .page-container {
+      min-height: 100vh;
+      background-color: #f8f9fa;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
 
-      /* Navigation */
-      .navbar {
-        background: linear-gradient(90deg, #4caf50, #8bc34a);
-        color: white;
-        padding: 1rem 3rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        height: 64px;
-      }
+    /* Navigation */
+    .navbar {
+      background: linear-gradient(90deg, #4caf50, #8bc34a);
+      color: white;
+      padding: 1rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 64px;
+    }
 
-      .nav-brand {
-        font-size: 1.5rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-      }
+    .nav-brand {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
 
-      /* Main content */
+    /* Main content */
+    .main-content {
+      max-width: 1400px;
+      width: 90%;
+      margin: 0 auto;
+      padding: 100px 0 3rem;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .login-container {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 3rem;
+      width: 100%;
+      align-items: start;
+    }
+
+    .login-box {
+      background: white;
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      max-width: 650px;
+      width: 100%;
+    }
+
+    .header-section {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      color: #2c3e50;
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: #6c757d;
+      font-size: 1.25rem;
+    }
+
+    /* Test Time Info Styles */
+    .test-time-info {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-left: 5px solid #4caf50;
+    }
+
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      background: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+    }
+
+    .time-badge.active {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+    }
+
+    .time-badge.upcoming {
+      background: rgba(33, 150, 243, 0.1);
+      color: #2196f3;
+    }
+
+    .time-badge.expired {
+      background: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+    }
+
+    .status-icon {
+      font-size: 1.25rem;
+    }
+
+    .time-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .time-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .time-label {
+      font-weight: 600;
+      color: #495057;
+      min-width: 60px;
+    }
+
+    .time-value {
+      color: #6c757d;
+    }
+
+    /* Form styles */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    label {
+      font-weight: 500;
+      color: #495057;
+      font-size: 1.1rem;
+    }
+
+    input {
+      padding: 1rem;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4caf50;
+      box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+    }
+
+    input.error {
+      border-color: #e53935;
+    }
+
+    .error-message {
+      color: #e53935;
+      font-size: 0.95rem;
+    }
+
+    /* Button styles */
+    .start-test-btn {
+      background: linear-gradient(90deg, #4caf50, #8bc34a);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 40px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 0.5rem 0;
+    }
+
+    .start-test-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(76, 175, 80, 0.35);
+    }
+
+    .start-test-btn:disabled {
+      background: #e0e0e0;
+      color: #9e9e9e;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .button-icon {
+      font-size: 1.5rem;
+    }
+
+    /* Test Details Section */
+    .test-details-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .test-details-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+
+    .test-header h3 {
+      font-size: 1.5rem;
+      color: #2c3e50;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .test-type-badge {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .details-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .detail-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+
+    .detail-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .detail-label {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .detail-value {
+      color: #2c3e50;
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+
+    .difficulty-badge {
+      display: inline-block;
+      background: #fff3e0;
+      color: #f57c00;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #4caf50;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+    }
+
+    .form-footer {
+      text-align: center;
+      font-size: 1rem;
+      color: #6c757d;
+      margin-top: 1.5rem;
+    }
+
+    .form-footer a {
+      color: #4caf50;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Test availability message */
+    .test-availability-message {
+      background: rgba(255, 152, 0, 0.1);
+      border-left: 4px solid #ff9800;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      color: #e65100;
+      margin-top: -0.5rem;
+    }
+
+    /* Responsive design */
+    @media (max-width: 1200px) {
       .main-content {
-        max-width: 1400px;
-        width: 90%;
-        margin: 0 auto;
-        padding: 100px 0 3rem;
-        flex: 1;
-        display: flex;
-        align-items: center;
+        width: 95%;
+        padding: 90px 0 2rem;
       }
 
       .login-container {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 3rem;
-        width: 100%;
-        align-items: center;
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .login-container {
+        grid-template-columns: 1fr;
+        max-width: 700px;
+        margin: 0 auto;
       }
 
       .login-box {
-        background: white;
-        padding: 3rem;
-        border-radius: 20px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        max-width: 650px;
-        width: 100%;
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 1rem 2rem;
       }
 
-      .header-section {
-        text-align: center;
-        margin-bottom: 2rem;
+      .main-content {
+        padding: 80px 1rem 1.5rem;
       }
 
       h2 {
-        font-size: 2.5rem;
-        color: #2c3e50;
-        margin-bottom: 0.75rem;
-        font-weight: 700;
+        font-size: 2rem;
+      }
+
+      .test-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .navbar {
+        padding: 0.75rem 1.5rem;
+        height: 56px;
+      }
+
+      .nav-brand {
+        font-size: 1.25rem;
+      }
+
+      .main-content {
+        width: 92%;
+        padding: 70px 0 1rem;
+      }
+
+      .login-box,
+      .test-details-card {
+        padding: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.75rem;
       }
 
       .subtitle {
-        color: #6c757d;
+        font-size: 1rem;
+      }
+
+      .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .detail-icon {
+        width: 32px;
+        height: 32px;
         font-size: 1.25rem;
       }
-
-      /* Test Time Info Styles */
-      .test-time-info {
-        background: #f8f9fa;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        border-left: 5px solid #4caf50;
-      }
-
-      .time-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.6rem 1.2rem;
-        border-radius: 30px;
-        font-weight: 600;
-        font-size: 1rem;
-        margin-bottom: 1rem;
-        background: rgba(76, 175, 80, 0.1);
-        color: #4caf50;
-      }
-
-      .time-badge.active {
-        background: rgba(76, 175, 80, 0.1);
-        color: #4caf50;
-      }
-
-      .time-badge.upcoming {
-        background: rgba(33, 150, 243, 0.1);
-        color: #2196f3;
-      }
-
-      .time-badge.expired {
-        background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
-      }
-
-      .status-icon {
-        font-size: 1.25rem;
-      }
-
-      .time-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .time-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 1rem;
-      }
-
-      .time-label {
-        font-weight: 600;
-        color: #495057;
-        min-width: 60px;
-      }
-
-      .time-value {
-        color: #6c757d;
-      }
-
-      /* Form styles */
-      .login-form {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      label {
-        font-weight: 500;
-        color: #495057;
-        font-size: 1.1rem;
-      }
-
-      input {
-        padding: 1rem;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
-        font-size: 1.1rem;
-        transition: all 0.2s;
-      }
-
-      input:focus {
-        outline: none;
-        border-color: #4caf50;
-        box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
-      }
-
-      input.error {
-        border-color: #e53935;
-      }
-
-      .error-message {
-        color: #e53935;
-        font-size: 0.95rem;
-      }
-
-      /* Test availability message */
-      .test-availability-message {
-        background: rgba(255, 152, 0, 0.1);
-        border-left: 4px solid #ff9800;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        font-size: 1rem;
-        color: #e65100;
-        margin-top: -0.5rem;
-      }
-
-      /* Button styles */
-      .start-test-btn {
-        background: linear-gradient(90deg, #4caf50, #8bc34a);
-        color: white;
-        border: none;
-        padding: 1rem 2rem;
-        border-radius: 40px;
-        font-size: 1.2rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 6px 12px rgba(76, 175, 80, 0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        margin: 0.5rem 0;
-      }
-
-      .start-test-btn:hover:not(:disabled) {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 16px rgba(76, 175, 80, 0.35);
-      }
-
-      .start-test-btn:disabled {
-        background: #e0e0e0;
-        color: #9e9e9e;
-        box-shadow: none;
-        cursor: not-allowed;
-      }
-
-      .button-icon {
-        font-size: 1.5rem;
-      }
-
-      /* Features section */
-      .features-section {
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        gap: 2rem;
-      }
-
-      .feature-card {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 20px;
-        text-align: center;
-        transition:
-          transform 0.3s,
-          box-shadow 0.3s;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-      }
-
-      .feature-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
-      }
-
-      .feature-icon {
-        font-size: 3.5rem;
-        margin-bottom: 1.5rem;
-        display: inline-block;
-      }
-
-      .feature-card h3 {
-        color: #2c3e50;
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-        font-weight: 600;
-      }
-
-      .feature-card p {
-        color: #6c757d;
-        font-size: 1.1rem;
-        line-height: 1.6;
-      }
-
-      .form-footer {
-        text-align: center;
-        font-size: 1rem;
-        color: #6c757d;
-        margin-top: 1.5rem;
-      }
-
-      .form-footer a {
-        color: #4caf50;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .form-footer a:hover {
-        text-decoration: underline;
-      }
-
-      /* Responsive design */
-      @media (max-width: 1200px) {
-        .main-content {
-          width: 95%;
-          padding: 90px 0 2rem;
-        }
-
-        .login-container {
-          gap: 2rem;
-        }
-
-        .login-box {
-          padding: 2.5rem;
-        }
-      }
-
-      @media (max-width: 992px) {
-        .login-container {
-          grid-template-columns: 1fr;
-          max-width: 700px;
-          margin: 0 auto;
-        }
-
-        .login-box {
-          max-width: 100%;
-        }
-
-        .features-section {
-          grid-template-columns: repeat(3, 1fr);
-        }
-      }
-
-      @media (max-width: 768px) {
-        .navbar {
-          padding: 1rem 2rem;
-        }
-
-        .main-content {
-          padding: 80px 0 1.5rem;
-        }
-
-        .features-section {
-          grid-template-columns: 1fr;
-        }
-
-        h2 {
-          font-size: 2rem;
-        }
-
-        .subtitle {
-          font-size: 1.1rem;
-        }
-
-        .login-box {
-          padding: 2rem;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .navbar {
-          padding: 0.75rem 1.5rem;
-          height: 56px;
-        }
-
-        .nav-brand {
-          font-size: 1.25rem;
-        }
-
-        .main-content {
-          width: 92%;
-          padding: 70px 0 1rem;
-        }
-
-        .login-box {
-          padding: 1.5rem;
-        }
-
-        h2 {
-          font-size: 1.75rem;
-        }
-
-        .subtitle {
-          font-size: 1rem;
-        }
-
-        .feature-card {
-          padding: 1.5rem;
-        }
-
-        .feature-icon {
-          font-size: 2.5rem;
-        }
-      }
-    `,
-  ],
+    }
+  `]
 })
 export class LoginComponent {
   loginForm: FormGroup;
@@ -535,6 +603,12 @@ export class LoginComponent {
   isTestUpcoming: boolean = false;
   isTestExpired: boolean = false;
   currentTime: Date = new Date();
+  assessmentName:string ='';
+  assessmentType:string ='';
+  duration:string ='';
+  difficultyLevel:string ='';
+  assessmentStatus:string ='';
+  candidateFullName:string = ''
 
   constructor(
     private fb: FormBuilder,
@@ -549,6 +623,13 @@ export class LoginComponent {
   ngOnInit(): void {
     // Retrieve invite data from service
     const inviteData = this.inviteService.getInviteData();
+    this.assessmentName = inviteData?.assessmentName ?? '';
+    this.assessmentType = inviteData?.assessmentType ?? '';
+    this.duration = inviteData?.duration ?? '';
+    this.difficultyLevel = inviteData?.difficultyLevel ?? '';
+    this.assessmentStatus = inviteData?.assessmentStatus ?? '';
+    this.candidateFullName = inviteData?.candidateFullName ?? '';
+
 
     if (inviteData) {
       if (inviteData.startTime && inviteData.endTime) {
