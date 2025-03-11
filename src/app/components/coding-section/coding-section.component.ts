@@ -15,6 +15,7 @@ import { CodeSnippetServiceForReset } from "../../services/reset.code.snippet.se
 import { CodeExecutionService } from "../../services/code-run.service";
 import { DropOffAnswerService } from "../../services/dropoff.Coding.service"; // Import the new service
 import { interval, Subscription } from "rxjs"; // Import interval and Subscription
+import { InviteService } from "../../services/invite.service";
 
 interface CodingQuestion {
   id: number;
@@ -865,16 +866,20 @@ export class CodingSectionComponent
   language_id = 0;
   private dropOffSubscription!: Subscription; // Subscription for the interval
 
-  assessmentId = 1;
-  candidateId = 1;
-  candidateAssessmentSessionId = 1;
-  sectionId = 1;
+  //Assessment details
+  assessmentId!: number;
+  candidateId!: number;
+  sectionId!: number;
+  candidateAssessmentSessionId!: number;
+  assessmentData: any = null;
 
   constructor(
     private codeSnippetService: CodeSnippetService,
     private codeSnippetServiceForReset: CodeSnippetServiceForReset,
     private codeExecutionService: CodeExecutionService,
     private dropOffAnswerService: DropOffAnswerService, // Inject the new service
+    private inviteService: InviteService
+    
   ) {
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
@@ -892,36 +897,86 @@ export class CodingSectionComponent
     //   userCode: ''
     // };
 
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 4; // Replace with dynamic section ID if needed
-
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 4; // Replace with dynamic section ID if needed
     this.loading = true;
+    this.initializeAssessmentDataAssessment()
+    this.loadSnippetCode()
 
-    this.codeSnippetService
-      .fetchCodingQuestions(assessmentId, candidateId, sectionId)
-      .subscribe({
-        next: (questions) => {
-          this.codingQuestions = questions;
-          this.currentQuestion =
-            this.codingQuestions[this.currentQuestionIndex];
-          this.selectedLanguage = this.currentQuestion.languages[0].id;
-          this.language_id = this.currentQuestion.languages[0].language_id;
-          this.initializeEditor();
-          this.loading = false;
 
-          // Start the interval to drop off the answer every 30 seconds
-          this.dropOffSubscription = interval(30000).subscribe(() => {
-            this.dropOffAnswer();
-          });
-        },
-        error: (error) => {
-          console.error("Error fetching coding questions:", error);
-          this.loading = false;
-        },
-      });
   }
 
+  loadSnippetCode():void{
+    this.codeSnippetService
+    .fetchCodingQuestions(this.assessmentId, this.candidateId, this.sectionId)
+    .subscribe({
+      next: (questions) => {
+        this.codingQuestions = questions;
+        this.currentQuestion =
+          this.codingQuestions[this.currentQuestionIndex];
+        this.selectedLanguage = this.currentQuestion.languages[0].id;
+        this.language_id = this.currentQuestion.languages[0].language_id;
+        this.initializeEditor();
+        this.loading = false;
+
+        // Start the interval to drop off the answer every 30 seconds
+        this.dropOffSubscription = interval(30000).subscribe(() => {
+          this.dropOffAnswer();
+        });
+      },
+      error: (error) => {
+        console.error("Error fetching coding questions:", error);
+        this.loading = false;
+      },
+    });
+  }
+
+  initializeAssessmentDataAssessment(): void {
+    const inviteData = this.inviteService.getAssessmentData();
+    console.log("inviteData OF ASSESSMENT In CODING", inviteData); // Debugging: Log the inviteData object
+  
+    if (!inviteData) {
+      console.error("No invite data found.");
+      return;
+    }
+  
+    if (!inviteData.assessmentDto?.assessmentId) {
+      console.error("Missing assessmentId in assessmentDto.");
+      return;
+    }
+  
+    if (!inviteData.candidateDto?.candidateId) {
+      console.error("Missing candidateId in candidateDto.");
+      return;
+    }
+  
+    if (!inviteData.candidateAssessmentSessionDto?.candidateAssessmentSessionId) {
+      console.error("Missing candidateAssessmentSessionId in candidateAssessmentSessionDto.");
+      return;
+    }
+  
+    // If all required fields are present, proceed
+    this.assessmentId = inviteData.assessmentDto.assessmentId;
+    this.candidateId = inviteData.candidateDto.candidateId;
+    this.candidateAssessmentSessionId = inviteData.candidateAssessmentSessionDto.candidateAssessmentSessionId;
+  
+    const assessmentSections = inviteData.assessmentSectionList;
+  
+    if (assessmentSections && Array.isArray(assessmentSections)) {
+      const mcqSection = assessmentSections.find(section => section.name === "CODING");
+      console.log('=====================1===', mcqSection);
+  
+      if (mcqSection) {
+        this.sectionId = mcqSection.sectionId;
+        console.log("CODING Section ID:", this.sectionId);
+      } else {
+        console.log("CODING Section not found.");
+      }
+    } else {
+      console.log("No assessment sections found.");
+    }
+  }
   ngOnDestroy() {
     // Unsubscribe from the interval to avoid memory leaks
     if (this.dropOffSubscription) {
@@ -947,12 +1002,12 @@ export class CodingSectionComponent
 
     const answerData = {
       questionId: this.currentQuestion.id,
-      assessmentId: 4, // Replace with actual assessment ID
-      sectionId: 4, // Replace with actual section ID
-      candidateId: 4, // Replace with actual candidate ID
+      assessmentId: this.assessmentId, // Replace with actual assessment ID
+      sectionId: this.sectionId, // Replace with actual section ID
+      candidateId: this.candidateId, // Replace with actual candidate ID
       languageId: selectedLanguage.language_id,
       answer: code,
-      candidateAssessmentSessionId: 1,
+      candidateAssessmentSessionId: this.candidateAssessmentSessionId,
     };
 
     this.dropOffAnswerService.dropOffAnswer(answerData).subscribe({

@@ -4,6 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
 import { McqService } from "../../services/mcq.service"; // Existing service
 import { McqAnswerService } from "../../services/dropoff.push.mcq.service"; // New service
+import { InviteService } from "../../services/invite.service";
 
 @Component({
   selector: "app-mcq-section",
@@ -530,24 +531,92 @@ export class McqSectionComponent implements OnInit {
   submitting: boolean = false;
   submitted: boolean = false;
 
+  //Assessment details
+  assessmentId!: number;
+  candidateId!: number;
+  sectionId!: number;
+  candidateAssessmentSessionId!: number;
+  assessmentData: any = null;
+
+
   constructor(
     private mcqService: McqService, // Existing service
     private mcqAnswerService: McqAnswerService, // New service
+    private inviteService: InviteService
+    
+    
   ) {}
 
   ngOnInit(): void {
+
+    console.log('ON INIT CALLED OF MCQ')
     //if something Going wrong remove below thing
+    this.initializeAssessmentDataAssessment();
     this.loadAnswersFromLocalStorage();
     this.fetchQuestions();
   }
 
+
+  
+
+  initializeAssessmentDataAssessment(): void {
+    const inviteData = this.inviteService.getAssessmentData();
+    console.log("inviteData OF ASSESSMENT In MCQ", inviteData); // Debugging: Log the inviteData object
+  
+    if (!inviteData) {
+      console.error("No invite data found.");
+      return;
+    }
+  
+    if (!inviteData.assessmentDto?.assessmentId) {
+      console.error("Missing assessmentId in assessmentDto.");
+      return;
+    }
+  
+    if (!inviteData.candidateDto?.candidateId) {
+      console.error("Missing candidateId in candidateDto.");
+      return;
+    }
+  
+    if (!inviteData.candidateAssessmentSessionDto?.candidateAssessmentSessionId) {
+      console.error("Missing candidateAssessmentSessionId in candidateAssessmentSessionDto.");
+      return;
+    }
+  
+    // If all required fields are present, proceed
+    this.assessmentId = inviteData.assessmentDto.assessmentId;
+    this.candidateId = inviteData.candidateDto.candidateId;
+    this.candidateAssessmentSessionId = inviteData.candidateAssessmentSessionDto.candidateAssessmentSessionId;
+  
+    const assessmentSections = inviteData.assessmentSectionList;
+  
+    if (assessmentSections && Array.isArray(assessmentSections)) {
+      const mcqSection = assessmentSections.find(section => section.name === "MCQ");
+      console.log('=====================1===', mcqSection);
+  
+      if (mcqSection) {
+        this.sectionId = mcqSection.sectionId;
+        console.log("MCQ Section ID:", this.sectionId);
+      } else {
+        console.log("MCQ Section not found.");
+      }
+    } else {
+      console.log("No assessment sections found.");
+    }
+  }
+
   fetchQuestions(): void {
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 3; // Replace with dynamic section ID if needed
+
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 3; // Replace with dynamic section ID if needed
 
     // Check if questions are available in local storage
-    const cachedQuestions = localStorage.getItem("mcqQuestions");
+
+    // const cachedQuestions = localStorage.getItem("mcqQuestions");
+    //Commenting out because the options are not redering correctly for mcq
+    const cachedQuestions = localStorage.getItem("TODO");
+
     if (cachedQuestions) {
       this.questions = JSON.parse(cachedQuestions);
       this.loadAnswersFromLocalStorage();
@@ -555,7 +624,7 @@ export class McqSectionComponent implements OnInit {
     } else {
       // If not in local storage, make an API call
       this.mcqService
-        .fetchQuestions(assessmentId, candidateId, sectionId)
+        .fetchQuestions(this.assessmentId, this.candidateId, this.sectionId)
         .subscribe(
           (response) => {
             if (response.code === 200 && response.status === "SUCCESS") {
@@ -604,19 +673,20 @@ export class McqSectionComponent implements OnInit {
 
   onOptionChange(questionId: number, optionId: number): void {
     this.selectedAnswers[questionId] = optionId;
+    localStorage.setItem("mcqAnswers", JSON.stringify(this.selectedAnswers));
     this.saveAnswersToLocalStorage();
-    this.pushAnswerToServer(questionId, optionId); // Push the updated answer to the server
+    this.pushAnswerToServer(questionId, optionId,this.assessmentId,this.candidateId,this.sectionId,this.candidateAssessmentSessionId); // Push the updated answer to the server
   }
 
   saveAnswersToLocalStorage(): void {
     localStorage.setItem("mcqAnswers", JSON.stringify(this.selectedAnswers));
   }
 
-  pushAnswerToServer(questionId: number, optionId: number): void {
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 3; // Replace with dynamic section ID if needed
-    const candidateAssessmentSessionId = 1;
+  pushAnswerToServer(questionId: number, optionId: number,assessmentId:number,candidateId:number,sectionId:number,candidateAssessmentSessionId:number): void {
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 3; // Replace with dynamic section ID if needed
+    // const candidateAssessmentSessionId = 1;
     const answerData = {
       assessmentId,
       candidateId,

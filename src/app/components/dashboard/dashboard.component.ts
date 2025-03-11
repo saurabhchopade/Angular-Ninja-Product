@@ -9,6 +9,8 @@ import { HttpClientModule } from "@angular/common/http";
 import { SubmitTestService } from "../../services/submit.test.service";
 import { RouterModule } from "@angular/router";
 import { FullstackSectionComponent } from "../fullstack-section/fullstack.component";
+import { InviteService } from "../../services/invite.service";
+import { StartAssessmentResponse } from "../../models/start.test.model";
 
 @Component({
   selector: "app-dashboard",
@@ -964,15 +966,19 @@ export class AppDashboard implements OnInit {
   showSubmitConfirmation: boolean = false;
   testSubmitted: boolean = false;
   navCollapsed: boolean = false;
+  assessmentData: StartAssessmentResponse['data'] | null = null;
+  inviteData: any = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private submitTestService: SubmitTestService,
+    private inviteService: InviteService
   ) {}
 
   ngOnInit() {
     this.startTimer();
+    this.startAssessment();
   }
 
   toggleNav() {
@@ -1029,4 +1035,33 @@ export class AppDashboard implements OnInit {
 
     // });
   }
+
+  startAssessment(): void {
+    const inviteData = this.inviteService.getInviteData();
+
+    if (!inviteData || !inviteData.inviteId || !inviteData.email) {
+      console.error("Invalid invite data. Missing inviteId or email.");
+      return; // Exit the method if data is invalid
+    }
+  
+    const inviteId = inviteData.inviteId; // inviteId is guaranteed to be a number
+    const email = inviteData.email; // email is guaranteed to be a string
+  
+    this.inviteService.startAssessment(inviteId, email).subscribe(
+      (response) => {
+        console.log("Assessment started successfully:", response);
+        // Retrieve the stored assessment data
+        this.assessmentData = this.inviteService.getAssessmentData();
+      },
+      (error) => {
+        console.error("Failed to start assessment:", error);
+        // If the API call fails, try to retrieve existing data from local storage
+        this.assessmentData = this.inviteService.getAssessmentData();
+        if (!this.assessmentData) {
+          console.log("No assessment data found. Please try again.");
+        }
+      },
+    );
+  }
+
 }

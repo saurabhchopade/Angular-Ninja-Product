@@ -4,6 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
 import { QuestionService } from "../../services/subjective.question.service";
 import { DropOffService } from "../../services/dropoff.subjective.service";
+import { InviteService } from "../../services/invite.service";
 
 // Define the SubjectiveQuestion model within the same file
 interface SubjectiveQuestion {
@@ -521,12 +522,22 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
   submitted: boolean = false;
   private dropOffIntervals: { [key: number]: any } = {};
 
+
+  assessmentId!: number;
+  candidateId!: number;
+  sectionId!: number;
+  candidateAssessmentSessionId!: number;
+  assessmentData: any = null;
+
   constructor(
     private questionService: QuestionService,
     private dropOffService: DropOffService,
+    private inviteService: InviteService
+    
   ) {}
 
   ngOnInit(): void {
+    this.initializeAssessmentDataAssessment();
     this.loadAnswersFromLocalStorage();
     this.fetchQuestions();
   }
@@ -537,10 +548,58 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     );
   }
 
+  
+  initializeAssessmentDataAssessment(): void {
+    const inviteData = this.inviteService.getAssessmentData();
+    console.log("inviteData OF ASSESSMENT In SUB", inviteData); // Debugging: Log the inviteData object
+  
+    if (!inviteData) {
+      console.error("No invite data found.");
+      return;
+    }
+  
+    if (!inviteData.assessmentDto?.assessmentId) {
+      console.error("Missing assessmentId in assessmentDto.");
+      return;
+    }
+  
+    if (!inviteData.candidateDto?.candidateId) {
+      console.error("Missing candidateId in candidateDto.");
+      return;
+    }
+  
+    if (!inviteData.candidateAssessmentSessionDto?.candidateAssessmentSessionId) {
+      console.error("Missing candidateAssessmentSessionId in candidateAssessmentSessionDto.");
+      return;
+    }
+  
+    // If all required fields are present, proceed
+    this.assessmentId = inviteData.assessmentDto.assessmentId;
+    this.candidateId = inviteData.candidateDto.candidateId;
+    this.candidateAssessmentSessionId = inviteData.candidateAssessmentSessionDto.candidateAssessmentSessionId;
+  
+    const assessmentSections = inviteData.assessmentSectionList;
+  
+    if (assessmentSections && Array.isArray(assessmentSections)) {
+      const mcqSection = assessmentSections.find(section => section.name === "SUBJECTIVE");
+      console.log('=====================1===', mcqSection);
+  
+      if (mcqSection) {
+        this.sectionId = mcqSection.sectionId;
+        console.log("SUBJECTIVE Section ID:", this.sectionId);
+      } else {
+        console.log("SUBJECTIVE Section not found.");
+      }
+    } else {
+      console.log("No assessment sections found.");
+    }
+  }
+
+
   fetchQuestions(): void {
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 5; // Replace with dynamic section ID if needed
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 5; // Replace with dynamic section ID if needed
 
     // Check if questions are available in local storage
     const cachedQuestions = localStorage.getItem("subjectiveQuestions");
@@ -550,7 +609,7 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
       this.loading = false;
     } else {
       this.questionService
-        .fetchSubjectiveQuestions(assessmentId, sectionId, candidateId)
+        .fetchSubjectiveQuestions(this.assessmentId, this.sectionId, this.candidateId)
         .subscribe({
           next: (response) => {
             if (response.code === 200) {
@@ -629,10 +688,10 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
   }
 
   startDropOffPush(questionId: number): void {
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 5; // Replace with dynamic section ID if needed
-    const candidateAssessmentSessionId = 1;
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 5; // Replace with dynamic section ID if needed
+    // const candidateAssessmentSessionId = 1;
 
     // Start periodic push every 20 seconds
     this.dropOffIntervals[questionId] = setInterval(() => {
@@ -641,11 +700,11 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
         this.dropOffService
           .pushDropOffAnswer(
             questionId,
-            assessmentId,
-            sectionId,
-            candidateId,
+            this.assessmentId,
+            this.sectionId,
+            this.candidateId,
             answer,
-            candidateAssessmentSessionId,
+            this.candidateAssessmentSessionId,
           )
           .subscribe({
             next: (response) => {
@@ -667,10 +726,10 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     }
 
     // Push the answer immediately when the user leaves the textarea
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 5; // Replace with dynamic section ID if needed
-    const candidateAssessmentSessionId = 1;
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 5; // Replace with dynamic section ID if needed
+    // const candidateAssessmentSessionId = 1;
 
     const answer = this.answers[questionId] || "";
 
@@ -678,11 +737,11 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
       this.dropOffService
         .pushDropOffAnswer(
           questionId,
-          assessmentId,
-          sectionId,
-          candidateId,
+          this.assessmentId,
+          this.sectionId,
+          this.candidateId,
           answer,
-          candidateAssessmentSessionId,
+          this.candidateAssessmentSessionId,
         )
         .subscribe({
           next: (response) => {
@@ -701,10 +760,10 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     this.submitting = true;
 
     // Push all answers one last time
-    const assessmentId = 4; // Replace with dynamic assessment ID if needed
-    const candidateId = 4; // Replace with dynamic candidate ID if needed
-    const sectionId = 5; // Replace with dynamic section ID if needed
-    const candidateAssessmentSessionId = 1;
+    // const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    // const candidateId = 4; // Replace with dynamic candidate ID if needed
+    // const sectionId = 5; // Replace with dynamic section ID if needed
+    // const candidateAssessmentSessionId = 1;
 
     const pushPromises = Object.keys(this.answers)
       .filter(
@@ -718,11 +777,11 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
         return this.dropOffService
           .pushDropOffAnswer(
             questionId,
-            assessmentId,
-            sectionId,
-            candidateId,
+            this.assessmentId,
+            this.sectionId,
+            this.candidateId,
             answer,
-            candidateAssessmentSessionId,
+            this.candidateAssessmentSessionId,
           )
           .toPromise();
       });
