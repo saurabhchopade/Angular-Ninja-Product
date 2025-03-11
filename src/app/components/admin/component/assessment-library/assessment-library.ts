@@ -733,6 +733,7 @@ export class AssessmentLibraryComponent implements OnInit {
 
   onInvite(id: number) {
     this.selectedTestId = id;
+    console.log('Invite ID === ',this.selectedTestId)
     this.inviteCandidatesModal.show();
   }
 

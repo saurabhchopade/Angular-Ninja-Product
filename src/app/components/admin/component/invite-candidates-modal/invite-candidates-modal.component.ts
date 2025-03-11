@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter, Input } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Candidate, CandidateInviteData } from "../../types/candidate.type";
+import { EmailInviteService } from "../../services/email.invite.service";
 
 @Component({
   selector: "app-invite-candidates-modal",
@@ -109,6 +110,19 @@ import { Candidate, CandidateInviteData } from "../../types/candidate.type";
                       [(ngModel)]="candidate.lastName"
                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Enter last name"
+                    />
+                  </div>
+
+                  <!-- Phone Number -->
+                  <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-600 mb-1"
+                      >Phone Number</label
+                    >
+                    <input
+                      type="text"
+                      [(ngModel)]="candidate.phoneNumber"
+                      class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="Enter phone number"
                     />
                   </div>
 
@@ -280,9 +294,12 @@ export class InviteCandidatesModalComponent {
       email: "",
       firstName: "",
       lastName: "",
+      phoneNumber: "",
       tags: [],
     },
   ];
+
+  constructor(private emailnviteService: EmailInviteService) {} // Inject the service
 
   show() {
     this.isVisible = true;
@@ -300,6 +317,7 @@ export class InviteCandidatesModalComponent {
         email: "",
         firstName: "",
         lastName: "",
+        phoneNumber: "",
         tags: [],
       },
     ];
@@ -314,6 +332,7 @@ export class InviteCandidatesModalComponent {
         email: "",
         firstName: "",
         lastName: "",
+        phoneNumber: "",
         tags: [],
       });
       this.newTags.push("");
@@ -410,11 +429,31 @@ export class InviteCandidatesModalComponent {
       const validCandidates = this.candidates.filter(
         (c) => c.email && this.isValidEmail(c.email),
       );
-      this.invitesSent.emit({
-        candidates: validCandidates,
-        testId: this.testId,
+
+      const inviteData = {
+        assessmentId: this.testId,
+        inviteCandidateRequests: validCandidates.map((c) => ({
+          email: c.email,
+          firstName: c.firstName || "", // Provide a default value if undefined
+          lastName: c.lastName || "", // Provide a default value if undefined
+          phoneNumber: c.phoneNumber || "", // Provide a default value if undefined
+          tags: c.tags,
+        })),
+      };
+
+      this.emailnviteService.createInvite(inviteData).subscribe({
+        next: (response: any) => {
+          console.log("Invites sent successfully:", response);
+          this.invitesSent.emit({
+            candidates: validCandidates,
+            testId: this.testId,
+          });
+          this.close();
+        },
+        error: (error: any) => {
+          console.error("Failed to send invites:", error);
+        },
       });
-      this.close();
     }
   }
 }
