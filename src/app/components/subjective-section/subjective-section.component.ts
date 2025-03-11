@@ -629,9 +629,9 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
   }
 
   startDropOffPush(questionId: number): void {
-    const assessmentId = 7;
-    const sectionId = 7;
-    const candidateId = 7;
+    const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    const candidateId = 4; // Replace with dynamic candidate ID if needed
+    const sectionId = 5; // Replace with dynamic section ID if needed
     const candidateAssessmentSessionId = 1;
 
     // Start periodic push every 20 seconds
@@ -667,11 +667,12 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     }
 
     // Push the answer immediately when the user leaves the textarea
-    const assessmentId = 7;
-    const sectionId = 7;
-    const candidateId = 7;
-    const answer = this.answers[questionId] || "";
+    const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    const candidateId = 4; // Replace with dynamic candidate ID if needed
+    const sectionId = 5; // Replace with dynamic section ID if needed
     const candidateAssessmentSessionId = 1;
+
+    const answer = this.answers[questionId] || "";
 
     if (answer.trim() !== "") {
       this.dropOffService
@@ -700,9 +701,9 @@ export class SubjectiveSectionComponent implements OnInit, OnDestroy {
     this.submitting = true;
 
     // Push all answers one last time
-    const assessmentId = 7;
-    const sectionId = 7;
-    const candidateId = 7;
+    const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    const candidateId = 4; // Replace with dynamic candidate ID if needed
+    const sectionId = 5; // Replace with dynamic section ID if needed
     const candidateAssessmentSessionId = 1;
 
     const pushPromises = Object.keys(this.answers)

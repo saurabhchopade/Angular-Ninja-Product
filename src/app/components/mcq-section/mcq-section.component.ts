@@ -613,9 +613,9 @@ export class McqSectionComponent implements OnInit {
   }
 
   pushAnswerToServer(questionId: number, optionId: number): void {
-    const assessmentId = 6; // Replace with dynamic assessment ID if needed
-    const candidateId = 6; // Replace with dynamic candidate ID if needed
-    const sectionId = 6; // Replace with dynamic section ID if needed
+    const assessmentId = 4; // Replace with dynamic assessment ID if needed
+    const candidateId = 4; // Replace with dynamic candidate ID if needed
+    const sectionId = 3; // Replace with dynamic section ID if needed
     const candidateAssessmentSessionId = 1;
     const answerData = {
       assessmentId,

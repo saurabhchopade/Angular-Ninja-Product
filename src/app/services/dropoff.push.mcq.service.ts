@@ -6,8 +6,8 @@ import { Observable } from "rxjs";
   providedIn: "root",
 })
 export class McqAnswerService {
-  private baseUrl = "http://localhost:8080/api/questionAndOption";
-
+  private baseUrl = "http://localhost:8080/api/mcq-question";
+  
   constructor(private http: HttpClient) {}
 
   // Add MCQ answer to the server

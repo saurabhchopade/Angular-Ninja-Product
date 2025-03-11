@@ -947,9 +947,9 @@ export class CodingSectionComponent
 
     const answerData = {
       questionId: this.currentQuestion.id,
-      assessmentId: 1, // Replace with actual assessment ID
-      sectionId: 1, // Replace with actual section ID
-      candidateId: 1, // Replace with actual candidate ID
+      assessmentId: 4, // Replace with actual assessment ID
+      sectionId: 4, // Replace with actual section ID
+      candidateId: 4, // Replace with actual candidate ID
       languageId: selectedLanguage.language_id,
       answer: code,
       candidateAssessmentSessionId: 1,

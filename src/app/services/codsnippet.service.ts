@@ -57,7 +57,7 @@ interface CodingQuestionResponse {
 interface ApiResponseItem {
   codingQuestionResponse: CodingQuestionResponse;
   codingQuestionTemplateResponse: CodingQuestionTemplateResponse[];
-  testcaseResponse: TestCaseResponse[];
+  testcaseDto: TestCaseResponse[];
 }
 
 interface ApiResponse {
@@ -132,7 +132,7 @@ export class CodeSnippetService {
               language_id: template.language.languageId,
             }),
           ),
-          testCases: item.testcaseResponse.map(
+          testCases: item.testcaseDto.map(
             (testCase: TestCaseResponse) => ({
               input: testCase.inputData,
               expectedOutput: testCase.expectedOutput,

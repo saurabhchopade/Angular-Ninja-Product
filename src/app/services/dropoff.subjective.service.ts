@@ -7,7 +7,7 @@ import { switchMap } from "rxjs/operators";
   providedIn: "root",
 })
 export class DropOffService {
-  private apiUrl = "http://localhost:8080/api/questions/drop-off-answer";
+  private apiUrl = "http://localhost:8080/api/subjective-questions/drop-off-answer";
 
   constructor(private http: HttpClient) {}
 

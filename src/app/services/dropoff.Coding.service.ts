@@ -6,8 +6,8 @@ import { Observable } from "rxjs";
   providedIn: "root",
 })
 export class DropOffAnswerService {
-  private apiUrl = "http://localhost:8080/api/questions/coding/drop-off-answer";
-
+  private apiUrl = "http://localhost:8080/api/codingQuestion/coding/drop-off-answer";
+  
   constructor(private http: HttpClient) {}
 
   dropOffAnswer(answerData: any): Observable<any> {
