@@ -123,7 +123,7 @@ import { AssessmentDataService } from "../../services/assessment.data.service";
                 </div>
 
                 <!-- Question Summary -->
-                <div class="space-y-3">
+                <!-- <div class="space-y-3">
                   <div
                     class="flex justify-between text-sm text-gray-600 border-b pb-2"
                   >
@@ -162,7 +162,7 @@ import { AssessmentDataService } from "../../services/assessment.data.service";
                       {{ getQuestionTypeCount(section, "Full Stack") }}
                     </span>
                   </div>
-                </div>
+                </div> -->
 
                 <!-- Difficulty Distribution -->
                 <div class="mt-6">
