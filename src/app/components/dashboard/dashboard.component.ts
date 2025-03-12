@@ -152,7 +152,7 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
                         <h3>General Guidelines</h3>
                         <ul>
                           <li>
-                            You have a total of <strong>2 hours</strong> to
+                            You have a total of <strong>{{assessmentData?.assessmentDto?.duration}} Minutes</strong> to
                             complete all sections of the test.
                           </li>
                           <li>
@@ -178,7 +178,7 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
                               <div class="section-info-number">{{ section.sequenceNo }}</div>
                               <div class="section-info-details">
                                 <h4>{{ section.name }}</h4>
-                                <p>{{ section.description }}</p>
+                                <!-- <p>{{ section.description }}</p> -->
                               </div>
                             </div>
                           }
@@ -208,7 +208,7 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
                           class="start-test-btn"
                           (click)="currentSection = assessmentData?.assessmentSectionList?.[0]?.name?.toLowerCase() ?? ''"
                           >
-                          Start Test
+                          Continue Test
                         </button>
                       </div>
                     </div>
