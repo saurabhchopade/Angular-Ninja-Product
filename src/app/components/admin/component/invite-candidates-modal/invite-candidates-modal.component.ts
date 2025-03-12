@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Candidate, CandidateInviteData } from "../../types/candidate.type";
 import { EmailInviteService } from "../../services/email.invite.service";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-invite-candidates-modal",
@@ -37,13 +38,22 @@ import { EmailInviteService } from "../../services/email.invite.service";
           <div *ngIf="!showFileUpload" class="space-y-6">
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-medium text-gray-800">Add Candidates</h3>
-              <button
-                (click)="showFileUpload = true"
-                class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center gap-1"
-              >
-                <span class="material-icons text-base">upload_file</span>
-                Upload multiple candidate details
-              </button>
+              <div class="flex gap-2">
+                <button
+                  (click)="showFileUpload = true"
+                  class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center gap-1"
+                >
+                  <span class="material-icons text-base">upload_file</span>
+                  Upload multiple candidate details
+                </button>
+                <button
+                  (click)="downloadTemplate()"
+                  class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+                >
+                  <span class="material-icons text-base">download</span>
+                  Download Template
+                </button>
+              </div>
             </div>
 
             <!-- Candidate List -->
@@ -279,6 +289,7 @@ import { EmailInviteService } from "../../services/email.invite.service";
   `,
 })
 export class InviteCandidatesModalComponent {
+  // [disabled]="!canSend"    Add this line to enable the email adn
   @Input() testId!: number;
   @Output() closed = new EventEmitter<void>();
   @Output() invitesSent = new EventEmitter<CandidateInviteData>();
@@ -299,7 +310,10 @@ export class InviteCandidatesModalComponent {
     },
   ];
 
-  constructor(private emailnviteService: EmailInviteService) {} // Inject the service
+  constructor(
+    private emailnviteService: EmailInviteService,
+    private http: HttpClient // Inject HttpClient for file download/upload
+  ) {}
 
   show() {
     this.isVisible = true;
@@ -412,16 +426,28 @@ export class InviteCandidatesModalComponent {
     }
 
     this.selectedFile = file;
-    // Here you would typically parse the Excel file
-    // and populate the candidates array
+    this.uploadFile(file);
   }
 
   removeFile() {
     this.selectedFile = null;
   }
 
+  // get canSend(): boolean {
+  //   return this.candidates.some((c) => c.email && this.isValidEmail(c.email));
+  // }
+
   get canSend(): boolean {
-    return this.candidates.some((c) => c.email && this.isValidEmail(c.email));
+    // Check if there are valid candidates with valid emails
+    const hasValidCandidates = this.candidates.some(
+      (c) => c.email && this.isValidEmail(c.email),
+    );
+  
+    // Check if a valid file has been uploaded
+    const hasValidFile = this.selectedFile !== null;
+  
+    // Enable the "Send Invites" button if either condition is true
+    return hasValidCandidates || hasValidFile;
   }
 
   send() {
@@ -455,5 +481,34 @@ export class InviteCandidatesModalComponent {
         },
       });
     }
+  }
+
+  // Download Template
+  downloadTemplate() {
+    const url = "http://localhost:8080/excel/download/users-template";
+    this.http.get(url, { responseType: "blob" }).subscribe((blob: Blob) => {
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = "candidate_template.xlsx";
+      link.click();
+    });
+  }
+
+  // Upload Excel File
+  uploadFile(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("assessmentId", this.testId.toString());
+
+    const url = "http://localhost:8080/excel/upload/users";
+    this.http.post(url, formData).subscribe({
+      next: (response: any) => {
+        console.log("File uploaded successfully:", response);
+        // Optionally, update the candidates list with the uploaded data
+      },
+      error: (error: any) => {
+        console.error("Failed to upload file:", error);
+      },
+    });
   }
 }
