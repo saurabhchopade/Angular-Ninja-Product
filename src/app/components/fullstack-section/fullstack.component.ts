@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { HttpClientModule, HttpEventType } from "@angular/common/http";
+import { HttpClientModule, HttpEvent, HttpEventType } from "@angular/common/http";
 import { FullstackFileUploadService } from "../../services/file.upload.service";
 import { FullStackQuestionService } from "../../services/fetch.fullstack.service";
 import { QuestionResponse } from "../../models/fullstack.question.model";
@@ -607,12 +607,13 @@ export class FullstackSectionComponent {
   errorMessage = "";
 
   // Metadata for the upload
-  questionId = 5; // Replace with dynamic question ID
-  assessmentId = 33; // Replace with dynamic assessment ID
-  sectionId = 33; // Replace with dynamic section ID
+  questionId = 18; // Replace with dynamic question ID
+  assessmentId = 34; // Replace with dynamic assessment ID
+  sectionId = 34; // Replace with dynamic section ID
   candidateId = 1; // Replace with dynamic candidate ID
 
-  constructor(private fullstackQuestionService: FullstackFileUploadService,
+  constructor(
+    private fullstackQuestionService: FullstackFileUploadService,
     private questionService: FullStackQuestionService
   ) {}
 
@@ -622,34 +623,31 @@ export class FullstackSectionComponent {
   }
 
   fetchFullStackQuestions() {
-
     const request = {
       assessmentId: 34,
       candidateId: 1,
-      sectionId: 34
+      sectionId: 34,
     };
 
-    this.questionService.fetchFullstackQuestions(request)
-    .subscribe({
+    this.questionService.fetchFullstackQuestions(request).subscribe({
       next: (response) => {
         this.questions = response;
-        console.log('Questions loaded:', response);
+        console.log("Questions loaded:", response);
       },
       error: (error) => {
-        console.error('Error fetching questions:', error);
-      }
+        console.error("Error fetching questions:", error);
+      },
     });
   }
 
-
-   getProblemStatement(response: QuestionResponse | null): string | null {
+  getProblemStatement(response: QuestionResponse | null): string | null {
     if (!response || !response.data || response.data.length === 0) {
-        return null; // Return null if the response is null or has no questions
+      return null; // Return null if the response is null or has no questions
     }
 
     // Return the problem statement of the first question in the data array
     return response.data[0].problemStatement;
-}
+  }
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -690,7 +688,7 @@ export class FullstackSectionComponent {
       // Check if file is already in the list
       if (
         !this.uploadedFiles.some(
-          (f) => f.name === file.name && f.size === file.size,
+          (f) => f.name === file.name && f.size === file.size
         )
       ) {
         // Check file size (10MB limit)
@@ -701,7 +699,7 @@ export class FullstackSectionComponent {
             this.uploadedFiles.push(file);
           } else {
             this.showError(
-              `File "${file.name}" is not an accepted format. Please use .zip, .rar, or .tar.gz files.`,
+              `File "${file.name}" is not an accepted format. Please use .zip, .rar, or .tar.gz files.`
             );
           }
         } else {
@@ -730,7 +728,7 @@ export class FullstackSectionComponent {
     // For example, storing the file list and notes in localStorage
     localStorage.setItem(
       "fullstack-files",
-      JSON.stringify(this.uploadedFiles.map((f) => f.name)),
+      JSON.stringify(this.uploadedFiles.map((f) => f.name))
     );
     localStorage.setItem("fullstack-notes", this.additionalNotes);
 
@@ -746,48 +744,49 @@ export class FullstackSectionComponent {
       this.showError("No files selected for upload.");
       return;
     }
-
+  
     this.isUploading = true;
     this.uploadProgress = 0;
     this.uploadSuccess = false;
     this.uploadError = false;
-
-    // this.fullstackQuestionService
-    //   .uploadFiles(
-    //     this.uploadedFiles,
-    //     this.questionId,
-    //     this.assessmentId,
-    //     this.sectionId,
-    //     this.candidateId,
-    //   )
-    //   .subscribe({
-    //     next: (event: any) => {
-    //       if (event.type === HttpEventType.UploadProgress) {
-    //         this.uploadProgress = Math.round(
-    //           (100 * event.loaded) / event.total,
-    //         );
-    //       } else if (event.type === HttpEventType.Response) {
-    //         this.isUploading = false;
-    //         this.uploadSuccess = true;
-    //         this.uploadProgress = null;
-
-    //         // Clear the form after successful upload
-    //         setTimeout(() => {
-    //           this.uploadedFiles = [];
-    //           this.additionalNotes = "";
-    //           this.uploadSuccess = false;
-    //         }, 3000);
-    //       }
-    //     },
-    //     error: (err: any) => {
-    //       this.isUploading = false;
-    //       this.uploadProgress = null;
-    //       this.showError("File upload failed. Please try again later.");
-    //       console.error("Upload error:", err);
-    //     },
-    //   });
+  
+    // Get the first file from the uploadedFiles array
+    const file = this.uploadedFiles[0];
+  
+    // Call the service method to upload the file with all required arguments
+    this.fullstackQuestionService
+      .uploadFile(file, this.questionId, this.assessmentId, this.sectionId, this.candidateId)
+      .subscribe({
+        next: (event: HttpEvent<any>) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            // ✅ Use optional chaining to prevent undefined error
+            this.uploadProgress = event.total
+              ? Math.round((100 * event.loaded) / event.total)
+              : 0; // Default to 0 if event.total is undefined
+          } else if (event.type === HttpEventType.Response) {
+            // Handle successful upload
+            this.isUploading = false;
+            this.uploadSuccess = true;
+            this.uploadProgress = null;
+  
+            // Clear the form after successful upload
+            setTimeout(() => {
+              this.uploadedFiles = [];
+              this.additionalNotes = "";
+              this.uploadSuccess = true;
+            }, 3000);
+          }
+        },
+        error: (err: any) => {
+          // Handle upload error
+          this.isUploading = false;
+          this.uploadProgress = null;
+          this.showError("File upload failed. Please try again later.");
+          console.error("Upload error:", err);
+        },
+      });
   }
-
+  
   private showError(message: string) {
     this.errorMessage = message;
     this.uploadError = true;

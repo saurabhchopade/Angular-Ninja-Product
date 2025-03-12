@@ -6,24 +6,13 @@ import { Observable } from "rxjs";
   providedIn: "root",
 })
 export class FullstackFileUploadService {
-  private apiUrl = "http://localhost:8080/api/full-stack/upload"; // Updated URL for file upload
+  private apiUrl = "http://localhost:8080/api/full-stack/upload"; // API endpoint for file upload
 
   constructor(private http: HttpClient) {}
 
-  // Fetch full-stack questions
-  fetchFullStackQuestions(
-    assessmentId: number,
-    candidateId: number,
-    sectionId: number
-  ): Observable<any> {
-    const url = `${this.apiUrl}/fetch-fullstack-questions`;
-    const body = { assessmentId, candidateId, sectionId };
-    return this.http.post(url, body);
-  }
-
-  // Upload files with full-stack metadata
-  uploadFiles(
-    files: File[],
+  // Upload a single file with full-stack metadata
+  uploadFile(
+    file: File,
     questionId: number,
     assessmentId: number,
     sectionId: number,
@@ -31,17 +20,25 @@ export class FullstackFileUploadService {
   ): Observable<HttpEvent<any>> {
     const formData = new FormData();
 
-    // Append files to FormData
-    files.forEach((file) => {
-      formData.append("file", file, file.name);
+    // Append the file to FormData
+    formData.append("file", file, file.name);
+
+    // Append full-stack metadata as a JSON string with explicit Content-Type
+    const fullStackMetadata = {
+      questionId,
+      assessmentId,
+      sectionId,
+      candidateId,
+    };
+    const metadataBlob = new Blob([JSON.stringify(fullStackMetadata)], {
+      type: "application/json", // Explicitly set Content-Type
     });
+    formData.append("fullStack", metadataBlob);
 
-    // Append full-stack metadata as a JSON string
- 
-
+    // Make the HTTP POST request
     return this.http.post(this.apiUrl, formData, {
-      reportProgress: true,
-      observe: "events",
+      reportProgress: true, // Enable progress tracking
+      observe: "events", // Observe the full HTTP event
     });
   }
 }
