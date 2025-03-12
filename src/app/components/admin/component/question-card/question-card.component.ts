@@ -37,7 +37,7 @@ import { TruncatePipe } from "../../../../shared/pipes/truncate.pipe";
               Score: {{ question.maxScore }}
             </span>
             <span [class]="getDifficultyClass()" class="mt-2">
-              {{ question.difficultyLevel }}
+              {{ question.type }}
             </span>
           </div>
         </div>
