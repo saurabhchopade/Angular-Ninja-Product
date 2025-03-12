@@ -1,14 +1,16 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { HttpClientModule, HttpEventType } from "@angular/common/http";
-import { FileUploadService } from "../../services/file.upload.service";
+import { FullstackFileUploadService } from "../../services/file.upload.service";
+import { FullStackQuestionService } from "../../services/fetch.fullstack.service";
+import { QuestionResponse } from "../../models/fullstack.question.model";
 
 @Component({
   selector: "app-fullstack-section",
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule],
-  providers: [FileUploadService],
+  providers: [FullstackFileUploadService,FullStackQuestionService],
   template: `
     <div class="fullstack-container">
       <div class="section-header">
@@ -25,19 +27,20 @@ import { FileUploadService } from "../../services/file.upload.service";
 
           <div class="question-content">
             <p class="question-text">
-              Create a simple user management system with the following
-              features:
+              {{questions?.data?.[0]?.problemStatement ?? 'No problem statement available'}}
+              <!-- Create a simple user management system with the following
+              features: -->
             </p>
 
-            <ul class="requirements-list">
+            <!-- <ul class="requirements-list">
               <li>User registration form with validation</li>
               <li>User login functionality</li>
               <li>Dashboard to display user information</li>
               <li>Ability to update user profile</li>
-            </ul>
+            </ul> -->
 
             <p class="instruction-text">
-              Implement both frontend and backend components. Upload your
+              Implement both Give problem statement in your local and  Upload your
               solution files below.
             </p>
           </div>
@@ -592,6 +595,8 @@ import { FileUploadService } from "../../services/file.upload.service";
   ],
 })
 export class FullstackSectionComponent {
+  questions: QuestionResponse | null = null;
+
   isDragging = false;
   uploadedFiles: File[] = [];
   additionalNotes = "";
@@ -601,7 +606,50 @@ export class FullstackSectionComponent {
   uploadError = false;
   errorMessage = "";
 
-  constructor(private fileUploadService: FileUploadService) {}
+  // Metadata for the upload
+  questionId = 5; // Replace with dynamic question ID
+  assessmentId = 33; // Replace with dynamic assessment ID
+  sectionId = 33; // Replace with dynamic section ID
+  candidateId = 1; // Replace with dynamic candidate ID
+
+  constructor(private fullstackQuestionService: FullstackFileUploadService,
+    private questionService: FullStackQuestionService
+  ) {}
+
+  ngOnInit() {
+    // Fetch full-stack questions on component initialization
+    this.fetchFullStackQuestions();
+  }
+
+  fetchFullStackQuestions() {
+
+    const request = {
+      assessmentId: 34,
+      candidateId: 1,
+      sectionId: 34
+    };
+
+    this.questionService.fetchFullstackQuestions(request)
+    .subscribe({
+      next: (response) => {
+        this.questions = response;
+        console.log('Questions loaded:', response);
+      },
+      error: (error) => {
+        console.error('Error fetching questions:', error);
+      }
+    });
+  }
+
+
+   getProblemStatement(response: QuestionResponse | null): string | null {
+    if (!response || !response.data || response.data.length === 0) {
+        return null; // Return null if the response is null or has no questions
+    }
+
+    // Return the problem statement of the first question in the data array
+    return response.data[0].problemStatement;
+}
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -704,37 +752,40 @@ export class FullstackSectionComponent {
     this.uploadSuccess = false;
     this.uploadError = false;
 
-    this.fileUploadService
-      .uploadMultipleFiles(this.uploadedFiles, this.additionalNotes)
-      .subscribe({
-        next: (event: any) => {
-          if (event.type === HttpEventType.UploadProgress) {
-            this.uploadProgress = Math.round(
-              (100 * event.loaded) / event.total,
-            );
-          } else if (event.type === HttpEventType.Response) {
-            this.isUploading = false;
-            this.uploadSuccess = true;
-            this.uploadProgress = null;
+    // this.fullstackQuestionService
+    //   .uploadFiles(
+    //     this.uploadedFiles,
+    //     this.questionId,
+    //     this.assessmentId,
+    //     this.sectionId,
+    //     this.candidateId,
+    //   )
+    //   .subscribe({
+    //     next: (event: any) => {
+    //       if (event.type === HttpEventType.UploadProgress) {
+    //         this.uploadProgress = Math.round(
+    //           (100 * event.loaded) / event.total,
+    //         );
+    //       } else if (event.type === HttpEventType.Response) {
+    //         this.isUploading = false;
+    //         this.uploadSuccess = true;
+    //         this.uploadProgress = null;
 
-            // Clear the form after successful upload
-            setTimeout(() => {
-              this.uploadedFiles = [];
-              this.additionalNotes = "";
-              this.uploadSuccess = false;
-            }, 3000);
-          }
-        },
-        error: (err: any) => {
-          //Fix this error going ahed
-          this.isUploading = false;
-          this.uploadSuccess = true;
-
-          //   this.uploadProgress = null;
-          //   this.showError('File upload failed. Please try again later.');
-          //   console.error('Upload error:', err);
-        },
-      });
+    //         // Clear the form after successful upload
+    //         setTimeout(() => {
+    //           this.uploadedFiles = [];
+    //           this.additionalNotes = "";
+    //           this.uploadSuccess = false;
+    //         }, 3000);
+    //       }
+    //     },
+    //     error: (err: any) => {
+    //       this.isUploading = false;
+    //       this.uploadProgress = null;
+    //       this.showError("File upload failed. Please try again later.");
+    //       console.error("Upload error:", err);
+    //     },
+    //   });
   }
 
   private showError(message: string) {

@@ -1,76 +1,47 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpEvent, HttpRequest } from "@angular/common/http";
+import { HttpClient, HttpEvent, HttpEventType } from "@angular/common/http";
 import { Observable } from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
-export class FileUploadService {
-  private apiUrl = "http://localhost:8080/api/full-stack/upload";
+export class FullstackFileUploadService {
+  private apiUrl = "http://localhost:8080/api/full-stack/upload"; // Updated URL for file upload
 
   constructor(private http: HttpClient) {}
 
-  uploadFile(file: File): Observable<HttpEvent<any>> {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const req = new HttpRequest("POST", this.apiUrl, formData, {
-      reportProgress: true,
-      responseType: "json",
-    });
-
-    return this.http.request(req);
+  // Fetch full-stack questions
+  fetchFullStackQuestions(
+    assessmentId: number,
+    candidateId: number,
+    sectionId: number
+  ): Observable<any> {
+    const url = `${this.apiUrl}/fetch-fullstack-questions`;
+    const body = { assessmentId, candidateId, sectionId };
+    return this.http.post(url, body);
   }
 
-  uploadMultipleFiles(
+  // Upload files with full-stack metadata
+  uploadFiles(
     files: File[],
-    notes: string,
+    questionId: number,
+    assessmentId: number,
+    sectionId: number,
+    candidateId: number
   ): Observable<HttpEvent<any>> {
     const formData = new FormData();
 
-    files.forEach((file, index) => {
-      formData.append("files", file);
+    // Append files to FormData
+    files.forEach((file) => {
+      formData.append("file", file, file.name);
     });
 
-    formData.append("notes", notes);
+    // Append full-stack metadata as a JSON string
+ 
 
-    const req = new HttpRequest("POST", `${this.apiUrl}/multiple`, formData, {
+    return this.http.post(this.apiUrl, formData, {
       reportProgress: true,
-      responseType: "json",
+      observe: "events",
     });
-
-    return this.http.request(req);
-  }
-
-  saveProgress(files: string[], notes: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/save-progress`, {
-      files,
-      notes,
-    });
-  }
-
-  getProgress(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/progress`);
-  }
-
-  validateFile(file: File): { valid: boolean; message?: string } {
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      return {
-        valid: false,
-        message: `File "${file.name}" exceeds the 10MB size limit.`,
-      };
-    }
-
-    // Check file type
-    const fileExt = file.name.split(".").pop()?.toLowerCase();
-    if (!["zip", "rar", "gz"].includes(fileExt || "")) {
-      return {
-        valid: false,
-        message: `File "${file.name}" is not an accepted format. Please use .zip, .rar, or .tar.gz files.`,
-      };
-    }
-
-    return { valid: true };
   }
 }

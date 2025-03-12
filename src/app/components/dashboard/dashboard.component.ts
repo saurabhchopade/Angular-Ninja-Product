@@ -224,7 +224,7 @@ import { StartAssessmentResponse } from "../../models/start.test.model";
               @case ("subjective") {
                 <app-subjective-section />
               }
-              @case ("fullstack") {
+              @case ("full stack") {
                 <app-fullstack-section />
               }
             }
