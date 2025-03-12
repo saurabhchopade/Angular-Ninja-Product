@@ -5,7 +5,9 @@ import {
   FullStackQuestion,
   Framework,
   ProjectSetup,
+  FullStackQuestionRequest,
 } from "../../types/fullstack-question.type";
+import { FullStackQuestionService } from "../../services/create.fullstackq.service"; // Import the service
 
 @Component({
   selector: "app-create-fullstack-modal",
@@ -533,6 +535,8 @@ export class CreateFullStackModalComponent {
     },
   };
 
+  constructor(private fullStackQuestionService: FullStackQuestionService) {} // Inject the service
+
   show() {
     this.isVisible = true;
   }
@@ -698,8 +702,31 @@ export class CreateFullStackModalComponent {
 
   publish() {
     if (this.isComplete) {
-      this.published.emit({ ...this.question });
-      this.close();
+      // Map the user input to the API request interface
+      const apiRequest: FullStackQuestionRequest = {
+        type: "FULL STACK", // Fixed value
+        title: this.question.title,
+        problemStatement: this.question.problemStatement,
+        difficultyLevel: this.question.difficulty, // Map from "difficulty"
+        maxScore: this.question.maxScore,
+        tags: this.question.tags,
+        visibility: "Public", // Fixed value
+        aiEvaluationEnabled: true, // Fixed value
+        timeBoundSeconds: 300, // Fixed value
+        isDraft: false, // Fixed value
+      };
+
+      // Call the service to create the full-stack question
+      this.fullStackQuestionService.createFullStackQuestion(apiRequest).subscribe({
+        next: (response) => {
+          console.log("Question published successfully:", response);
+          this.published.emit({ ...this.question });
+          this.close();
+        },
+        error: (error) => {
+          console.error("Failed to publish question:", error);
+        },
+      });
     }
   }
 }
